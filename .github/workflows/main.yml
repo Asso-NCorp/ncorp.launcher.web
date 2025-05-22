@@ -31,14 +31,14 @@ jobs:
                   7z a ncorp.launcher.7z ./build/* ./prisma/ package.json .env -xr!prisma/migrations
 
             - name: Upload via SFTP
-              uses: atmoz/sftp@v1
+              uses: appleboy/scp-action@v0.1.7
               with:
                   host: ${{ secrets.SFTP_HOST }}
                   port: ${{ secrets.SFTP_PORT }}
                   username: ${{ secrets.SFTP_USER }}
                   password: ${{ secrets.SFTP_PASS }}
-                  local_path: ./ncorp.launcher.7z
-                  remote_path: /var/www/launcher/front/
+                  source: ./ncorp.launcher.7z
+                  target: /var/www/launcher/front/
 
             - name: Remote deploy via SSH
               uses: appleboy/ssh-action@master
