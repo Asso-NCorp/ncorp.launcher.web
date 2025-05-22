@@ -31,7 +31,7 @@ jobs:
                   7z a ncorp.launcher.7z ./build/* ./prisma/ package.json .env -xr!prisma/migrations
 
             - name: Upload via SFTP
-              uses: presslabs/action-sftp-deploy@v1
+              uses: atmoz/sftp@v1
               with:
                   host: ${{ secrets.SFTP_HOST }}
                   port: ${{ secrets.SFTP_PORT }}
