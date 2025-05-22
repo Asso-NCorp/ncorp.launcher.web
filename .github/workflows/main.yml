@@ -21,7 +21,7 @@ jobs:
             - name: Build app
               run: |
                   cp .env.production .env
-                  ORIGIN=https://launcher.n-lan.com NODE_ENV=production PORT=5173 bunx vite build
+                  ORIGIN=${{ secrets.ORIGIN }} NODE_ENV=production PORT=${{ secrets.PORT }} bunx vite build
 
             - name: Install 7-Zip
               run: sudo apt update && sudo apt install -y p7zip-full
