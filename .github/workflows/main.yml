@@ -1,4 +1,4 @@
-name: Deploy to n-lan.com
+name: Deploy to production
 
 on:
     push:
@@ -18,10 +18,11 @@ jobs:
             - name: Install dependencies
               run: bun install
 
+            - name: Inject .env from secrets
+              run: echo "${{ secrets.ENV_FILE }}" > .env
+
             - name: Build app
-              run: |
-                  cp .env.production .env
-                  ORIGIN=${{ secrets.ORIGIN }} NODE_ENV=production PORT=${{ secrets.PORT }} bunx vite build
+              run: NODE_ENV=production bunx vite build
 
             - name: Install 7-Zip
               run: sudo apt update && sudo apt install -y p7zip-full
