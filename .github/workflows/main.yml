@@ -37,7 +37,7 @@ jobs:
                   host: ${{ secrets.SFTP_HOST }}
                   port: ${{ secrets.SFTP_PORT }}
                   username: ${{ secrets.SFTP_USER }}
-                  password: ${{ secrets.SFTP_PASS }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
                   source: ./ncorp.launcher.7z
                   target: /var/www/launcher/front/
 
@@ -47,7 +47,7 @@ jobs:
                   host: ${{ secrets.SFTP_HOST }}
                   port: ${{ secrets.SFTP_PORT }}
                   username: ${{ secrets.SFTP_USER }}
-                  password: ${{ secrets.SFTP_PASS }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: |
                       cd /var/www/launcher/front/
                       /home/lan/.nvm/versions/node/v22.14.0/bin/node /home/lan/.bun/bin/pm2 stop ecosystem.config.json || true
