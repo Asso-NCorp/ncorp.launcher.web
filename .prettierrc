@@ -1,0 +1,19 @@
+{
+	"printWidth": 120,
+	"tabWidth": 4,
+	"useTabs": false,
+	"svelteSortOrder": "scripts-markup-styles-options",
+	"svelteStrictMode": false,
+	"svelteBracketNewLine": false,
+	"svelteIndentScriptAndStyle": true,
+	"htmlWhitespaceSensitivity": "ignore",
+	"plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+	"overrides": [
+		{
+			"files": "*.svelte",
+			"options": {
+				"parser": "svelte"
+			}
+		}
+	]
+}

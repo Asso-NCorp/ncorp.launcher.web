@@ -1,0 +1,14 @@
+{
+    "apps": [
+        {
+            "name": "launcher-front",
+            "script": "index.js",
+            "interpreter": "bun",
+            "interpreter_args": "run",
+            "env": {
+                "NODE_ENV": "production",
+                "PORT": 5173
+            }
+        }
+    ]
+}

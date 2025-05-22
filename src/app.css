@@ -1,0 +1,105 @@
+@import url("/css/clash-display.css");
+@import url("/css/gg-sans.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+iconify-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/fonts/InterVariable.woff2") format("woff2");
+}
+
+@layer base {
+    :root {
+        --background: 30 30% 10%;
+        --foreground: 35 25% 95%;
+        --card: 30 30% 8%;
+        --card-foreground: 35 25% 95%;
+        --popover: 30 30% 12%;
+        --popover-foreground: 35 25% 95%;
+        --primary: 25 85% 50%;
+        --primary-foreground: 25 15% 98%;
+        --secondary: 30 30% 16%;
+        --secondary-foreground: 35 25% 95%;
+        --muted: 30 30% 14%;
+        --muted-foreground: 24 6% 63%;
+        --accent: 45 65% 45%;
+        --accent-foreground: 45 15% 98%;
+        --destructive: 0 85% 52%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 30 30% 18%;
+        --input: 30 30% 18%;
+        --ring: 25 85% 50%;
+        --success: 145 80% 45%;
+        --info: 210 90% 60%;
+        --warning: 40 90% 52%;
+        --danger: 0 85% 52%;
+        --background-subtle: 30 30% 7%;
+        --radius: 0rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+
+    /* Styles pour les barres de défilement */
+
+    /* Barre de défilement principale (la piste) */
+    ::-webkit-scrollbar {
+        width: 10px; /* Largeur de la barre de défilement verticale */
+        height: 10px; /* Hauteur de la barre de défilement horizontale */
+    }
+
+    /* Piste (arrière-plan) de la barre de défilement */
+    ::-webkit-scrollbar-track {
+        background-color: hsl(var(--muted));
+        border-radius: var(--radius);
+    }
+
+    /* Poignée (thumb) de la barre de défilement */
+    ::-webkit-scrollbar-thumb {
+        background-color: hsl(var(--muted-foreground) / 0.5);
+        border-radius: var(--radius);
+        border: 2px solid hsl(var(--muted));
+    }
+
+    /* Poignée au survol */
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: hsl(var(--muted-foreground) / 0.7);
+    }
+
+    /* Poignée active (en train d'être cliquée) */
+    ::-webkit-scrollbar-thumb:active {
+        background-color: hsl(var(--muted-foreground) / 0.9);
+    }
+
+    /* Boutons de la barre de défilement (flèches aux extrémités) */
+    ::-webkit-scrollbar-button {
+        display: none; /* Cacher les boutons de défilement */
+    }
+
+    /* Coin où se croisent les barres de défilement */
+    ::-webkit-scrollbar-corner {
+        background-color: hsl(var(--muted));
+    }
+
+    /* Pour Firefox */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: hsl(var(--muted-foreground) / 0.5) hsl(var(--muted));
+    }
+}

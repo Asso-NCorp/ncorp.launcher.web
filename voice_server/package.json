@@ -1,0 +1,26 @@
+{
+    "name": "ncorp.launcher.voice",
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "vite build",
+        "preview": "vite preview",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "server": "node server/mediasoup-server.js"
+    },
+    "devDependencies": {
+        "@types/uuid": "^10.0.0",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "express": "^5.1.0",
+        "mediasoup": "^3.15.7",
+        "mediasoup-client": "^3.9.5",
+        "socket.io": "^4.8.1",
+        "socket.io-client": "^4.8.1",
+        "uuid": "^11.1.0"
+    }
+}

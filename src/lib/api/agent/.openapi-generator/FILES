@@ -1,0 +1,13 @@
+apis/LocalApi.ts
+apis/MachineApi.ts
+apis/index.ts
+index.ts
+models/CPUInfos.ts
+models/FolderInfo.ts
+models/GPUInfos.ts
+models/HardDriveInfo.ts
+models/InstallableGame.ts
+models/PhysicalDevices.ts
+models/TR.ts
+models/index.ts
+runtime.ts

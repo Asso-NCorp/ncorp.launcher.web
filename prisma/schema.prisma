@@ -1,0 +1,194 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model account {
+    id                    String    @id @db.VarChar(36)
+    accountId             String    @db.Text
+    providerId            String    @db.Text
+    userId                String    @db.VarChar(36)
+    accessToken           String?   @db.Text
+    refreshToken          String?   @db.Text
+    idToken               String?   @db.Text
+    accessTokenExpiresAt  DateTime? @db.DateTime(0)
+    refreshTokenExpiresAt DateTime? @db.DateTime(0)
+    scope                 String?   @db.Text
+    password              String?   @db.Text
+    createdAt             DateTime  @db.DateTime(0)
+    updatedAt             DateTime  @db.DateTime(0)
+}
+
+model invitation {
+    id             String   @id @db.VarChar(36)
+    organizationId String   @db.VarChar(36)
+    email          String   @db.Text
+    role           String?  @db.Text
+    status         String   @db.Text
+    expiresAt      DateTime @db.DateTime(0)
+    inviterId      String   @db.VarChar(36)
+}
+
+model jwks {
+    id         String   @id @db.VarChar(36)
+    publicKey  String   @db.Text
+    privateKey String   @db.Text
+    createdAt  DateTime @db.DateTime(0)
+}
+
+model member {
+    id             String   @id @db.VarChar(36)
+    organizationId String   @db.VarChar(36)
+    userId         String   @db.VarChar(36)
+    role           String   @db.Text
+    createdAt      DateTime @db.DateTime(0)
+}
+
+model organization {
+    id        String   @id @db.VarChar(36)
+    name      String   @db.Text
+    slug      String   @unique(map: "slug") @db.VarChar(255)
+    logo      String?  @db.Text
+    createdAt DateTime @db.DateTime(0)
+    metadata  String?  @db.Text
+}
+
+model session {
+    id                   String   @id @db.VarChar(36)
+    expiresAt            DateTime @db.DateTime(0)
+    token                String   @unique(map: "token") @db.VarChar(255)
+    createdAt            DateTime @db.DateTime(0)
+    updatedAt            DateTime @db.DateTime(0)
+    ipAddress            String?  @db.Text
+    userAgent            String?  @db.Text
+    userId               String   @db.VarChar(36)
+    impersonatedBy       String?  @db.Text
+    activeOrganizationId String?  @db.Text
+}
+
+model user {
+    id                                                          String                 @id @db.VarChar(36)
+    name                                                        String                 @db.Text
+    email                                                       String                 @unique(map: "email") @db.VarChar(255)
+    emailVerified                                               Boolean
+    image                                                       String?                @db.Text
+    createdAt                                                   DateTime               @db.DateTime(0)
+    updatedAt                                                   DateTime               @db.DateTime(0)
+    username                                                    String?                @unique(map: "username") @db.VarChar(255)
+    role                                                        String                 @db.Text
+    banned                                                      Boolean?
+    banReason                                                   String?                @db.Text
+    banExpires                                                  DateTime?              @db.DateTime(0)
+    displayUsername                                             String?                @db.Text
+    chat_message                                                chat_message[]
+    chat_private_message_chat_private_message_senderIdTouser    chat_private_message[] @relation("chat_private_message_senderIdTouser")
+    chat_private_message_chat_private_message_recipientIdTouser chat_private_message[] @relation("chat_private_message_recipientIdTouser")
+    user_settings                                               user_settings?
+    game_session                                                game_session[]
+}
+
+model verification {
+    id         String    @id @db.VarChar(36)
+    identifier String    @db.Text
+    value      String    @db.Text
+    expiresAt  DateTime  @db.DateTime(0)
+    createdAt  DateTime? @db.DateTime(0)
+    updatedAt  DateTime? @db.DateTime(0)
+}
+
+model chat_channel {
+    id           Int            @id @default(autoincrement())
+    name         String         @db.VarChar(100)
+    createdAt    DateTime       @default(now()) @db.Timestamp(0)
+    serverId     Int
+    chat_server  chat_server    @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_channel_chat_server_FK")
+    chat_message chat_message[]
+
+    @@index([serverId], map: "chat_channel_chat_server_FK")
+}
+
+model chat_message {
+    id           Int          @id @default(autoincrement())
+    senderId     String       @db.VarChar(36)
+    channelId    Int
+    timestamp    DateTime     @default(now()) @db.DateTime(0)
+    text         String       @db.VarChar(1000)
+    chat_channel chat_channel @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_messages_chat_channel_FK")
+    user         user         @relation(fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_messages_user_FK")
+
+    @@index([channelId], map: "chat_messages_chat_channel_FK")
+    @@index([senderId], map: "chat_messages_user_FK")
+}
+
+model chat_private_message {
+    id                                          Int                         @id @default(autoincrement())
+    senderId                                    String                      @db.VarChar(36)
+    recipientId                                 String                      @db.VarChar(36)
+    timestamp                                   DateTime                    @default(now()) @db.Timestamp(0)
+    text                                        String                      @db.VarChar(1000)
+    status                                      chat_private_message_status @default(sent)
+    user_chat_private_message_senderIdTouser    user                        @relation("chat_private_message_senderIdTouser", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK")
+    user_chat_private_message_recipientIdTouser user                        @relation("chat_private_message_recipientIdTouser", fields: [recipientId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK_1")
+
+    @@index([senderId], map: "chat_private_message_user_FK")
+    @@index([recipientId], map: "chat_private_message_user_FK_1")
+}
+
+model chat_server {
+    id           Int            @id @default(autoincrement())
+    name         String         @db.VarChar(100)
+    createdAt    DateTime       @default(now()) @db.DateTime(0)
+    creatorId    String         @db.VarChar(36)
+    chat_channel chat_channel[]
+}
+
+model sidelink {
+    id        Int      @id @default(autoincrement())
+    name      String   @db.VarChar(100)
+    url       String   @db.VarChar(100)
+    hidden    Boolean  @default(false)
+    createdAt DateTime @default(now()) @db.DateTime(0)
+    updatedAt DateTime @default(now()) @db.DateTime(0)
+    createdBy String   @db.VarChar(36)
+    updatedBy String   @db.VarChar(36)
+
+    @@index([createdBy], map: "sidelink_user_FK")
+    @@index([updatedBy], map: "sidelink_user_FK_1")
+}
+
+model username_file_config {
+    id          Int     @id @default(autoincrement()) @db.UnsignedInt
+    folder_slug String? @db.VarChar(100)
+    config_type String? @db.VarChar(100)
+    path        String? @db.VarChar(200)
+    variable    String? @db.VarChar(200)
+}
+
+enum chat_private_message_status {
+    sent
+    delivered
+    read
+}
+
+model user_settings {
+    id              Int    @id @default(autoincrement())
+    user_id         String @unique @db.VarChar(36)
+    local_games_dir String @db.Text
+
+    user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model game_session {
+    id            String    @id @default(uuid()) @db.Char(36)
+    user_id       String    @db.VarChar(36)
+    game_slug     String    @db.VarChar(36)
+    start_time    DateTime  @db.DateTime(0)
+    end_time      DateTime? @db.DateTime(0)
+    total_seconds Int?      @db.Int
+
+    user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}

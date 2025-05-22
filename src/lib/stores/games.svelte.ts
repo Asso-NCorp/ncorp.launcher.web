@@ -1,0 +1,308 @@
+
+import { toast } from "svelte-sonner";
+import { FetchError, type Game, type InstallableGame } from "../shared-models";
+import { global } from "../states/global.svelte";
+import { liveUsers } from "../states/live-users.svelte";
+import { getLocalApi, getServerApi } from "../utils";
+import { liveAgentConnection } from "../states/live-agent.svelte";
+import { t } from "$src/lib/translations";
+
+class GameStore {
+    games: InstallableGame[] = $state([]);
+    selected: InstallableGame[] = $derived(this.games.filter(game => game.isSelected));
+    gamesLoading = $state(false);
+    private allGames: InstallableGame[] = $state([]);
+
+    setGames(games: InstallableGame[]) {
+        this.allGames = games;
+        this.games = games
+    }
+
+    get(folderSlug: string): InstallableGame | undefined {
+        return this.games.find(game => game.folderSlug === folderSlug);
+    }
+
+    select(game: InstallableGame) {
+        game.isSelected = true;
+    }
+
+    deselect(game: InstallableGame) {
+        game.isSelected = false;
+    }
+
+    toggleSelect(game: InstallableGame) {
+        game.isSelected = !game.isSelected;
+    }
+
+    async syncPlayingGames() {
+        await getLocalApi().syncPlayingGames();
+    }
+
+    setGameInstallProgress(folderSlug: string, progress: number) {
+        const game = this.get(folderSlug);
+        if (game) {
+            game.installProgress = progress;
+            game.isInstalled = progress === 100;
+            game.isInstalling = progress < 100 && progress > 0;
+        }
+    }
+
+    setGamePlayingState(userId: string, folderSlug: string, isPlaying: boolean) {
+        const game = this.get(folderSlug);
+        if (game) {
+            if (userId === global.currentUser?.id) {
+                game.isPlaying = isPlaying;
+            }
+
+            if (isPlaying) {
+                liveUsers.updateUserActivity(userId, `Joue à ${game.title}`);
+            } else {
+                liveUsers.updateUserActivity(userId, undefined);
+            }
+        } else {
+            console.error(`Game with folder slug ${folderSlug} not found`);
+            liveUsers.updateUserActivity(userId, 'Joue à un jeu');
+        }
+    }
+
+    resetGamePlayingState(userId: string) {
+        this.games.forEach(game => {
+            if (game.isPlaying) {
+                game.isPlaying = false;
+                liveUsers.updateUserActivity(userId, undefined);
+            }
+        });
+    }
+
+    has(gameSlug: string) {
+        return this.games.some(game => game.folderSlug === gameSlug);
+    }
+
+    resetSelected() {
+        this.games.forEach(game => game.isSelected = false);
+    }
+
+    clearSearch = () => {
+        global.gamesSearchQuery = '';
+        this.search();
+    }
+
+    search = () => {
+        const searchQuery = global.gamesSearchQuery.toLowerCase();
+        if (!searchQuery || searchQuery === '') {
+            this.games = this.allGames;
+            return;
+        }
+
+        this.games = this.allGames.filter(game => game.title!.toLowerCase().includes(searchQuery));
+    }
+
+
+    installGame = async (game: InstallableGame) => {
+        if (!game.isInstalled) {
+            try {
+                game.isInstalling = true;
+                var result = await getLocalApi().install({
+                    installableGame: game,
+                });
+                if (!result.isSuccess) {
+                    toast.error(result.message!);
+                }
+            } catch (error) {
+                if (error instanceof FetchError && error.cause && error.cause.name === "TypeError") {
+                    // Gérer spécifiquement les erreurs de réseau
+                    console.log("Erreur de réseau:", error.cause);
+                } else {
+                    console.error(error);
+                    game.installError = (error as Error)?.message;
+                }
+            } finally {
+                game.isInstalling = false;
+            }
+        }
+    }
+
+
+    installGames = async (games: InstallableGame[]) => {
+        if (games.length === 0) {
+            toast.error("Aucun jeu sélectionné");
+            return;
+        }
+        if (this.gamesLoading) {
+            toast.error("Jeux déjà en cours de chargement");
+            return;
+        }
+
+        this.gamesLoading = true;
+        let successCount = 0;
+
+        try {
+            for (const game of games) {
+                try {
+                    await this.installGame(game);
+                    successCount++;
+                } catch (err) {
+                    console.error(`Erreur installation ${game.title}`, err);
+                    toast.error(`Erreur sur ${game.title}`);
+                } finally {
+                    GamesStore.toggleSelect(game);
+                }
+            }
+
+            if (successCount > 0) toast.success(`${successCount} jeu(x) installé(s)`);
+            else toast.error("Aucun jeu n'a pu être installé");
+        } finally {
+            this.gamesLoading = false;
+        }
+    };
+
+    uninstallGame = async (game: InstallableGame) => {
+        if (game.isInstalled) {
+            try {
+                game.isLoading = true;
+                await getLocalApi().deleteGame({
+                    gameSlug: game.folderSlug,
+                });
+                toast.success("Désinstallation réussie", {
+                    class: "bg-green-500",
+                });
+            } catch (error) {
+                console.error(error);
+                game.installError = (error as Error)?.message; // Capture the error message
+                toast.error("Erreur lors de la désinstallation", {
+                    class: "bg-red-500",
+                });
+            } finally {
+                GamesStore.setGameInstallProgress(game.folderSlug!, 0);
+                game.isLoading = false;
+            }
+        }
+    }
+
+    uninstallGames = async (games: InstallableGame[]) => {
+        if (games.length === 0) {
+            toast.error("Aucun jeu sélectionné");
+            return;
+        }
+        if (this.gamesLoading) {
+            toast.error("Jeux déjà en cours de chargement");
+            return;
+        }
+
+        this.gamesLoading = true;
+        let successCount = 0;
+
+        try {
+            for (const game of games) {
+                try {
+                    await this.uninstallGame(game);
+                    successCount++;
+                } catch (err) {
+                    console.error(`Erreur désinstallation ${game.title}`, err);
+                    toast.error(`Erreur sur ${game.title}`);
+                } finally {
+                    GamesStore.toggleSelect(game);
+                }
+            }
+
+            if (successCount > 0) toast.success(`${successCount} jeu(x) désinstallé(s)`);
+            else toast.error("Aucun jeu n'a pu être désinstallé");
+        } finally {
+            this.gamesLoading = false;
+        }
+    };
+
+
+
+    getAvailableGames = async () => {
+        if (this.gamesLoading) {
+            console.warn("Games are already loading");
+            return false;
+        }
+
+        GamesStore.gamesLoading = true;
+        let games: InstallableGame[] = [];
+        let installedGames: InstallableGame[] = [];
+        const serverApi = getServerApi();
+        const localApi = getLocalApi();
+
+        try {
+            // Get games from the server
+            games = await serverApi.getAvailableGames({
+                sort: global.gamesSortOrder,
+            });
+        } catch (error) {
+            console.error(error);
+            toast.error("Impossible de récupérer les jeux disponibles. Veuillez vérifier la connexion au serveur");
+            return false;
+        }
+
+        try {
+            // Get installed games locally
+            if (liveAgentConnection?.isConnected) {
+                installedGames = await localApi.getInstalledGames();
+            }
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Impossible de récupérer les jeux installés. Veuillez vérifier l'agent");
+            installedGames = [];
+        }
+
+        try {
+            // Merge games with installed games to get the isInstalled and isPlaying status
+            const mergedGames = games.map((game) => ({
+                ...game,
+                isInstalled: installedGames.some(
+                    (installedGame) => installedGame.folderSlug === game.folderSlug && installedGame.isInstalled,
+                ),
+                isPlaying: installedGames.some(
+                    (installedGame) => installedGame.folderSlug === game.folderSlug && installedGame.isPlaying,
+                ),
+            }));
+
+            // Load the games into the state
+            GamesStore.setGames(mergedGames);
+        } catch (error) {
+            toast.error("Impossible de charger les jeux");
+            console.error(error);
+            return false;
+        }
+
+        try {
+            if (liveAgentConnection?.isConnected && global.localGamesFolder) {
+                // Sync the installed games with the server
+                await GamesStore.syncPlayingGames();
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Impossible de synchroniser les jeux installés. Veuillez vérifier l'agent");
+            return false;
+        } finally {
+            GamesStore.gamesLoading = false;
+        }
+
+        return true;
+    };
+
+
+
+    async deleteGame(folderSlug: string) {
+        try {
+            const deleted = await getServerApi().deleteGame({ slug: folderSlug });
+            if (!deleted) {
+                toast.error("Erreur lors de la suppression du jeu");
+                return;
+            }
+            this.games = this.games.filter(game => game.folderSlug !== folderSlug);
+            toast.success("Jeu supprimé avec succès");
+        } catch (error) {
+            toast.error("Erreur lors de la suppression du jeu");
+            console.error(error);
+        }
+    }
+
+
+}
+
+export const GamesStore = new GameStore();

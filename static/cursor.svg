@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 20" width="21px" height="20px"
+    preserveAspectRatio="none">
+    <path
+        d="M 15.504 3.11 L 12.536 15.406 C 12.267 16.52 10.764 16.715 10.22 15.705 L 7.476 10.609 L 2.004 8.655 C 0.916 8.266 0.892 6.737 1.967 6.314 L 13.831 1.653 C 14.773 1.283 15.741 2.127 15.504 3.11 Z M 7.567 10.642 L 7.566 10.642 C 7.567 10.642 7.567 10.642 7.567 10.642 L 7.651 10.406 L 7.567 10.642 Z"
+        fill="skyblue" stroke="dodgerblue" strokewidth="1.5"
+        style="transform-origin: 8.35722px 8.96345px;"
+        transform="matrix(0, -1, 1, 0, 9.53674e-7, -9.53674e-7)" id="object-0" />
+</svg>
