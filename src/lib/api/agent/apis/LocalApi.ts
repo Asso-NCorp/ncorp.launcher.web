@@ -48,10 +48,6 @@ export interface InstallRequest {
     installableGame?: Omit<InstallableGame, 'genresStr'>;
 }
 
-export interface InstallV2Request {
-    installableGame?: Omit<InstallableGame, 'genresStr'>;
-}
-
 export interface OpenGameFolderRequest {
     gameSlug?: string;
 }
@@ -322,41 +318,6 @@ export class LocalApi extends runtime.BaseAPI {
      */
     async install(requestParameters: InstallRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TR> {
         const response = await this.installRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async installV2Raw(requestParameters: InstallV2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TR>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("Bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/api/Local/Installv2`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: InstallableGameToJSON(requestParameters['installableGame']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => TRFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async installV2(requestParameters: InstallV2Request = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TR> {
-        const response = await this.installV2Raw(requestParameters, initOverrides);
         return await response.value();
     }
 

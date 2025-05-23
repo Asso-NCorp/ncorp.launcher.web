@@ -7,17 +7,18 @@
     import * as Avatar from "../../ui/avatar";
     import { goto } from "$app/navigation";
     import { t } from "$src/lib/translations";
+    import { global } from "$src/lib/states/global.svelte";
     import UserStatusDot from "../UserStatusDot.svelte";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
 
-    let { user, sidebarCollapsed = false }: { user: User; sidebarCollapsed?: boolean } = $props();
+    let { user }: { user: User } = $props();
     let name = user.name;
 </script>
 
 <DropdownMenu.Root>
     <DropdownMenu.Trigger class="{buttonVariants({ variant: 'ghost' })} w-full">
-        <SideMenuItem href="/" class="w-full py-0 pb-0 text-base" collapsed={sidebarCollapsed}>
+        <SideMenuItem href="/" class="w-full py-0 pb-0 text-base" collapsed={global.sidebarCollapsed}>
             <div class="relative">
                 <Avatar.Root class="size-9 text-lg uppercase ring-2 ring-primary/40">
                     <Avatar.Image src="/api/avatars/{user.id}" alt={name} />
@@ -28,7 +29,7 @@
                 <UserStatusDot status={"Connected"} />
             </div>
 
-            {#if !sidebarCollapsed}
+            {#if !global.sidebarCollapsed}
                 <span>{name}</span>
             {/if}
         </SideMenuItem>

@@ -1,11 +1,11 @@
 
 import { toast } from "svelte-sonner";
-import { FetchError, type Game, type InstallableGame } from "../shared-models";
+import { FetchError } from "../shared-models";
+import type { InstallableGame } from "../shared-models";
 import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi } from "../utils";
 import { liveAgentConnection } from "../states/live-agent.svelte";
-import { t } from "$src/lib/translations";
 
 class GameStore {
     games: InstallableGame[] = $state([]);
@@ -18,8 +18,8 @@ class GameStore {
         this.games = games
     }
 
-    get(folderSlug: string): InstallableGame | undefined {
-        return this.games.find(game => game.folderSlug === folderSlug);
+    get(gameSlug: string): InstallableGame | undefined {
+        return this.games.find(game => game.folderSlug === gameSlug);
     }
 
     select(game: InstallableGame) {
@@ -45,17 +45,29 @@ class GameStore {
         await getLocalApi().syncPlayingGames();
     }
 
-    setGameInstallProgress(folderSlug: string, progress: number) {
-        const game = this.get(folderSlug);
+    setGameInstallProgress(gameSlug: string, progress: number) {
+        const game = this.get(gameSlug);
         if (game) {
             game.installProgress = progress;
-            game.isInstalled = progress === 100;
-            game.isInstalling = progress < 100 && progress > 0;
         }
     }
 
-    setGamePlayingState(userId: string, folderSlug: string, isPlaying: boolean) {
-        const game = this.get(folderSlug);
+    setGameIsInstalled(gameSlug: string, isInstalled: boolean) {
+        const game = this.get(gameSlug);
+        if (game) {
+            game.isInstalled = isInstalled;
+            if (isInstalled) {
+                game.isInstalling = false;
+                game.installProgress = 100;
+            } else {
+                game.isInstalling = false;
+                game.installProgress = 0;
+            }
+        }
+    }
+
+    setGamePlayingState(userId: string, gameSlug: string, isPlaying: boolean) {
+        const game = this.get(gameSlug);
         if (game) {
             if (userId === global.currentUser?.id) {
                 game.isPlaying = isPlaying;
@@ -67,7 +79,7 @@ class GameStore {
                 liveUsers.updateUserActivity(userId, undefined);
             }
         } else {
-            console.error(`Game with folder slug ${folderSlug} not found`);
+            console.error(`Game with folder slug ${gameSlug} not found`);
             liveUsers.updateUserActivity(userId, 'Joue à un jeu');
         }
     }
@@ -136,8 +148,8 @@ class GameStore {
             toast.success("Annulation réussie", {
                 class: "bg-green-500",
             });
-            this.setGameInstallProgress(game.folderSlug!, 0);
-            game.isInstalled = false;
+            this.setGameIsInstalled(game.folderSlug!, false);
+            this.deselect(game.folderSlug!);
         } catch (error) {
             console.error(error);
             game.installError = (error as Error)?.message; // Capture the error message
@@ -195,7 +207,7 @@ class GameStore {
                     class: "bg-red-500",
                 });
             } finally {
-                GamesStore.setGameInstallProgress(game.folderSlug!, 0);
+                GamesStore.setGameIsInstalled(game.folderSlug!, false);
                 GamesStore.deselect(game.folderSlug!);
                 game.isLoading = false;
             }
@@ -218,6 +230,7 @@ class GameStore {
         try {
             for (const game of games) {
                 try {
+                    game.isLoading = true;
                     await this.uninstallGame(game);
                     successCount++;
                 } catch (err) {
@@ -225,6 +238,8 @@ class GameStore {
                     toast.error(`Erreur sur ${game.title}`);
                 } finally {
                     GamesStore.deselect(game.folderSlug!);
+                    GamesStore.setGameIsInstalled(game.folderSlug!, false);
+                    game.isLoading = false;
                 }
             }
 
@@ -314,14 +329,14 @@ class GameStore {
 
 
 
-    async deleteGame(folderSlug: string) {
+    async deleteGame(gameSlug: string) {
         try {
-            const deleted = await getServerApi().deleteGame({ slug: folderSlug });
+            const deleted = await getServerApi().deleteGame({ slug: gameSlug });
             if (!deleted) {
                 toast.error("Erreur lors de la suppression du jeu");
                 return;
             }
-            this.games = this.games.filter(game => game.folderSlug !== folderSlug);
+            this.games = this.games.filter(game => game.folderSlug !== gameSlug);
             toast.success("Jeu supprimé avec succès");
         } catch (error) {
             toast.error("Erreur lors de la suppression du jeu");

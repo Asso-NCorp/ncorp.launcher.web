@@ -14,6 +14,13 @@ class GlobalState {
     private serverApi = getServerApi();
     private localApi = getLocalApi();
 
+    /**
+     * @description The current collapsed state of the sidebar
+     * @type {boolean}
+     * @default false
+     * @memberof GlobalState
+     */
+    sidebarCollapsed: boolean = $state<boolean>(false);
 
     /**
      * @description The current display mode of the games

@@ -21,15 +21,13 @@
             <UserStatusDot status={user.status?.toString()!} />
         {/key}
     </div>
-    <div class="flex flex-col text-start">
-        <span class:text-primary={user.role === "admin"} class="text-lg">{user.name}</span>
-        {#if user.activity}
-            <div
-                transition:fly={{ y: -10, duration: 300 }}
-                class="flex items-center gap-1 text-xs font-bold text-gray-500">
-                <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
-                <span class="truncate text-2xs">{user.activity}</span>
-            </div>
-        {/if}
+    <div class="flex min-h-8 flex-col justify-center text-start">
+        <span class:text-primary={user.role === "admin"} class="text-lg leading-tight">{user.name}</span>
+        <div
+            class="flex items-center gap-1 overflow-hidden text-xs font-bold text-gray-500 transition-all duration-300 ease-in-out"
+            style="height: {user.activity ? '1rem' : '0'}; opacity: {user.activity ? 1 : 0};">
+            <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
+            <span class="truncate text-2xs">{user.activity || ""}</span>
+        </div>
     </div>
 </div>

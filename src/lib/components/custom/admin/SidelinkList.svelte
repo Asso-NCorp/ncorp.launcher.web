@@ -7,6 +7,8 @@
     import { toast } from "svelte-sonner";
     import type { sidelink } from "@prisma/client";
     import { Checkbox } from "../../ui/checkbox";
+    import { global } from "$lib/states/global.svelte";
+    import { cn } from "$lib/utils";
 
     interface SidelinkListProps {
         loading: boolean;
@@ -61,14 +63,20 @@
     {#if loading}
         <Skeleton />
     {:else}
-        <span>Sélectionnez un lien</span>
-        <Table.Root>
+        <span class={cn("block", global.sidebarCollapsed && "text-sm")}>
+            {global.sidebarCollapsed ? "Liens" : "Sélectionnez un lien"}
+        </span>
+        <Table.Root class={cn("", global.sidebarCollapsed && "text-sm")}>
             <Table.Header>
                 <Table.Row>
                     <Table.Head class="w-10"></Table.Head>
-                    <Table.Head>Nom</Table.Head>
-                    <Table.Head>URL</Table.Head>
-                    <Table.Head>Caché</Table.Head>
+                    <Table.Head class={cn("", global.sidebarCollapsed && "text-xs")}>Nom</Table.Head>
+                    <Table.Head class={cn("", global.sidebarCollapsed && "hidden text-xs md:table-cell")}>
+                        URL
+                    </Table.Head>
+                    <Table.Head class={cn("", global.sidebarCollapsed && "hidden text-xs lg:table-cell")}>
+                        Caché
+                    </Table.Head>
                     <Table.Head class="text-right"></Table.Head>
                 </Table.Row>
             </Table.Header>
@@ -76,11 +84,23 @@
                 {#each sidelinks as sidelink (sidelink.id)}
                     <Table.Row class="cursor-pointer" onclick={() => onSelect(sidelink)}>
                         <Table.Cell>
-                            <Link class="size-5" />
+                            <Link class={cn("size-5", global.sidebarCollapsed && "size-4")} />
                         </Table.Cell>
-                        <Table.Cell class="font-medium">{sidelink.name}</Table.Cell>
-                        <Table.Cell>{sidelink.url}</Table.Cell>
-                        <Table.Cell class="font-medium">
+                        <Table.Cell class={cn("font-medium", global.sidebarCollapsed && "text-xs")}>
+                            {global.sidebarCollapsed
+                                ? sidelink.name.length > 10
+                                    ? sidelink.name.substring(0, 10) + "..."
+                                    : sidelink.name
+                                : sidelink.name}
+                        </Table.Cell>
+                        <Table.Cell class={cn("", global.sidebarCollapsed && "hidden text-xs md:table-cell")}>
+                            {global.sidebarCollapsed
+                                ? sidelink.url.length > 15
+                                    ? sidelink.url.substring(0, 15) + "..."
+                                    : sidelink.url
+                                : sidelink.url}
+                        </Table.Cell>
+                        <Table.Cell class={cn("font-medium", global.sidebarCollapsed && "hidden lg:table-cell")}>
                             <Checkbox checked={sidelink.hidden} inert />
                         </Table.Cell>
                         <Table.Cell class="text-right">
@@ -90,20 +110,32 @@
                                     popoverStates[sidelink.id] = isOpen;
                                 }}>
                                 <Popover.Trigger class="text-destructive-foreground">
-                                    <Button variant="outline">Supprimer</Button>
+                                    <Button variant="outline" size={global.sidebarCollapsed ? "sm" : "default"}>
+                                        {global.sidebarCollapsed ? "×" : "Supprimer"}
+                                    </Button>
                                 </Popover.Trigger>
                                 <Popover.Content>
                                     <div class="flex flex-col gap-2">
-                                        <span>Êtes-vous sûr ?</span>
-                                        <span>Cette action est irréversible.</span>
+                                        <span class={cn("", global.sidebarCollapsed && "text-sm")}>
+                                            Êtes-vous sûr ?
+                                        </span>
+                                        <span class={cn("", global.sidebarCollapsed && "text-xs")}>
+                                            Cette action est irréversible.
+                                        </span>
                                         <div class="flex gap-2">
                                             <Popover.Close>
-                                                <Button variant="outline" onclick={() => closePopover(sidelink.id)}>
-                                                    Annuler
+                                                <Button
+                                                    variant="outline"
+                                                    size={global.sidebarCollapsed ? "sm" : "default"}
+                                                    onclick={() => closePopover(sidelink.id)}>
+                                                    {global.sidebarCollapsed ? "×" : "Annuler"}
                                                 </Button>
                                             </Popover.Close>
-                                            <Button variant="destructive" onclick={() => handleDelete(sidelink)}>
-                                                Supprimer
+                                            <Button
+                                                variant="destructive"
+                                                size={global.sidebarCollapsed ? "sm" : "default"}
+                                                onclick={() => handleDelete(sidelink)}>
+                                                {global.sidebarCollapsed ? "✓" : "Supprimer"}
                                             </Button>
                                         </div>
                                     </div>

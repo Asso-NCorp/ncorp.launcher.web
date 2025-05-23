@@ -58,7 +58,7 @@ export class SignalREventBinder {
                     onClick: () => goto(`/games/${gameSlug}`),
                 }
             });
-            GamesStore.setGameInstallProgress(gameSlug, 100);
+            GamesStore.setGameIsInstalled(gameSlug, true);
             GamesStore.deselect(gameSlug);
         });
 

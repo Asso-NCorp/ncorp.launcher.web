@@ -1,32 +1,25 @@
 <script lang="ts">
     import "$src/app.css";
-    import { t } from "$lib/translations";
     import Header from "$src/lib/components/custom/Header.svelte";
     import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
     import { page } from "$app/state";
     import { AlertTriangle, Folder, Gamepad2, MoveRight, ChevronLeft, Menu } from "@lucide/svelte";
-    import SideMenuItem from "$src/lib/components/custom/SideMenuItem.svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
     import { getLocalApi, cn } from "$src/lib/utils";
     import { onDestroy, onMount } from "svelte";
     import { type User } from "$src/lib/auth/client";
-    import AdminMenu from "$src/lib/components/custom/AdminMenu.svelte";
-    import SideLinks from "$src/lib/components/custom/SideLinks.svelte";
     import "@fontsource-variable/rubik";
     import { fade, fly } from "svelte/transition";
     import { afterNavigate, beforeNavigate, goto, onNavigate } from "$app/navigation";
     import { browser } from "$app/environment";
     import LazyImage from "$src/lib/components/custom/LazyImage.svelte";
     import { Toaster } from "$lib/components/ui/sonner/index.js";
-    import { global } from "$src/lib/states/global.svelte";
     import { TooltipProvider } from "$src/lib/components/ui/tooltip";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
     import { liveUsers } from "$src/lib/states/live-users.svelte";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import LiveUsers from "$src/lib/components/custom/LiveUsers.svelte";
-    import SuperJSON from "superjson";
-    import { Card } from "$src/lib/components/ui/card";
     import ThemeProvider from "$src/lib/components/theme/ThemeProvider.svelte";
     import ThemSelectorAdvanced from "$src/lib/components/theme/ThemSelectorAdvanced.svelte";
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
@@ -34,8 +27,8 @@
     import { SignalREventBinder } from "$src/lib/signalr-events";
     import { GamesStore } from "$src/lib/stores/games.svelte";
     import NcorpGlitch from "$src/lib/components/custom/NcorpGlitch.svelte";
+    import { global } from "$src/lib/states/global.svelte";
     let loading = $state(false);
-    let sidebarCollapsed = $state(false);
     let rightSidebarHidden = $state(false);
     let { children } = $props();
 
@@ -45,11 +38,11 @@
             const handleResize = () => {
                 if (window.innerWidth < 768) {
                     // md breakpoint
-                    sidebarCollapsed = true;
+                    global.sidebarCollapsed = true;
                     rightSidebarHidden = true;
                 } else if (window.innerWidth >= 1024) {
                     // lg breakpoint
-                    sidebarCollapsed = false;
+                    global.sidebarCollapsed = false;
                     rightSidebarHidden = false;
                 } else if (window.innerWidth >= 768) {
                     // md to lg
@@ -72,7 +65,7 @@
     liveUsers.users = page.data.liveUsers;
 
     const toggleSidebar = () => {
-        sidebarCollapsed = !sidebarCollapsed;
+        global.sidebarCollapsed = !global.sidebarCollapsed;
     };
 
     onNavigate((navigation) => {
@@ -195,19 +188,20 @@
                 </div>
             {/if}
             <!-- Header with Logo Grid -->
-            <div class="header-container flex h-12 flex-shrink-0 bg-card shadow-sm backdrop-blur dark:shadow-none">
+            <div
+                class="header-container z-[100] flex h-12 flex-shrink-0 bg-card shadow-sm backdrop-blur dark:shadow-none">
                 <!-- Logo Section - aligned with sidebar -->
                 <div
                     class="flex items-center justify-center gap-2 border-r border-border bg-card transition-all duration-300 ease-in-out"
-                    style:width={sidebarCollapsed ? "60px" : "250px"}>
+                    style:width={global.sidebarCollapsed ? "80px" : "250px"}>
                     <img
                         src="/logo_small.png"
                         alt="Logo"
                         class={cn("h-10 w-auto transition-all duration-300", {
-                            "h-8": sidebarCollapsed,
+                            "h-8": global.sidebarCollapsed,
                         })} />
 
-                    {#if !sidebarCollapsed}
+                    {#if !global.sidebarCollapsed}
                         <!-- Vertical divided -->
                         <div class="h-8 w-[1px] bg-border" />
                         <NcorpGlitch
@@ -221,8 +215,8 @@
                     <button
                         onclick={toggleSidebar}
                         class="mr-2 rounded-md p-2 transition-colors hover:bg-muted"
-                        title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
-                        {#if sidebarCollapsed}
+                        title={global.sidebarCollapsed ? "Agrandir le menu" : "Réduire le menu"}>
+                        {#if global.sidebarCollapsed}
                             <Menu size={18} />
                         {:else}
                             <ChevronLeft size={18} />
@@ -246,11 +240,11 @@
             <div class="flex flex-1 overflow-hidden">
                 <!-- Collapsible Left Sidebar -->
                 <aside
-                    class="flex-shrink-0 overflow-hidden border-border bg-card transition-all duration-300 ease-in-out"
-                    style:width={sidebarCollapsed ? "60px" : "250px"}>
-                    <SideMenu class="h-full" {sidebarCollapsed}>
+                    class="z-[100] flex-shrink-0 overflow-hidden border-border bg-card transition-all duration-300 ease-in-out"
+                    style:width={global.sidebarCollapsed ? "80px" : "250px"}>
+                    <SideMenu class="h-full">
                         <div class="mt-auto flex w-full">
-                            <ProfileDropdown {user} {sidebarCollapsed} />
+                            <ProfileDropdown {user} />
                         </div>
                     </SideMenu>
                 </aside>

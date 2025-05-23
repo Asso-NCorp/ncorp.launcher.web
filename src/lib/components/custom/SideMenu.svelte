@@ -8,20 +8,15 @@
     import { t } from "$src/lib/translations";
     import Card from "../ui/card/card.svelte";
     import GridPattern from "./GridPattern.svelte";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
     import { toast } from "svelte-sonner";
     import { ResponseError } from "$src/lib/api/agent";
     import { goto } from "$app/navigation";
     import SideLinks from "./SideLinks.svelte";
     import AdminMenu from "./AdminMenu.svelte";
     import { page } from "$app/state";
-    import type { PageData } from "../../../routes/(authenticated)/$types";
+    import { global } from "$src/lib/states/global.svelte";
     import type { User } from "$src/lib/auth/client";
-    let {
-        children,
-        class: klazz,
-        sidebarCollapsed = false,
-    }: { children?: Snippet; class?: string; sidebarCollapsed?: boolean } = $props();
+    let { children, class: klazz }: { children?: Snippet; class?: string } = $props();
 
     const user = page.data["user"] as User;
 
@@ -43,91 +38,71 @@
 <aside class="h-full min-w-0">
     <Card class={cn("relative flex h-full w-auto min-w-0 flex-col border-y-0", klazz)}>
         <ScrollArea class="min-w-0 flex-1">
-            <div class={cn("min-w-0 p-4", sidebarCollapsed && "p-2")}>
+            <div class={cn("min-w-0 p-4", global.sidebarCollapsed && "p-2")}>
                 <!-- Added padding for content within ScrollArea -->
                 <SideMenuItem
-                    showSquareCard={!sidebarCollapsed}
+                    showSquareCard={!global.sidebarCollapsed}
                     href="/"
-                    label={sidebarCollapsed ? "" : $t("home")}
-                    collapsed={sidebarCollapsed} />
-
-                {#if !sidebarCollapsed}
+                    label={global.sidebarCollapsed ? "" : $t("home")}
+                    collapsed={global.sidebarCollapsed} />
+                <!-- Navigation menu items - always visible but adapt to collapsed state -->
+                <div class={cn("flex flex-col", global.sidebarCollapsed ? "items-center space-y-3" : "space-y-0")}>
                     <SideMenuSubItem
                         icon={Gamepad2}
-                        class="pl-3 pt-3"
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/all-games"
-                        label={$t("available_games")} />
-                    <SideMenuSubItem icon={FolderOpen} class="pl-3 pt-3" href="/my-games" label={$t("my_games")} />
+                        label={$t("available_games")}
+                        iconOnly={global.sidebarCollapsed} />
+                    <SideMenuSubItem
+                        icon={FolderOpen}
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+                        href="/my-games"
+                        label={$t("my_games")}
+                        iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={CloudLightning}
-                        class="pl-3 pt-3"
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/small-games"
-                        label={$t("max_10gb_games")} />
-
+                        label={$t("max_10gb_games")}
+                        iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={MicVocal}
-                        class="pl-3 pt-3"
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         onClick={handleStartTeamSpeak}
-                        label="Lancer TeamSpeak" />
+                        label="Lancer TeamSpeak"
+                        iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={DownloadCloud}
-                        class="pl-3 pt-3"
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
-                        label="Télécharger l'agent" />
+                        label="Télécharger l'agent"
+                        iconOnly={global.sidebarCollapsed} />
+                </div>
 
-                    <div class="mt-5 hidden w-auto flex-col gap-2 lg:flex">
-                        <!-- Side Links Component -->
-                        <SideLinks />
+                <!-- Side Links and Admin Menu - always visible but adapt to collapsed state -->
+                <div class={cn("mt-5 w-auto flex-col gap-2", global.sidebarCollapsed ? "flex items-center" : "flex")}>
+                    <!-- Side Links Component -->
+                    <SideLinks />
 
-                        {#if user?.role?.includes("admin")}
-                            <div
-                                class="relative flex h-auto w-auto flex-col items-center rounded-lg p-4 antialiased dark:bg-background-dark">
-                                <!-- <BackgroundBeams /> -->
+                    {#if user?.role?.includes("admin")}
+                        <div
+                            class={cn(
+                                "relative flex h-auto w-auto flex-col rounded-lg antialiased dark:bg-background-dark",
+                                global.sidebarCollapsed ? "items-center" : "items-center p-4",
+                            )}>
+                            <!-- <BackgroundBeams /> -->
+                            {#if !global.sidebarCollapsed}
                                 <SideMenuItem class="mr-auto text-2xl">{$t("admin_menu")}</SideMenuItem>
-                                <AdminMenu />
-                            </div>
-                        {/if}
-                    </div>
-                {:else}
-                    <!-- Collapsed state icons only -->
-                    <div class="flex flex-col items-center space-y-3">
-                        <SideMenuSubItem
-                            icon={Gamepad2}
-                            class="p-2"
-                            href="/all-games"
-                            label={$t("available_games")}
-                            iconOnly />
-                        <SideMenuSubItem
-                            icon={FolderOpen}
-                            class="p-2"
-                            href="/my-games"
-                            label={$t("my_games")}
-                            iconOnly />
-                        <SideMenuSubItem
-                            icon={CloudLightning}
-                            class="p-2"
-                            href="/small-games"
-                            label={$t("max_10gb_games")}
-                            iconOnly />
-                        <SideMenuSubItem
-                            icon={MicVocal}
-                            class="p-2"
-                            onClick={handleStartTeamSpeak}
-                            label="Lancer TeamSpeak"
-                            iconOnly />
-                        <SideMenuSubItem
-                            icon={DownloadCloud}
-                            class="p-2"
-                            href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
-                            label="Télécharger l'agent"
-                            iconOnly />
-                    </div>
-                {/if}
+                            {/if}
+                            <AdminMenu />
+                        </div>
+                    {/if}
+                </div>
             </div>
         </ScrollArea>
         {#if children}
             <hr />
-            <div class={cn("p-2", sidebarCollapsed && "px-1")}>
+            <div class={cn("p-2", global.sidebarCollapsed && "px-1")}>
                 {@render children?.()}
             </div>
         {/if}
