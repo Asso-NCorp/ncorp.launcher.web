@@ -15,10 +15,9 @@
     import Button from "../ui/button/button.svelte";
     import { getLocalApi } from "$src/lib/utils";
 
-    let { game, onCheckedChange }: { game: InstallableGame; onCheckedChange?: (checked: boolean) => void } = $props();
+    let { game }: { game: InstallableGame } = $props();
     let currentScreenshot = $state(game.screenshots ? game.screenshots[0] : "");
     let showDetails = $state(false);
-    let checked = $state(game.isSelected || false);
 
     const handleMouseEnter = () => {
         showDetails = true;
@@ -26,11 +25,6 @@
 
     const handleMouseLeave = () => {
         showDetails = false;
-    };
-
-    const handleOnClicked = () => {
-        onCheckedChange?.(checked);
-        GamesStore.toggleSelect(game);
     };
 
     const openGameFolder = async () => {
@@ -43,8 +37,8 @@
 <div
     id="game-card-{game.folderSlug}"
     onmouseleave={handleMouseLeave}
-    class:ring-2={checked}
-    class:ring-primary={checked}
+    class:ring-2={game.isSelected}
+    class:ring-primary={game.isSelected}
     class="group/card relative flex h-80 max-w-[15rem] flex-col overflow-hidden rounded-lg border bg-subtle/10 text-card-foreground backdrop-blur-sm transition-all duration-300 dark:backdrop-blur-none {game.isInstalled
         ? 'ring-green-500'
         : null}">
@@ -112,7 +106,7 @@
 
         {#if showDetails}
             <div class="absolute left-2 top-2 flex flex-col items-center gap-2 {!showDetails ? 'opacity-0' : null}">
-                <Checkbox onclick={() => handleOnClicked()} id="select-{game.folderSlug}" bind:checked />
+                <Checkbox id="select-{game.folderSlug}" bind:checked={game.isSelected} />
                 <Button
                     disabled={!game.isInstalled}
                     onclick={() => openGameFolder()}

@@ -50,20 +50,26 @@ export class SignalREventBinder {
             });
         });
 
-        this.offAndOn(liveAgentConnection, "GameInstalled", (game: InstallableGame) => {
-            toast.success(`Installation terminée : ${game.title}`, {
+        this.offAndOn(liveAgentConnection, "GameInstalled", (gameSlug: string) => {
+            toast.success(`Installation terminée : ${gameSlug}`, {
                 important: true,
                 action: {
                     label: "Voir",
-                    onClick: () => goto(`/games/${game.folderSlug}`),
+                    onClick: () => goto(`/games/${gameSlug}`),
                 }
             });
-            GamesStore.setGameInstallProgress(game.folderSlug!, 100);
+            GamesStore.setGameInstallProgress(gameSlug, 100);
+            GamesStore.deselect(gameSlug);
         });
 
         // SERVER EVENTS
-        this.offAndOn(liveServerConnection, "GameInstallStarted", (userId: string, game: InstallableGame) => {
-            liveUsers.updateUserActivity(userId, "Installe " + game.title);
+        this.offAndOn(liveServerConnection, "GameInstallStarted", (userId: string, gameSlug: string) => {
+            // Try to find the game in the store
+            const game = GamesStore.games.find((g) => g.folderSlug === gameSlug);
+            if (game)
+                liveUsers.updateUserActivity(userId, "Installe " + game.title);
+            else
+                liveUsers.updateUserActivity(userId, "Installe " + gameSlug);
         });
 
         this.offAndOn(liveServerConnection, "SetLocalGamesFolderValid", async (localGamesDir: string) => {
@@ -82,7 +88,7 @@ export class SignalREventBinder {
             await GamesStore.getAvailableGames();
         });
 
-        this.offAndOn(liveServerConnection, "GameInstallFinished", (userId: string, game: InstallableGame) => {
+        this.offAndOn(liveServerConnection, "GameInstallFinished", (userId: string) => {
             liveUsers.updateUserActivity(userId, undefined);
         });
 

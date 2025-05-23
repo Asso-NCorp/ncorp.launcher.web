@@ -123,11 +123,13 @@
     <Form.FieldErrors />
 </Form.Field>
 
-<Form.Field {form} name="isCompressed">
+<Form.Field {form} name="useNotifications">
     <Form.Control>
         {#snippet children({ props })}
-            <Label for="isCompressed">{$t("is_compressed")}</Label>
-            <Checkbox {...props} bind:checked={$formData.isCompressed} />
+            <Label for="useNotifications" title="Si oui, vous pourrez voir qui lance/installe ce jeu">
+                Notifications de lancement/installation
+            </Label>
+            <Checkbox {...props} bind:checked={$formData.useNotifications} />
         {/snippet}
     </Form.Control>
     <Form.FieldErrors />

@@ -7,4 +7,5 @@ export type SideMenuSubItemProps = {
     iconClass?: string;
     label: string;
     onClick?: () => void;
+    iconOnly?: boolean;
 };

@@ -4,11 +4,11 @@
     import Header from "$src/lib/components/custom/Header.svelte";
     import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
     import { page } from "$app/state";
-    import { AlertTriangle, Folder, Gamepad2, MoveRight } from "@lucide/svelte";
+    import { AlertTriangle, Folder, Gamepad2, MoveRight, ChevronLeft, Menu } from "@lucide/svelte";
     import SideMenuItem from "$src/lib/components/custom/SideMenuItem.svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
-    import { getLocalApi } from "$src/lib/utils";
+    import { getLocalApi, cn } from "$src/lib/utils";
     import { onDestroy, onMount } from "svelte";
     import { type User } from "$src/lib/auth/client";
     import AdminMenu from "$src/lib/components/custom/AdminMenu.svelte";
@@ -33,15 +33,47 @@
     import ProfileDropdown from "$src/lib/components/custom/dropdowns/ProfileDropdown.svelte";
     import { SignalREventBinder } from "$src/lib/signalr-events";
     import { GamesStore } from "$src/lib/stores/games.svelte";
-
+    import NcorpGlitch from "$src/lib/components/custom/NcorpGlitch.svelte";
     let loading = $state(false);
+    let sidebarCollapsed = $state(false);
+    let rightSidebarHidden = $state(false);
     let { children } = $props();
+
+    // Auto-collapse sidebar on smaller screens
+    $effect(() => {
+        if (typeof window !== "undefined") {
+            const handleResize = () => {
+                if (window.innerWidth < 768) {
+                    // md breakpoint
+                    sidebarCollapsed = true;
+                    rightSidebarHidden = true;
+                } else if (window.innerWidth >= 1024) {
+                    // lg breakpoint
+                    sidebarCollapsed = false;
+                    rightSidebarHidden = false;
+                } else if (window.innerWidth >= 768) {
+                    // md to lg
+                    rightSidebarHidden = true;
+                }
+            };
+
+            handleResize(); // Initial check
+            window.addEventListener("resize", handleResize);
+
+            return () => {
+                window.removeEventListener("resize", handleResize);
+            };
+        }
+    });
     const user = page.data["user"] as User;
     global.localGamesFolder = page.data.localGamesDir;
     let showConfigGamesDirDialog = $state(false);
-
     global.currentUser = user;
     liveUsers.users = page.data.liveUsers;
+
+    const toggleSidebar = () => {
+        sidebarCollapsed = !sidebarCollapsed;
+    };
 
     onNavigate((navigation) => {
         if (!document.startViewTransition) return;
@@ -144,7 +176,7 @@
 {/if}
 <ThemeProvider>
     <TooltipProvider delayDuration={100}>
-        <div class="mx-auto flex h-screen flex-col overflow-hidden">
+        <div class="flex h-screen flex-col overflow-hidden">
             {#if liveServerConnection.connectionState === "Reconnecting" || liveAgentConnection.connectionState === "Reconnecting"}
                 <div
                     transition:fly={{ y: -20, duration: 200 }}
@@ -162,27 +194,85 @@
                     <Loader size={24} class="!text-white" />
                 </div>
             {/if}
-            <Header class="relative h-12 bg-card shadow-sm backdrop-blur dark:shadow-none" {loading}>
-                <ThemSelectorAdvanced />
-            </Header>
+            <!-- Header with Logo Grid -->
+            <div class="header-container flex h-12 flex-shrink-0 bg-card shadow-sm backdrop-blur dark:shadow-none">
+                <!-- Logo Section - aligned with sidebar -->
+                <div
+                    class="flex items-center justify-center gap-2 border-r border-border bg-card transition-all duration-300 ease-in-out"
+                    style:width={sidebarCollapsed ? "60px" : "250px"}>
+                    <img
+                        src="/logo_small.png"
+                        alt="Logo"
+                        class={cn("h-10 w-auto transition-all duration-300", {
+                            "h-8": sidebarCollapsed,
+                        })} />
 
-            <div class="flex flex-1 overflow-hidden">
-                <SideMenu class="h-full self-start bg-card">
-                    <div class="mt-auto flex h-full w-full">
-                        <ProfileDropdown {user} />
-                    </div>
-                </SideMenu>
-
-                <div class="flex-1 overflow-y-auto overflow-x-hidden p-2">
-                    {@render children?.()}
+                    {#if !sidebarCollapsed}
+                        <!-- Vertical divided -->
+                        <div class="h-8 w-[1px] bg-border" />
+                        <NcorpGlitch
+                            class="inline-block font-clash text-lg font-semibold tracking-widest"
+                            text="NCORP"
+                            glitchEnabled={false} />
+                    {/if}
+                </div>
+                <!-- Header Content - spans remaining width -->
+                <div class="flex flex-1 items-center border-b px-4">
+                    <button
+                        onclick={toggleSidebar}
+                        class="mr-2 rounded-md p-2 transition-colors hover:bg-muted"
+                        title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+                        {#if sidebarCollapsed}
+                            <Menu size={18} />
+                        {:else}
+                            <ChevronLeft size={18} />
+                        {/if}
+                    </button>
+                    {#if loading || GamesStore.gamesLoading}
+                        <Loader size={24} class="text-primary" />
+                    {/if}
+                    <Header class="flex-1" />
                 </div>
 
-                <aside class="h-full w-[209px] flex-shrink-0 border border-y-0 border-border bg-card">
-                    <Card class="h-full border-0 p-2">
-                        <LiveUsers />
-                    </Card>
+                <!-- Right Header Section - aligned with right sidebar -->
+                <div
+                    class="flex items-center justify-center border-b bg-card px-4 transition-all duration-300 ease-in-out"
+                    class:hidden={rightSidebarHidden}
+                    style="width: 210px;">
+                    <ThemSelectorAdvanced />
+                </div>
+            </div>
+            <!-- Main Content Area -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Collapsible Left Sidebar -->
+                <aside
+                    class="flex-shrink-0 overflow-hidden border-border bg-card transition-all duration-300 ease-in-out"
+                    style:width={sidebarCollapsed ? "60px" : "250px"}>
+                    <SideMenu class="h-full" {sidebarCollapsed}>
+                        <div class="mt-auto flex w-full">
+                            <ProfileDropdown {user} {sidebarCollapsed} />
+                        </div>
+                    </SideMenu>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 overflow-y-auto overflow-x-hidden p-2">
+                    {@render children?.()}
+                </main>
+                <!-- Right Sidebar - LiveUsers -->
+                <aside
+                    class="right-sidebar h-full w-[209px] flex-shrink-0 border-l border-border bg-card transition-all duration-300 ease-in-out"
+                    class:hidden={rightSidebarHidden}>
+                    <div class="h-full p-2">
+                        <LiveUsers class="h-full" />
+                    </div>
                 </aside>
             </div>
+
+            <!-- Footer (placeholder for future use) -->
+            <!-- <footer class="bg-card border-t border-border p-2 flex-shrink-0">
+                Footer content here
+            </footer> -->
         </div>
     </TooltipProvider>
 </ThemeProvider>
@@ -217,14 +307,16 @@
             90ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
             300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;
     }
-
     :root::view-transition-new(root) {
         animation:
             210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
             300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
     }
+    .header-container {
+        view-transition-name: header;
+    }
 
-    aside {
-        view-transition-name: live-users;
+    .right-sidebar {
+        view-transition-name: right-sidebar;
     }
 </style>

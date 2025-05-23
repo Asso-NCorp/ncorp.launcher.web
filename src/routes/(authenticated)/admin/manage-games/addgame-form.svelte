@@ -166,6 +166,7 @@
         $formData.sizeGb = game.sizeGb || 1;
         $formData.maxPlayers = game.maxPlayers || 1;
         $formData.genres = game.genres || [];
+        $formData.useNotifications = game.useNotifications || false;
 
         // Handle cover image
         if (game.cover) {

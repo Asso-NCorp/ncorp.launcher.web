@@ -55,6 +55,7 @@ export const actions: Actions = {
                 startCommand: form.data.startCommand,
                 size: form.data.sizeGb,
                 mainProcessName: form.data.mainProcessName,
+                useNotifications: form.data.useNotifications,
             }
 
             const result = await getServerApi(event.cookies.get("token")).addGame({

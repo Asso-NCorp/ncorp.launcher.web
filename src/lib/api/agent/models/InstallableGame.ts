@@ -135,6 +135,12 @@ export interface InstallableGame {
     isCompressedAvailable?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof InstallableGame
+     */
+    useNotifications?: boolean;
+    /**
+     * 
      * @type {Date}
      * @memberof InstallableGame
      */
@@ -201,6 +207,7 @@ export function InstallableGameFromJSONTyped(json: any, ignoreDiscriminator: boo
         'isInstalling': json['isInstalling'] == null ? undefined : json['isInstalling'],
         'installError': json['installError'] == null ? undefined : json['installError'],
         'isCompressedAvailable': json['isCompressedAvailable'] == null ? undefined : json['isCompressedAvailable'],
+        'useNotifications': json['useNotifications'] == null ? undefined : json['useNotifications'],
         'addedDate': json['addedDate'] == null ? undefined : (new Date(json['addedDate'])),
         'isLoading': json['isLoading'] == null ? undefined : json['isLoading'],
         'isPlaying': json['isPlaying'] == null ? undefined : json['isPlaying'],
@@ -238,6 +245,7 @@ export function InstallableGameToJSONTyped(value?: Omit<InstallableGame, 'genres
         'isInstalling': value['isInstalling'],
         'installError': value['installError'],
         'isCompressedAvailable': value['isCompressedAvailable'],
+        'useNotifications': value['useNotifications'],
         'addedDate': value['addedDate'] == null ? undefined : ((value['addedDate'] as any).toISOString()),
         'isLoading': value['isLoading'],
         'isPlaying': value['isPlaying'],

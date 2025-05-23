@@ -11,13 +11,13 @@
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
 
-    let { user }: { user: User } = $props();
+    let { user, sidebarCollapsed = false }: { user: User; sidebarCollapsed?: boolean } = $props();
     let name = user.name;
 </script>
 
 <DropdownMenu.Root>
-    <DropdownMenu.Trigger class={buttonVariants({ variant: "ghost" })}>
-        <SideMenuItem href="/" class="w-full py-0 pb-0 text-base">
+    <DropdownMenu.Trigger class="{buttonVariants({ variant: 'ghost' })} w-full">
+        <SideMenuItem href="/" class="w-full py-0 pb-0 text-base" collapsed={sidebarCollapsed}>
             <div class="relative">
                 <Avatar.Root class="size-9 text-lg uppercase ring-2 ring-primary/40">
                     <Avatar.Image src="/api/avatars/{user.id}" alt={name} />
@@ -28,7 +28,9 @@
                 <UserStatusDot status={"Connected"} />
             </div>
 
-            <span>{name}</span>
+            {#if !sidebarCollapsed}
+                <span>{name}</span>
+            {/if}
         </SideMenuItem>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content class="w-56">

@@ -8,11 +8,15 @@
     import { global, type GameDisplayMode } from "$src/lib/states/global.svelte";
     import { initHeadMenu } from "./layout-slots.svelte";
     import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { onNavigate } from "$app/navigation";
 
     let { children }: { children?: Snippet } = $props();
 
     const slots = initHeadMenu();
 
+    onNavigate(() => {
+        GamesStore.resetSelected();
+    });
     onMount(async () => {
         if (GamesStore.games.length === 0) {
             await GamesStore.getAvailableGames();

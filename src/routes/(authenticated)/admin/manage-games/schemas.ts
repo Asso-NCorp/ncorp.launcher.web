@@ -13,6 +13,7 @@ export const addGameFormSchema = z.object({
     folderSlug: z.string({ required_error: "Veuillez sélectionner un dossier" })
         .min(1, "Veuillez sélectionner un dossier"),
     mainProcessName: z.string().optional(),
+    useNotifications: z.boolean(),
 });
 
 export type AddGameFormSchema = typeof addGameFormSchema;

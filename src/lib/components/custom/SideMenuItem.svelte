@@ -12,9 +12,19 @@
         children?: Snippet;
         onClick?: () => void;
         showSquareCard?: boolean;
+        collapsed?: boolean;
     };
 
-    let { href, label, badge, class: klazz, children, onClick, showSquareCard }: SideMenuItemProps = $props();
+    let {
+        href,
+        label,
+        badge,
+        class: klazz,
+        children,
+        onClick,
+        showSquareCard,
+        collapsed = false,
+    }: SideMenuItemProps = $props();
 </script>
 
 <div class={cn("group/squarecard relative", klazz)}>
@@ -26,34 +36,36 @@
     {#if onClick}
         <Button
             variant="ghost"
-            class={cn("flex w-full items-center gap-2 p-2 dark:hover:bg-transparent", klazz)}
+            class={cn("flex w-full min-w-0 items-center gap-2 p-2 dark:hover:bg-transparent", klazz)}
             onclick={onClick}>
-            {@render children?.()}
-            <span>{label}</span>
+            {#if children}
+                {@render children?.()}
+            {/if}
+            <span class="min-w-0 flex-1 truncate">{label}</span>
         </Button>
-    {:else}
-        <a
+    {:else}<a
             {href}
-            class={cn("group flex items-center gap-2 rounded-lg px-1 py-2 text-2xl font-bold ", klazz, {
+            class={cn("group flex min-w-0 items-center gap-2 rounded-lg px-1 py-2 text-2xl font-bold", klazz, {
                 "pointer-events-none": href === undefined,
-            })}>
+                "justify-center": collapsed,
+            })}
+            title={collapsed ? label : undefined}>
             <div
-                class="h-1/3 w-1 rounded-lg transition-all group-hover:h-2/3 dark:bg-subtle/50 dark:group-hover:bg-primary dark:group-hover:text-white">
+                class="h-1/3 w-1 flex-shrink-0 rounded-lg transition-all group-hover:h-2/3 dark:bg-subtle/50 dark:group-hover:bg-primary dark:group-hover:text-white">
             </div>
             {#if children}
                 {@render children()}
-            {:else}
+            {:else if !collapsed}
                 <span
-                    class={cn({
+                    class={cn("min-w-0 flex-1 truncate", {
                         "!text-primary": global.currentPath === href,
-
                         "font-bold": href !== undefined, // Added to emphasize the label when href is present
                     })}>
                     {label}
                 </span>
             {/if}
-            {#if badge}
-                <span class="rounded-[var(--radius)] py-1 text-2xs uppercase text-primary">{badge}</span>
+            {#if badge && !collapsed}
+                <span class="flex-shrink-0 rounded-[var(--radius)] py-1 text-2xs uppercase text-primary">{badge}</span>
             {/if}
         </a>
     {/if}

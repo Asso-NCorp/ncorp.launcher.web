@@ -6,8 +6,9 @@
     import { GamesStore } from "$src/lib/stores/games.svelte";
     import { buttonVariants } from "$src/lib/components/ui/button/button.svelte";
     import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
+    import type { InstallableGame } from "$src/lib/shared-models";
 
-    let { gameSelected }: { gameSelected: (game: any) => void } = $props();
+    let { gameSelected }: { gameSelected: (game: InstallableGame) => void } = $props();
 
     // State to track which dialog is open (if any)
     let openDialogId = $state<string | null>(null);

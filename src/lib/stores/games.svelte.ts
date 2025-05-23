@@ -26,13 +26,20 @@ class GameStore {
         game.isSelected = true;
     }
 
-    deselect(game: InstallableGame) {
-        game.isSelected = false;
+    deselect(gameSlug: string) {
+        const game = this.get(gameSlug);
+        if (game) {
+            game.isSelected = false;
+        }
     }
 
-    toggleSelect(game: InstallableGame) {
-        game.isSelected = !game.isSelected;
+    toggleSelect(gameSlug: string, checked: boolean) {
+        const game = this.get(gameSlug);
+        if (game) {
+            game.isSelected = !checked;
+        }
     }
+
 
     async syncPlayingGames() {
         await getLocalApi().syncPlayingGames();
@@ -117,11 +124,28 @@ class GameStore {
                     game.installError = (error as Error)?.message;
                 }
             } finally {
-                game.isInstalling = false;
             }
         }
     }
 
+    cancelGameInstallation = async (game: InstallableGame) => {
+        try {
+            await getLocalApi().cancelInstallation({
+                gameSlug: game.folderSlug,
+            });
+            toast.success("Annulation réussie", {
+                class: "bg-green-500",
+            });
+            this.setGameInstallProgress(game.folderSlug!, 0);
+            game.isInstalled = false;
+        } catch (error) {
+            console.error(error);
+            game.installError = (error as Error)?.message; // Capture the error message
+            toast.error("Erreur lors de l'annulation", {
+                class: "bg-red-500",
+            });
+        }
+    }
 
     installGames = async (games: InstallableGame[]) => {
         if (games.length === 0) {
@@ -144,12 +168,10 @@ class GameStore {
                 } catch (err) {
                     console.error(`Erreur installation ${game.title}`, err);
                     toast.error(`Erreur sur ${game.title}`);
-                } finally {
-                    GamesStore.toggleSelect(game);
                 }
             }
 
-            if (successCount > 0) toast.success(`${successCount} jeu(x) installé(s)`);
+            if (successCount > 0) toast.success(`L'installation de ${successCount} jeu(x) a été ajoutée à la file d'attente`);
             else toast.error("Aucun jeu n'a pu être installé");
         } finally {
             this.gamesLoading = false;
@@ -174,6 +196,7 @@ class GameStore {
                 });
             } finally {
                 GamesStore.setGameInstallProgress(game.folderSlug!, 0);
+                GamesStore.deselect(game.folderSlug!);
                 game.isLoading = false;
             }
         }
@@ -201,7 +224,7 @@ class GameStore {
                     console.error(`Erreur désinstallation ${game.title}`, err);
                     toast.error(`Erreur sur ${game.title}`);
                 } finally {
-                    GamesStore.toggleSelect(game);
+                    GamesStore.deselect(game.folderSlug!);
                 }
             }
 
@@ -220,7 +243,7 @@ class GameStore {
             return false;
         }
 
-        GamesStore.gamesLoading = true;
+        this.gamesLoading = true;
         let games: InstallableGame[] = [];
         let installedGames: InstallableGame[] = [];
         const serverApi = getServerApi();
@@ -235,18 +258,19 @@ class GameStore {
             console.error(error);
             toast.error("Impossible de récupérer les jeux disponibles. Veuillez vérifier la connexion au serveur");
             return false;
+        } finally {
+            this.gamesLoading = false;
         }
 
         try {
             // Get installed games locally
-            if (liveAgentConnection?.isConnected) {
-                installedGames = await localApi.getInstalledGames();
-            }
-
+            installedGames = await localApi.getInstalledGames();
         } catch (error) {
             console.error(error);
             toast.error("Impossible de récupérer les jeux installés. Veuillez vérifier l'agent");
             installedGames = [];
+        } finally {
+            this.gamesLoading = false;
         }
 
         try {
@@ -267,6 +291,8 @@ class GameStore {
             toast.error("Impossible de charger les jeux");
             console.error(error);
             return false;
+        } finally {
+            this.gamesLoading = false;
         }
 
         try {
@@ -280,6 +306,7 @@ class GameStore {
             return false;
         } finally {
             GamesStore.gamesLoading = false;
+            this.gamesLoading = false;
         }
 
         return true;
