@@ -34,7 +34,7 @@
             {/if}
         </SideMenuItem>
     </DropdownMenu.Trigger>
-    <DropdownMenu.Content class="w-56">
+    <DropdownMenu.Content class="z-[110] w-56">
         <DropdownMenu.Group>
             <DropdownMenu.GroupHeading>Mon compte</DropdownMenu.GroupHeading>
             <DropdownMenu.Group>
