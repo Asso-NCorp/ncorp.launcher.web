@@ -3,6 +3,7 @@ import type { LayoutServerLoad } from './$types';
 import { logger } from '$src/lib/stores/loggerStore';
 import { getServerApi } from '$src/lib/utils';
 import { type LiveUser } from '$src/lib/shared-models';
+import { db } from '$srv/db';
 export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
     const session = locals.session;
     const user = locals.user;
@@ -37,6 +38,28 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         }
     }
 
-    return { user, liveUsers: liveUsers, localGamesDir };
+    try {
+        // Get events from the server
+        const events = await db.event.findMany({
+            orderBy: { start_time: 'asc' }
+        });
+        locals.events = events;
+        logger.info('Events fetched successfully', { count: events.length });
+
+    } catch (error) {
+        logger.error('Error fetching events', error);
+    }
+
+    try {
+        // Get global settings
+        const globalSettings = await db.global_settings.findMany();
+        locals.globalSettings = globalSettings;
+        logger.info('Global settings fetched successfully', { count: globalSettings.length });
+
+    } catch (error) {
+        logger.error('Error fetching global settings', error);
+    }
+
+    return { user, liveUsers: liveUsers, localGamesDir, events: locals.events, globalSettings: locals.globalSettings };
 
 };

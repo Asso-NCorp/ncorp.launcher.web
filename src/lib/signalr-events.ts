@@ -37,8 +37,7 @@ export class SignalREventBinder {
 
         this.offAndOn(liveAgentConnection, "NoGameConfig", (gameSlug: string) => {
             toast.warning(
-                `Attention, la mise à jour du pseudo du jeu ${gameSlug} a échouée.\nVous devrez mettre à jour le pseudo manuellement.`,
-                { important: true }
+                `Attention, la mise à jour du pseudo du jeu ${gameSlug} a échouée.\nVous devrez mettre à jour le pseudo manuellement.`
             );
         });
 
@@ -52,7 +51,6 @@ export class SignalREventBinder {
 
         this.offAndOn(liveAgentConnection, "GameInstalled", (gameSlug: string) => {
             toast.success(`Installation terminée : ${gameSlug}`, {
-                important: true,
                 action: {
                     label: "Voir",
                     onClick: () => goto(`/games/${gameSlug}`),
@@ -125,7 +123,7 @@ export class SignalREventBinder {
     private static offAndOn(
         conn: SignalRConnection,
         eventName: string,
-        handler: (...args: any[]) => void
+        handler: (...args: never[]) => void
     ) {
         conn.connection.off(eventName);
         conn.connection.on(eventName, handler);

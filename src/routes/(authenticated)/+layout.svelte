@@ -3,7 +3,7 @@
     import Header from "$src/lib/components/custom/Header.svelte";
     import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
     import { page } from "$app/state";
-    import { AlertTriangle, Folder, Gamepad2, MoveRight, ChevronLeft, Menu } from "@lucide/svelte";
+    import { AlertTriangle, Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar, Settings } from "@lucide/svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
     import { getLocalApi, cn } from "$src/lib/utils";
@@ -28,6 +28,11 @@
     import { GamesStore } from "$src/lib/stores/games.svelte";
     import NcorpGlitch from "$src/lib/components/custom/NcorpGlitch.svelte";
     import { global } from "$src/lib/states/global.svelte";
+    import Card from "$src/lib/components/ui/card/card.svelte";
+    import * as DropdownMenu from "$src/lib/components/ui/dropdown-menu/index.js";
+    import UserStatusDot from "$src/lib/components/custom/UserStatusDot.svelte";
+    import SideMenuItem from "$src/lib/components/custom/SideMenuItem.svelte";
+    import { buttonVariants } from "$src/lib/components/ui/button";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { children } = $props();
@@ -158,7 +163,7 @@
     </AlertDialog.Content>
 </AlertDialog.Root>
 
-<Toaster richColors position="top-center" expand />
+<Toaster richColors position="top-center" />
 {#if global.mainBackgroundImage}
     <div in:fade={{ duration: 200, delay: 600 }} out:fade={{ duration: 200 }}>
         <LazyImage
@@ -211,7 +216,7 @@
                     {/if}
                 </div>
                 <!-- Header Content - spans remaining width -->
-                <div class="flex flex-1 items-center border-b px-4">
+                <div class="flex flex-1 items-center border-b px-1">
                     <button
                         onclick={toggleSidebar}
                         class="mr-2 rounded-md p-2 transition-colors hover:bg-muted"
@@ -223,9 +228,55 @@
                         {/if}
                     </button>
                     {#if loading || GamesStore.gamesLoading}
-                        <Loader size={24} class="text-primary" />
+                        <Loader size={24} class="!text-primary" />
                     {/if}
                     <Header class="flex-1" />
+                    <div class="ml-auto flex h-full">
+                        <div class="flex h-full w-auto gap-1 border-l px-2">
+                            <Calendar class="my-auto size-6 text-muted-foreground" />
+                            <div class="flex flex-1 flex-col items-start justify-center">
+                                <DropdownMenu.Root>
+                                    <DropdownMenu.Trigger class={buttonVariants({ variant: "ghost" })}>
+                                        <SideMenuItem
+                                            href="/"
+                                            class="w-full py-0 pb-0 text-base"
+                                            collapsed={global.sidebarCollapsed}>
+                                        </SideMenuItem>
+                                    </DropdownMenu.Trigger>
+                                    <DropdownMenu.Content class="z-[110] w-56">
+                                        <DropdownMenu.Group>
+                                            <DropdownMenu.GroupHeading>Mon compte</DropdownMenu.GroupHeading>
+                                            <DropdownMenu.Group>
+                                                <DropdownMenu.Item onclick={() => goto("/my/settings")}>
+                                                    <Settings class="mr-2 size-4" />
+                                                    <span>BLA</span>
+                                                </DropdownMenu.Item>
+                                            </DropdownMenu.Group>
+                                        </DropdownMenu.Group>
+
+                                        <DropdownMenu.Separator />
+                                    </DropdownMenu.Content>
+                                </DropdownMenu.Root>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex h-full w-auto flex-col items-start justify-center border-l pl-2 text-xs text-muted-foreground">
+                            <div class="flex w-full items-center justify-between gap-2">
+                                <span>Agent</span>
+                                <UserStatusDot
+                                    class="static left-0 top-0 m-0 p-0"
+                                    status={liveAgentConnection.connectionState} />
+                            </div>
+
+                            <div class="flex w-full items-center justify-between gap-2">
+                                <span>Serveur</span>
+                                <UserStatusDot
+                                    class="static left-0 top-0 m-0 p-0"
+                                    status={liveServerConnection.connectionState} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right Header Section - aligned with right sidebar -->

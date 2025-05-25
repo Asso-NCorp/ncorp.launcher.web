@@ -89,6 +89,8 @@ model user {
     chat_private_message_chat_private_message_recipientIdTouser chat_private_message[] @relation("chat_private_message_recipientIdTouser")
     user_settings                                               user_settings?
     game_session                                                game_session[]
+    event_created                                               event[]                @relation("event_created_by")
+    event_updated                                               event[]                @relation("event_updated_by")
 }
 
 model verification {
@@ -191,4 +193,38 @@ model game_session {
     total_seconds Int?      @db.Int
 
     user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model event {
+    id          String   @id @default(uuid()) @db.Char(36)
+    name        String   @db.VarChar(255)
+    description String?  @db.Text
+    url         String?  @db.VarChar(500)
+    start_time  DateTime @db.DateTime(0)
+    end_time    DateTime @db.DateTime(0)
+    created_at  DateTime @default(now()) @db.DateTime(0)
+    updated_at  DateTime @default(now()) @updatedAt @db.DateTime(0)
+    created_by  String   @db.VarChar(36)
+    updated_by  String   @db.VarChar(36)
+
+    creator user @relation("event_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    updater user @relation("event_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+    @@index([created_by], map: "event_created_by_FK")
+    @@index([updated_by], map: "event_updated_by_FK")
+    @@index([start_time], map: "event_start_time_IDX")
+    @@index([end_time], map: "event_end_time_IDX")
+}
+
+model global_settings {
+    id         Int      @id @default(autoincrement())
+    key        String   @unique @db.VarChar(100)
+    value      String?  @db.Text
+    created_at DateTime @default(now()) @db.DateTime(0)
+    updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
+    created_by String   @db.VarChar(36)
+    updated_by String   @db.VarChar(36)
+
+    @@index([created_by], map: "global_settings_user_FK")
+    @@index([updated_by], map: "global_settings_user_FK_1")
 }
