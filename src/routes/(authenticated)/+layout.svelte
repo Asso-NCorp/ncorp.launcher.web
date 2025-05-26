@@ -2,8 +2,7 @@
     import "$src/app.css";
     import Header from "$src/lib/components/custom/Header.svelte";
     import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
-    import { page } from "$app/state";
-    import { AlertTriangle, Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar, Settings } from "@lucide/svelte";
+    import { AlertTriangle, Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar } from "@lucide/svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
     import { getLocalApi, cn } from "$src/lib/utils";
@@ -28,10 +27,8 @@
     import { GamesStore } from "$src/lib/stores/games.svelte";
     import NcorpGlitch from "$src/lib/components/custom/NcorpGlitch.svelte";
     import { global } from "$src/lib/states/global.svelte";
-    import Card from "$src/lib/components/ui/card/card.svelte";
     import * as DropdownMenu from "$src/lib/components/ui/dropdown-menu/index.js";
     import UserStatusDot from "$src/lib/components/custom/UserStatusDot.svelte";
-    import SideMenuItem from "$src/lib/components/custom/SideMenuItem.svelte";
     import { buttonVariants } from "$src/lib/components/ui/button";
     import dayjs from "dayjs";
     import relativeTime from "dayjs/plugin/relativeTime";
@@ -39,11 +36,6 @@
     import "dayjs/locale/fr";
     import type { LayoutProps } from "./$types";
     import { Progress } from "$src/lib/components/ui/progress";
-    import * as Avatar from "$lib/components/ui/avatar/index.js";
-    import Ripple from "$src/lib/components/custom/Ripple.svelte";
-    import GridPattern from "$src/lib/components/custom/GridPattern.svelte";
-    import SquareCard from "$src/lib/components/custom/admin/SquareCard.svelte";
-    import RainbowButton from "$src/lib/components/custom/RainbowButton.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
