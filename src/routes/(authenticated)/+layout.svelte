@@ -303,7 +303,7 @@
                                                 {#each upcomingEvents() as event}
                                                     <DropdownMenu.Item
                                                         class="cursor-pointer"
-                                                        onclick={() => event.url && window.open(event.url, "_blank")}>
+                                                        onclick={async () => event.url && (await goto(event.url))}>
                                                         <div class="flex w-full flex-col gap-1">
                                                             <div class="flex items-center justify-between">
                                                                 <span class="font-medium">{event.name}</span>
