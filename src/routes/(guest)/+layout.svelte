@@ -1,7 +1,6 @@
 <script lang="ts">
     import "$src/app.css";
     import "@fontsource-variable/rubik";
-    import { onMount, type Snippet } from "svelte";
     import { Toaster } from "$lib/components/ui/sonner";
     import LampEffect from "$src/lib/components/custom/LampEffect.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
@@ -9,15 +8,12 @@
     import ThemeProvider from "$src/lib/components/theme/ThemeProvider.svelte";
     import { browser } from "$app/environment";
     import FluidSimulation from "$src/lib/components/custom/FluidSimulation.svelte";
-    import { page } from "$app/state";
-    import type { global_settings } from "@prisma/client";
     import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
     import * as Alert from "$lib/components/ui/alert/index.js";
+    import type { LayoutProps } from "./$types";
 
-    let { children }: { children: Snippet } = $props();
-    const globalSettings = page.data.globalSettings as global_settings[];
-    const loginPageMessage = globalSettings.find((setting) => setting.key === "login_page_message")?.value;
-    onMount(() => {});
+    let { data, children }: LayoutProps = $props();
+    const loginPageMessage = data.globalSettings.find((setting) => setting.key === "login_page_message")?.value;
 </script>
 
 <Lights direction="top" class="absolute top-0 block h-56 w-full dark:hidden" />

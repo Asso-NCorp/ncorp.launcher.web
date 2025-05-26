@@ -12,11 +12,6 @@
     let { data }: { data: PageData } = $props();
     let selectedSidelink: sidelink | null = $state(null);
 
-    /* // Update sideLinks when data changes
-    $effect(() => {
-        sideLinks = data.sideLinks;
-    }); */
-
     // Handle delete action
     async function handleDelete(sidelink: sidelink) {
         const formData = new FormData();

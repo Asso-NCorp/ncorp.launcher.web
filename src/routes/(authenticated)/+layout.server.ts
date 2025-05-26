@@ -4,6 +4,7 @@ import { logger } from '$src/lib/stores/loggerStore';
 import { getServerApi } from '$src/lib/utils';
 import { type LiveUser } from '$src/lib/shared-models';
 import { db } from '$srv/db';
+import type { event, global_settings } from '@prisma/client';
 export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
     const session = locals.session;
     const user = locals.user;
@@ -60,6 +61,6 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         logger.error('Error fetching global settings', error);
     }
 
-    return { user, liveUsers: liveUsers, localGamesDir, events: locals.events, globalSettings: locals.globalSettings };
+    return { user, liveUsers: liveUsers, localGamesDir, events: locals.events as event[], globalSettings: locals.globalSettings as global_settings[] };
 
 };

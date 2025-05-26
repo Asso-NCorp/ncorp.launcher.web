@@ -83,6 +83,7 @@
         "datatables.net-responsive-dt": "^3.0.4",
         "datatables.net-scroller-dt": "^2.4.3",
         "datatables.net-select-dt": "^3.0.0",
+        "dayjs": "^1.11.13",
         "google-translate-api-x": "^10.7.2",
         "isomorphic-dompurify": "^2.25.0",
         "mediasoup-client": "^3.11.0",

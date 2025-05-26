@@ -8,7 +8,7 @@
     import Lights from "$src/lib/components/custom/Lights.svelte";
     import { getLocalApi, cn } from "$src/lib/utils";
     import { onDestroy, onMount } from "svelte";
-    import { type User } from "$src/lib/auth/client";
+    import * as Tooltip from "$lib/components/ui/tooltip/index.js";
     import "@fontsource-variable/rubik";
     import { fade, fly } from "svelte/transition";
     import { afterNavigate, beforeNavigate, goto, onNavigate } from "$app/navigation";
@@ -33,9 +33,21 @@
     import UserStatusDot from "$src/lib/components/custom/UserStatusDot.svelte";
     import SideMenuItem from "$src/lib/components/custom/SideMenuItem.svelte";
     import { buttonVariants } from "$src/lib/components/ui/button";
+    import dayjs from "dayjs";
+    import relativeTime from "dayjs/plugin/relativeTime";
+    import utc from "dayjs/plugin/utc";
+    import "dayjs/locale/fr";
+    import type { LayoutProps } from "./$types";
+    import { Progress } from "$src/lib/components/ui/progress";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
-    let { children } = $props();
+    let { data, children }: LayoutProps = $props(); // Configure dayjs
+    dayjs.extend(relativeTime);
+    dayjs.extend(utc);
+    dayjs.locale("fr");
+
+    // Create UTC-first dayjs instance
+    const dayjsUtc = (date?: dayjs.ConfigType) => dayjs.utc(date);
 
     // Auto-collapse sidebar on smaller screens
     $effect(() => {
@@ -63,11 +75,28 @@
             };
         }
     });
-    const user = page.data["user"] as User;
-    global.localGamesFolder = page.data.localGamesDir;
+    const user = data.user;
+    const events = data.events;
+    global.localGamesFolder = data.localGamesDir;
     let showConfigGamesDirDialog = $state(false);
     global.currentUser = user;
-    liveUsers.users = page.data.liveUsers;
+    liveUsers.users = data.liveUsers; // Filter and sort upcoming events
+
+    const upcomingEvents = $derived(() => {
+        const now = new Date();
+        return events
+            .filter((event) => new Date(event.start_time) > now)
+            .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+            .slice(0, 5); // Show only next 5 events
+    });
+
+    const formatRelativeTime = (date: Date) => {
+        return dayjsUtc(date).fromNow();
+    };
+
+    const formatDateTime = (date: Date) => {
+        return dayjsUtc(date).format("DD/MM/YYYY HH:mm");
+    };
 
     const toggleSidebar = () => {
         global.sidebarCollapsed = !global.sidebarCollapsed;
@@ -96,7 +125,6 @@
     });
 
     let heartbeatInterval: ReturnType<typeof setInterval> | undefined;
-
     onMount(async () => {
         try {
             await getLocalApi().authenticate({ redirect: false });
@@ -232,29 +260,80 @@
                     {/if}
                     <Header class="flex-1" />
                     <div class="ml-auto flex h-full">
-                        <div class="flex h-full w-auto gap-1 border-l px-2">
-                            <Calendar class="my-auto size-6 text-muted-foreground" />
+                        <div class="flex h-full w-auto gap-1 border-l">
                             <div class="flex flex-1 flex-col items-start justify-center">
                                 <DropdownMenu.Root>
                                     <DropdownMenu.Trigger class={buttonVariants({ variant: "ghost" })}>
-                                        <SideMenuItem
-                                            href="/"
-                                            class="w-full py-0 pb-0 text-base"
-                                            collapsed={global.sidebarCollapsed}>
-                                        </SideMenuItem>
+                                        {#if upcomingEvents().length > 0}
+                                            <Tooltip.Root>
+                                                <Tooltip.Trigger class="flex items-center gap-2">
+                                                    <Calendar class="text-muted-foreground" />
+                                                    <div class="flex flex-col items-start">
+                                                        <span class="text-sm font-medium">
+                                                            {upcomingEvents()[0].name}
+                                                        </span>
+                                                        <span class="text-xs text-muted-foreground">
+                                                            {formatRelativeTime(upcomingEvents()[0].start_time)}
+                                                        </span>
+                                                        <Progress
+                                                            value={dayjsUtc(upcomingEvents()[0].start_time).diff(
+                                                                dayjsUtc(),
+                                                                "minute",
+                                                            )}
+                                                            max={dayjsUtc(upcomingEvents()[0].end_time).diff(
+                                                                dayjsUtc(upcomingEvents()[0].start_time),
+                                                                "minute",
+                                                            )}
+                                                            class="h-1 w-full text-primary-foreground" />
+                                                    </div>
+                                                </Tooltip.Trigger>
+                                                <Tooltip.Content>
+                                                    <p>
+                                                        {dayjsUtc(upcomingEvents()[0].start_time).format(
+                                                            "DD/MM/YYYY HH:mm",
+                                                        )}
+                                                    </p>
+                                                </Tooltip.Content>
+                                            </Tooltip.Root>
+                                        {:else}
+                                            <span class="text-sm text-muted-foreground">Aucun événement</span>
+                                        {/if}
                                     </DropdownMenu.Trigger>
-                                    <DropdownMenu.Content class="z-[110] w-56">
+                                    <DropdownMenu.Content class="z-[110] w-80">
                                         <DropdownMenu.Group>
-                                            <DropdownMenu.GroupHeading>Mon compte</DropdownMenu.GroupHeading>
-                                            <DropdownMenu.Group>
-                                                <DropdownMenu.Item onclick={() => goto("/my/settings")}>
-                                                    <Settings class="mr-2 size-4" />
-                                                    <span>BLA</span>
+                                            <DropdownMenu.GroupHeading>Événements à venir</DropdownMenu.GroupHeading>
+                                            {#if upcomingEvents().length > 0}
+                                                {#each upcomingEvents() as event}
+                                                    <DropdownMenu.Item
+                                                        class="cursor-pointer"
+                                                        onclick={() => event.url && window.open(event.url, "_blank")}>
+                                                        <div class="flex w-full flex-col gap-1">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="font-medium">{event.name}</span>
+                                                                <span class="text-xs text-muted-foreground">
+                                                                    {formatRelativeTime(event.start_time)}
+                                                                </span>
+                                                            </div>
+                                                            {#if event.description}
+                                                                <span
+                                                                    class="line-clamp-2 text-xs text-muted-foreground">
+                                                                    {event.description}
+                                                                </span>
+                                                            {/if}
+                                                            <span class="text-xs text-muted-foreground">
+                                                                {formatDateTime(event.start_time)} - {formatDateTime(
+                                                                    event.end_time,
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </DropdownMenu.Item>
+                                                {/each}
+                                            {:else}
+                                                <DropdownMenu.Item disabled>
+                                                    <span class="text-muted-foreground">Aucun événement programmé</span>
                                                 </DropdownMenu.Item>
-                                            </DropdownMenu.Group>
+                                            {/if}
                                         </DropdownMenu.Group>
-
-                                        <DropdownMenu.Separator />
                                     </DropdownMenu.Content>
                                 </DropdownMenu.Root>
                             </div>
@@ -295,7 +374,7 @@
                     style:width={global.sidebarCollapsed ? "80px" : "250px"}>
                     <SideMenu class="h-full">
                         <div class="mt-auto flex w-full">
-                            <ProfileDropdown {user} />
+                            <ProfileDropdown user={user!} />
                         </div>
                     </SideMenu>
                 </aside>

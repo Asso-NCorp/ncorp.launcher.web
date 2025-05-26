@@ -1,8 +1,9 @@
 import { db } from '$srv/db';
 import type { LayoutServerLoad } from './$types';
 import { logger } from '$src/lib/stores/loggerStore';
+import type { global_settings } from '@prisma/client';
 
-export const load = (async ({ locals }) => {
+export const load: LayoutServerLoad = (async ({ locals }) => {
 
     const nicknames = await db.user.findMany({
         select: {
@@ -22,6 +23,6 @@ export const load = (async ({ locals }) => {
 
     return {
         nicknames: nicknames.map(({ name }) => name),
-        globalSettings: locals.globalSettings || []
+        globalSettings: locals.globalSettings as global_settings[]
     };
-}) satisfies LayoutServerLoad;
+});
