@@ -480,8 +480,24 @@
         }
     });
 
+    // Mélange la liste des users au mount (algo de Fisher-Yates)
+    function shuffle(array: any[]) {
+        let m = array.length,
+            t,
+            i;
+        while (m) {
+            i = Math.floor(Math.random() * m--);
+            t = array[m];
+            array[m] = array[i];
+            array[i] = t;
+        }
+        return array;
+    }
+
     onMount(() => {
         if (browser) {
+            users = shuffle([...users]); // Shuffle users on mount to randomize the wheel
+
             // Initialize canvas
             const canvas = canvasEl;
             if (!canvas) return;

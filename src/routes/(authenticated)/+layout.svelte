@@ -39,6 +39,11 @@
     import "dayjs/locale/fr";
     import type { LayoutProps } from "./$types";
     import { Progress } from "$src/lib/components/ui/progress";
+    import * as Avatar from "$lib/components/ui/avatar/index.js";
+    import Ripple from "$src/lib/components/custom/Ripple.svelte";
+    import GridPattern from "$src/lib/components/custom/GridPattern.svelte";
+    import SquareCard from "$src/lib/components/custom/admin/SquareCard.svelte";
+    import RainbowButton from "$src/lib/components/custom/RainbowButton.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
@@ -387,8 +392,19 @@
                 <aside
                     class="right-sidebar h-full w-[209px] flex-shrink-0 border-l border-border bg-card transition-all duration-300 ease-in-out"
                     class:hidden={rightSidebarHidden}>
-                    <div class="h-full p-2">
+                    <div class="flex h-full flex-col p-2">
                         <LiveUsers class="h-full" />
+                        <div class="mt-auto flex items-center justify-center gap-2 border-t py-2">
+                            <!-- KoFi Link -->
+                            <a
+                                href="https://ko-fi.com/keytrap"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex items-center gap-2">
+                                <img src="/img/kofi.webp" alt="Ko-Fi" class="h-4 w-4" />
+                                <span class="text-xs text-muted-foreground">Offrir un kawa au dev ☕</span>
+                            </a>
+                        </div>
                     </div>
                 </aside>
             </div>
