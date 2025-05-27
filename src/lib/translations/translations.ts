@@ -90,6 +90,7 @@ export default ({
         manage_games: 'Gestion des jeux',
         links_management: 'Gestion des liens',
         quick_links: 'Liens rapides',
+        my_profile: 'Mon profil',
     },
     en: {
         lang,
@@ -180,5 +181,6 @@ export default ({
         manage_games: 'Manage games',
         links_management: 'Manage links',
         quick_links: 'Quick links',
+        my_profile: 'My profile',
     },
 });

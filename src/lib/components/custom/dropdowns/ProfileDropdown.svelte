@@ -1,6 +1,6 @@
 <script lang="ts">
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-    import { Settings, LogOut, ComputerIcon } from "@lucide/svelte";
+    import { Settings, LogOut, ComputerIcon, UserCircle } from "@lucide/svelte";
     import { buttonVariants } from "../../ui/button";
     import { authClient, type User } from "$src/lib/auth/client";
     import SideMenuItem from "../SideMenuItem.svelte";
@@ -41,6 +41,11 @@
                 <DropdownMenu.Item onclick={() => goto("/my/settings")}>
                     <Settings class="mr-2 size-4" />
                     <span>{$t("settings")}</span>
+                </DropdownMenu.Item>
+
+                <DropdownMenu.Item onclick={() => goto("/my/profile")}>
+                    <UserCircle class="mr-2 size-4" />
+                    <span>{$t("my_profile")}</span>
                 </DropdownMenu.Item>
             </DropdownMenu.Group>
         </DropdownMenu.Group>

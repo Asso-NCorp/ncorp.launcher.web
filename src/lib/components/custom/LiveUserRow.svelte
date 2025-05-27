@@ -13,7 +13,7 @@
 <div class="relative flex h-10 w-full items-center justify-start gap-2">
     <div class="relative">
         <Avatar.Root class="size-8 ring-primary {user.isSpeaking ? 'ring' : 'ring-0'}">
-            <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} />
+            <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} class="object-cover object-center" />
             <Avatar.Fallback class="text-muted-foreground">
                 {user.name?.charAt(0)}{user.name?.charAt(1)}
             </Avatar.Fallback>
@@ -40,7 +40,7 @@
                     role="button"
                     onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
                     class="flex h-3 items-center gap-1 p-0 text-xs">
-                    <span class="truncate bg-subtle p-1 text-primary/70">{user.activity.gameTitle}</span>
+                    <span class="truncate p-1 text-primary/70">{user.activity.gameTitle}</span>
                 </div>
             </div>
 
