@@ -8,6 +8,7 @@
     import clsx from "clsx";
 
     const pageData = page.data as PageData;
+    const winnerGifFiles = $state(pageData.winnerGifFiles || []); // Initialize from pageData
 
     // Make initialUserDisplayNames mutable and initialize with a copy
     let initialUserDisplayNames: { id: string; name: string; role: string }[] = (pageData.userDisplayNames || []).map(
@@ -107,6 +108,7 @@
                 bind:this={wheelComponent}
                 users={usernames}
                 logoPath={logoImagePath}
+                {winnerGifFiles}
                 onwinner={handleWinner}
                 onerror={handleError}
                 onspin={() => (isWheelSpinning = true)}

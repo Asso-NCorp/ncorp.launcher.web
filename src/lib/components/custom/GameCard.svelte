@@ -2,7 +2,6 @@
     import { fly } from "svelte/transition";
     import LazyImage from "./LazyImage.svelte";
     import Loader from "./Loader.svelte";
-    import ScrollArea from "../ui/scroll-area/scroll-area.svelte";
     import Checkbox from "../ui/checkbox/checkbox.svelte";
     import Badge from "../ui/badge/badge.svelte";
     import { goto } from "$app/navigation";
@@ -14,17 +13,28 @@
     import type { InstallableGame } from "$src/lib/shared-models";
     import Button from "../ui/button/button.svelte";
     import { getLocalApi } from "$src/lib/utils";
-
     let { game }: { game: InstallableGame } = $props();
     let currentScreenshot = $state(game.screenshots ? game.screenshots[0] : "");
     let showDetails = $state(false);
+    let canScroll = $state(false);
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const handleMouseEnter = () => {
         showDetails = true;
+        // Enable scrolling after 1 second delay
+        scrollTimeout = setTimeout(() => {
+            canScroll = true;
+        }, 1000);
     };
 
     const handleMouseLeave = () => {
         showDetails = false;
+        canScroll = false;
+        // Clear the timeout if mouse leaves before delay completes
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = null;
+        }
     };
 
     const openGameFolder = async () => {
@@ -140,7 +150,7 @@
         </div>
     </div>
 
-    <ScrollArea class="h-full space-y-1.5 p-2">
+    <div class="flex h-full flex-col space-y-1.5 overflow-hidden p-2">
         <div
             role="heading"
             aria-level="3"
@@ -152,8 +162,9 @@
                 </div>
             {/if}
         </div>
-
-        <div in:fly={{ y: 50 }} class="flex flex-col space-y-2">
+        <div
+            in:fly={{ y: 50 }}
+            class="flex flex-1 flex-col space-y-2 {canScroll ? 'overflow-y-auto' : 'overflow-hidden'}">
             <div class="text-sm font-medium leading-none tracking-tight">
                 {game.description}
             </div>
@@ -175,7 +186,7 @@
                 </div>
             </div>
         </div>
-    </ScrollArea>
+    </div>
     <div class="flex h-auto w-full flex-col p-2">
         <GameActionButton {game} class="w-full" />
     </div>
