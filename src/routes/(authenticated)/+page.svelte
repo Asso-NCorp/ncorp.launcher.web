@@ -142,7 +142,9 @@
                             class="relative flex items-center gap-4 overflow-hidden p-4 pl-40 transition-colors hover:bg-muted/50">
                             <!-- MODIFIED: added relative, overflow-hidden -->
                             <Avatar class="h-10 w-10">
-                                <AvatarImage src={activity.user.image} alt={getUserDisplayName(activity.user)} />
+                                <AvatarImage
+                                    src={`/api/avatars/${activity.user.id}`}
+                                    alt={getUserDisplayName(activity.user)} />
                                 <AvatarFallback class="bg-primary/20 text-primary">
                                     {getUserDisplayName(activity.user).charAt(0).toUpperCase()}
                                 </AvatarFallback>
