@@ -6,10 +6,11 @@
     import UserStatusDot from "./UserStatusDot.svelte";
     import Button from "../ui/button/button.svelte";
     import { goto } from "$app/navigation";
+    import { GamesStore } from "$src/lib/stores/games.svelte";
     let { user }: { user: LiveUser } = $props();
 </script>
 
-<div class="flex h-10 w-full items-center justify-start gap-2">
+<div class="relative flex h-10 w-full items-center justify-start gap-2">
     <div class="relative">
         <Avatar.Root class="size-8 ring-primary {user.isSpeaking ? 'ring' : 'ring-0'}">
             <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} />
@@ -43,6 +44,18 @@
                     <span class="truncate bg-subtle p-1">{user.activity.gameTitle}</span>
                 </Button>
             </div>
+
+            <img
+                src={`${GamesStore.getGameScreenshot(user.activity?.gameSlug)}`}
+                alt={user.activity?.gameTitle}
+                class="pointer-events-none absolute right-0 h-full w-auto rounded-xl [mask-image:linear-gradient(to_right,transparent_0%,transparent_0%,black_100%)]"
+                transition:fly={{ y: -10, duration: 300 }} />
         {/if}
     </div>
 </div>
+
+<style>
+    .game-cover {
+        mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 10%, rgba(0, 0, 0, 0) 100%);
+    }
+</style>

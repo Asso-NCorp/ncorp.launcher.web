@@ -6,6 +6,7 @@ import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi } from "../utils";
 import { liveAgentConnection } from "../states/live-agent.svelte";
+import { logger } from "./loggerStore";
 
 class GameStore {
     games: InstallableGame[] = $state([]);
@@ -64,6 +65,24 @@ class GameStore {
                 game.installProgress = 0;
             }
         }
+    }
+
+    getGameCover = (gameSlug: string): string => {
+        const game = this.get(gameSlug);
+        if (game && game.cover) {
+            return `/api/resources/${game.cover}`;
+        }
+        return '/img/not_found.webp'; // Default cover image
+    }
+
+    getGameScreenshot = (gameSlug: string): string => {
+        const game = this.get(gameSlug);
+        const gameScreenShots = game?.screenshots || [];
+        // Choose first screenshot if available
+        if (gameScreenShots.length > 0) {
+            return `/api/resources/${gameScreenShots[0]}`;
+        }
+        return '/img/not_found.webp'; // Default screenshot image
     }
 
     setGamePlayingState(userId: string, gameSlug: string, isPlaying: boolean) {
