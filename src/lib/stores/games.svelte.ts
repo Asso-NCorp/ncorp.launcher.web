@@ -345,6 +345,15 @@ class GameStore {
     }
 
 
+    resetGamesPlayingStates = () => {
+        this.games.forEach(game => {
+            if (game.isPlaying) {
+                game.isPlaying = false;
+            }
+        });
+    }
+
+
 }
 
 export const GamesStore = new GameStore();

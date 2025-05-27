@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserActivity } from './UserActivity';
+import {
+    UserActivityFromJSON,
+    UserActivityFromJSONTyped,
+    UserActivityToJSON,
+    UserActivityToJSONTyped,
+} from './UserActivity';
 import type { UserConnectionStatus } from './UserConnectionStatus';
 import {
     UserConnectionStatusFromJSON,
@@ -59,10 +66,10 @@ export interface LiveUser {
     role?: string;
     /**
      * 
-     * @type {string}
+     * @type {UserActivity}
      * @memberof LiveUser
      */
-    activity?: string | null;
+    activity?: UserActivity;
     /**
      * 
      * @type {boolean}
@@ -101,7 +108,7 @@ export function LiveUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'name': json['name'] == null ? undefined : json['name'],
         'image': json['image'] == null ? undefined : json['image'],
         'role': json['role'] == null ? undefined : json['role'],
-        'activity': json['activity'] == null ? undefined : json['activity'],
+        'activity': json['activity'] == null ? undefined : UserActivityFromJSON(json['activity']),
         'isSpeaking': json['isSpeaking'] == null ? undefined : json['isSpeaking'],
         'status': json['status'] == null ? undefined : UserConnectionStatusFromJSON(json['status']),
     };
@@ -123,7 +130,7 @@ export function LiveUserToJSONTyped(value?: LiveUser | null, ignoreDiscriminator
         'name': value['name'],
         'image': value['image'],
         'role': value['role'],
-        'activity': value['activity'],
+        'activity': UserActivityToJSON(value['activity']),
         'isSpeaking': value['isSpeaking'],
         'status': UserConnectionStatusToJSON(value['status']),
     };

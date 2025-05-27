@@ -1,6 +1,8 @@
 import { logger } from "../stores/loggerStore";
 import { getServerApi } from "../utils";
-import type { LiveUser, UserConnectionStatus } from '$src/lib/shared-models';
+import { global } from "./global.svelte";
+import type { LiveUser, UserActivity, UserConnectionStatus } from '$src/lib/shared-models';
+import { GamesStore } from "../stores/games.svelte";
 
 class LiveUsers {
     users = $state<LiveUser[]>([]);
@@ -32,11 +34,27 @@ class LiveUsers {
         return this.users.find(u => u.id === userId);
     }
 
-    updateUserActivity(userId: string, activity?: string) {
+    updateUserActivity(userId: string, activity: UserActivity) {
         const user = this.getUser(userId);
         if (user) {
             logger.info(`User ${userId} activity updated to ${activity}`);
             user.activity = activity;
+
+
+            if (userId == global.currentUser?.id) {
+                if (user.activity.activityType == "Playing") {
+                    if (GamesStore.has(user.activity.gameSlug!)) {
+                        const game = GamesStore.get(user.activity.gameSlug!);
+                        if (game) {
+                            game.isPlaying = true;
+                        }
+                    }
+                } else {
+                    // Reset all games to not playing
+                    GamesStore.resetGamesPlayingStates();
+                }
+            }
+
         } else {
             logger.info(`[updateUserActivity] : User ${userId} not found.`);
         }

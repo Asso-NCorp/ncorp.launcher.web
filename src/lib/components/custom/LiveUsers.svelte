@@ -38,22 +38,7 @@
                 {#if adminUsers.length > 0}
                     <h2 class="mb-1 mt-2 text-sm font-semibold text-muted-foreground">{$t("admins")}</h2>
                     {#each adminUsers as user}
-                        <Popover.Root>
-                            <Popover.Trigger><LiveUserRow {user} /></Popover.Trigger>
-                            <Popover.Content side="right" align="start" sideOffset={-50} class="m-0 p-0 ">
-                                <div class="relative h-96 bg-gray-800">
-                                    <div class="absolute inset-0 h-1/5 bg-gradient-to-b from-gray-800 to-transparent">
-                                    </div>
-                                    <Avatar.Root
-                                        class="absolute left-2 top-10 ring-primary {user.isSpeaking
-                                            ? 'ring'
-                                            : 'ring-0'}">
-                                        <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} />
-                                        <Avatar.Fallback>{user.name?.charAt(0)}{user.name?.charAt(1)}</Avatar.Fallback>
-                                    </Avatar.Root>
-                                </div>
-                            </Popover.Content>
-                        </Popover.Root>
+                        <LiveUserRow {user} />
                     {/each}
                 {/if}
 
@@ -64,22 +49,7 @@
                 {#if otherUsers.length > 0}
                     <h2 class="mb-1 mt-2 text-sm font-semibold text-muted-foreground">{$t("users")}</h2>
                     {#each otherUsers as user}
-                        <Popover.Root>
-                            <Popover.Trigger><LiveUserRow {user} /></Popover.Trigger>
-                            <Popover.Content side="right" align="start" sideOffset={-50} class="m-0 p-0 ">
-                                <div class="relative h-96 bg-gray-800">
-                                    <div class="absolute inset-0 h-1/5 bg-gradient-to-b from-gray-800 to-transparent">
-                                    </div>
-                                    <Avatar.Root
-                                        class="absolute left-2 top-10 ring-primary {user.isSpeaking
-                                            ? 'ring'
-                                            : 'ring-0'}">
-                                        <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} />
-                                        <Avatar.Fallback>{user.name?.charAt(0)}{user.name?.charAt(1)}</Avatar.Fallback>
-                                    </Avatar.Root>
-                                </div>
-                            </Popover.Content>
-                        </Popover.Root>
+                        <LiveUserRow {user} />
                     {/each}
                 {/if}
             </div>

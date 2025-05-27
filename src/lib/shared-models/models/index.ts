@@ -109,6 +109,8 @@ export * from './StringTR';
 export * from './TR';
 export * from './Theme';
 export * from './ThemeIdentitiesOrValues';
+export * from './UserActivity';
+export * from './UserActivityType';
 export * from './UserConnectionEntry';
 export * from './UserConnectionStatus';
 export * from './UsernameFileConfig';

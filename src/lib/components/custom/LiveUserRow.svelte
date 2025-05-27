@@ -1,9 +1,11 @@
 <script lang="ts">
     import * as Avatar from "$lib/components/ui/avatar/index.js";
     import type { LiveUser } from "$src/lib/shared-models";
-    import { Gamepad2 } from "@lucide/svelte";
+    import { ArrowDown, Gamepad2 } from "@lucide/svelte";
     import { fly } from "svelte/transition";
     import UserStatusDot from "./UserStatusDot.svelte";
+    import Button from "../ui/button/button.svelte";
+    import { goto } from "$app/navigation";
     let { user }: { user: LiveUser } = $props();
 </script>
 
@@ -23,11 +25,24 @@
     </div>
     <div class="flex min-h-8 flex-col justify-center text-start">
         <span class:text-primary={user.role === "admin"} class="text-lg leading-tight">{user.name}</span>
-        <div
-            class="flex items-center gap-1 overflow-hidden text-xs font-bold text-gray-500 transition-all duration-300 ease-in-out"
-            style="height: {user.activity ? '1rem' : '0'}; opacity: {user.activity ? 1 : 0};">
-            <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
-            <span class="truncate text-2xs">{user.activity || ""}</span>
-        </div>
+        {#if user.activity && user.activity.activityType !== "Idle"}
+            <div
+                transition:fly={{ y: -10, duration: 300 }}
+                class="flex items-center gap-1 overflow-hidden text-xs font-bold text-gray-500">
+                {#if user.activity.activityType === "Playing"}
+                    <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
+                {:else}
+                    <ArrowDown class="inline-block h-4 w-4 text-blue-600" />
+                {/if}
+
+                <Button
+                    variant="link"
+                    size="sm"
+                    onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
+                    class="flex h-3 items-center gap-1 p-0 text-xs">
+                    <span class="truncate bg-subtle p-1">{user.activity.gameTitle}</span>
+                </Button>
+            </div>
+        {/if}
     </div>
 </div>

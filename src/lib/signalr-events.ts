@@ -3,7 +3,7 @@ import { browser } from '$app/environment';
 import * as signalR from '@microsoft/signalr';
 import { GamesStore } from './stores/games.svelte';
 import { gameStatuses } from './stores/gameStatusesStore';
-import type { InstallableGame, LiveUser, UserConnectionStatus } from './shared-models';
+import type { InstallableGame, LiveUser, UserActivity, UserConnectionStatus } from './shared-models';
 import { toast } from 'svelte-sonner';
 import { liveUsers } from './states/live-users.svelte';
 import { logger } from './stores/loggerStore';
@@ -61,14 +61,6 @@ export class SignalREventBinder {
         });
 
         // SERVER EVENTS
-        this.offAndOn(liveServerConnection, "GameInstallStarted", (userId: string, gameSlug: string) => {
-            // Try to find the game in the store
-            const game = GamesStore.games.find((g) => g.folderSlug === gameSlug);
-            if (game)
-                liveUsers.updateUserActivity(userId, "Installe " + game.title);
-            else
-                liveUsers.updateUserActivity(userId, "Installe " + gameSlug);
-        });
 
         this.offAndOn(liveServerConnection, "SetLocalGamesFolderValid", async (localGamesDir: string) => {
             if (!localGamesDir && options?.showConfigGamesDirDialogSetter) {
@@ -86,8 +78,8 @@ export class SignalREventBinder {
             await GamesStore.getAvailableGames();
         });
 
-        this.offAndOn(liveServerConnection, "GameInstallFinished", (userId: string) => {
-            liveUsers.updateUserActivity(userId, undefined);
+        this.offAndOn(liveServerConnection, "UserActivityChanged", (userId: string, activity: UserActivity) => {
+            liveUsers.updateUserActivity(userId, activity);
         });
 
         this.offAndOn(liveServerConnection, "GameExited", (userId: string, game: InstallableGame) => {
