@@ -36,13 +36,12 @@
                     <ArrowDown class="inline-block h-4 w-4 text-blue-600" />
                 {/if}
 
-                <Button
-                    variant="link"
-                    size="sm"
+                <div
+                    role="button"
                     onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
                     class="flex h-3 items-center gap-1 p-0 text-xs">
-                    <span class="truncate bg-subtle p-1">{user.activity.gameTitle}</span>
-                </Button>
+                    <span class="truncate bg-subtle p-1 text-primary/70">{user.activity.gameTitle}</span>
+                </div>
             </div>
 
             <img
