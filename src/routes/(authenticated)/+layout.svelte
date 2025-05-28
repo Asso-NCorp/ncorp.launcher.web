@@ -123,6 +123,31 @@
     });
 
     let heartbeatInterval: ReturnType<typeof setInterval> | undefined;
+
+    const detectSWUpdate = async () => {
+        const registration = await navigator.serviceWorker.ready;
+
+        registration.addEventListener("updatefound", () => {
+            const newSW = registration.installing;
+            newSW?.addEventListener("statechange", () => {
+                if (newSW.state === "installed") {
+                    toast.info(
+                        "Une nouvelle version de l'application est disponible. Veuillez recharger la page pour l'appliquer.",
+                        {
+                            action: {
+                                label: "Recharger",
+                                onClick: () => {
+                                    newSW.postMessage({ type: "SKIP_WAITING" });
+                                    window.location.reload();
+                                },
+                            },
+                        },
+                    );
+                }
+            });
+        });
+    };
+
     onMount(async () => {
         try {
             await getLocalApi().authenticate({ redirect: false });
@@ -144,6 +169,8 @@
             } else {
                 await GamesStore.getAvailableGames();
             }
+
+            await detectSWUpdate();
         }
     });
 

@@ -11,9 +11,39 @@
     import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
     import * as Alert from "$lib/components/ui/alert/index.js";
     import type { LayoutProps } from "./$types";
+    import { toast } from "svelte-sonner";
+    import { onMount } from "svelte";
 
     let { data, children }: LayoutProps = $props();
     const loginPageMessage = data.globalSettings.find((setting) => setting.key === "login_page_message")?.value;
+
+    const detectSWUpdate = async () => {
+        const registration = await navigator.serviceWorker.ready;
+
+        registration.addEventListener("updatefound", () => {
+            const newSW = registration.installing;
+            newSW?.addEventListener("statechange", () => {
+                if (newSW.state === "installed") {
+                    toast.info(
+                        "Une nouvelle version de l'application est disponible. Veuillez recharger la page pour l'appliquer.",
+                        {
+                            action: {
+                                label: "Recharger",
+                                onClick: () => {
+                                    newSW.postMessage({ type: "SKIP_WAITING" });
+                                    window.location.reload();
+                                },
+                            },
+                        },
+                    );
+                }
+            });
+        });
+    };
+
+    onMount(async () => {
+        await detectSWUpdate();
+    });
 </script>
 
 <Lights direction="top" class="absolute top-0 block h-56 w-full dark:hidden" />
