@@ -57,7 +57,7 @@
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/lottery"
-        label="Lotterie"
+        label="Loterie"
         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
         icon={FerrisWheel}
         iconOnly={global.sidebarCollapsed} />

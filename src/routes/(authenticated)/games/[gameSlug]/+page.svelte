@@ -120,7 +120,7 @@
 {:else if game === undefined && GamesStore.games.length > 0 && GamesStore.gamesLoading == false}
     <p class="text-center text-2xl text-secondary-foreground">{$t("game_not_found")} 🤨</p>
     <img src="/img/huhcat.gif" alt="404" class="mx-auto w-1/4 pt-10" />
-    <Button variant="outline" href="/games">
+    <Button variant="outline" href="/all-games">
         <ArrowLeft />
         {$t("back")}
     </Button>

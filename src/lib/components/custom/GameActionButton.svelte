@@ -93,7 +93,7 @@
                         class={cn("w-auto", klazz)}
                         onclick={handlePlayClick}
                         icon={Play}>
-                        {$t("play")}
+                        {$t("launch")}
                     </Button>
                 {/if}
                 <Button

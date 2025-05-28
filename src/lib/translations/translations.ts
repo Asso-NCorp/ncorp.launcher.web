@@ -91,6 +91,7 @@ export default ({
         links_management: 'Gestion des liens',
         quick_links: 'Liens rapides',
         my_profile: 'Mon profil',
+        launch: 'Lancer',
     },
     en: {
         lang,
@@ -182,5 +183,6 @@ export default ({
         links_management: 'Manage links',
         quick_links: 'Quick links',
         my_profile: 'My profile',
+        launch: 'Launch',
     },
 });

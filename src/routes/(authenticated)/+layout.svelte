@@ -36,6 +36,7 @@
     import "dayjs/locale/fr";
     import type { LayoutProps } from "./$types";
     import { Progress } from "$src/lib/components/ui/progress";
+    import Separator from "$src/lib/components/ui/separator/separator.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
@@ -262,33 +263,38 @@
                                 <DropdownMenu.Root>
                                     <DropdownMenu.Trigger class={buttonVariants({ variant: "ghost" })}>
                                         {#if upcomingEvents().length > 0}
+                                            {@const firstEvent = upcomingEvents()[0]}
                                             <Tooltip.Root>
                                                 <Tooltip.Trigger class="flex items-center gap-2">
                                                     <Calendar class="text-muted-foreground" />
                                                     <div class="flex flex-col items-start">
                                                         <span class="text-sm font-medium">
-                                                            {upcomingEvents()[0].name}
+                                                            {firstEvent.name}
                                                         </span>
                                                         <span class="text-xs text-muted-foreground">
-                                                            {formatRelativeTime(upcomingEvents()[0].start_time)}
+                                                            {formatRelativeTime(firstEvent.start_time)}
                                                         </span>
                                                         <Progress
-                                                            value={dayjsUtc(upcomingEvents()[0].start_time).diff(
+                                                            value={dayjsUtc(firstEvent.start_time).diff(
                                                                 dayjsUtc(),
                                                                 "minute",
                                                             )}
-                                                            max={dayjsUtc(upcomingEvents()[0].end_time).diff(
-                                                                dayjsUtc(upcomingEvents()[0].start_time),
+                                                            max={dayjsUtc(firstEvent.end_time).diff(
+                                                                dayjsUtc(firstEvent.start_time),
                                                                 "minute",
                                                             )}
                                                             class="h-1 w-full text-primary-foreground" />
                                                     </div>
+                                                    {#if firstEvent.image_url}
+                                                        <img
+                                                            src={firstEvent.image_url}
+                                                            alt={firstEvent.name}
+                                                            class="h-10 w-auto object-cover" />
+                                                    {/if}
                                                 </Tooltip.Trigger>
                                                 <Tooltip.Content>
                                                     <p>
-                                                        {dayjsUtc(upcomingEvents()[0].start_time).format(
-                                                            "DD/MM/YYYY HH:mm",
-                                                        )}
+                                                        {dayjsUtc(firstEvent.start_time).format("DD/MM/YYYY HH:mm")}
                                                     </p>
                                                 </Tooltip.Content>
                                             </Tooltip.Root>
@@ -300,30 +306,39 @@
                                         <DropdownMenu.Group>
                                             <DropdownMenu.GroupHeading>Événements à venir</DropdownMenu.GroupHeading>
                                             {#if upcomingEvents().length > 0}
-                                                {#each upcomingEvents() as event}
-                                                    <DropdownMenu.Item
-                                                        class="cursor-pointer"
-                                                        onclick={async () => event.url && (await goto(event.url))}>
-                                                        <div class="flex w-full flex-col gap-1">
-                                                            <div class="flex items-center justify-between">
-                                                                <span class="font-medium">{event.name}</span>
+                                                {#each upcomingEvents() as event, i}
+                                                    <div in:fly|global={{ x: -20, duration: 200, delay: i * 50 }}>
+                                                        <DropdownMenu.Item
+                                                            class="cursor-pointer"
+                                                            onclick={async () => event.url && (await goto(event.url))}>
+                                                            <div class="flex w-full flex-col gap-1">
+                                                                <div class="flex items-center justify-between">
+                                                                    <span class="font-medium">{event.name}</span>
+                                                                    <span class="text-xs text-muted-foreground">
+                                                                        {formatRelativeTime(event.start_time)}
+                                                                    </span>
+                                                                    {#if event.image_url}
+                                                                        <img
+                                                                            src={event.image_url}
+                                                                            alt={event.name}
+                                                                            class="h-10 w-auto object-cover" />
+                                                                    {/if}
+                                                                </div>
+                                                                {#if event.description}
+                                                                    <span
+                                                                        class="line-clamp-2 text-xs text-muted-foreground">
+                                                                        {event.description}
+                                                                    </span>
+                                                                {/if}
                                                                 <span class="text-xs text-muted-foreground">
-                                                                    {formatRelativeTime(event.start_time)}
+                                                                    {formatDateTime(event.start_time)} - {formatDateTime(
+                                                                        event.end_time,
+                                                                    )}
                                                                 </span>
+                                                                <Separator class="my-1" />
                                                             </div>
-                                                            {#if event.description}
-                                                                <span
-                                                                    class="line-clamp-2 text-xs text-muted-foreground">
-                                                                    {event.description}
-                                                                </span>
-                                                            {/if}
-                                                            <span class="text-xs text-muted-foreground">
-                                                                {formatDateTime(event.start_time)} - {formatDateTime(
-                                                                    event.end_time,
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </DropdownMenu.Item>
+                                                        </DropdownMenu.Item>
+                                                    </div>
                                                 {/each}
                                             {:else}
                                                 <DropdownMenu.Item disabled>
