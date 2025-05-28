@@ -10,6 +10,7 @@
     import { toast } from "svelte-sonner";
     import { page } from "$app/state";
     import { goto } from "$app/navigation";
+    import Card from "../ui/card/card.svelte";
 
     const user = page.data.user;
     const role = user?.role;
@@ -70,38 +71,38 @@
                 <p>Rafraîchir la liste des jeux</p>
             </Tooltip.Content>
         </Tooltip.Root>
+        <!-- Recent games buttons -->
+        {#if recentGames && recentGames.length > 0}
+            <Card class="flex items-center gap-2 border-l-0">
+                <div class="ml-2 flex items-center gap-1 text-sm text-muted-foreground">
+                    <Clock class="h-4 w-4" />
+                    <span>Récemment joués:</span>
+                </div>
+                <div class="flex gap-1">
+                    {#each recentGames as game}
+                        <Tooltip.Root>
+                            <Tooltip.Trigger>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="relative overflow-hidden text-xs"
+                                    onclick={() => handleRecentGameClick(game.game_slug)}>
+                                    <!-- Masked transparent game cover background -->
+                                    <img
+                                        src={GamesStore.getGameCover(game.game_slug)}
+                                        alt="Cover for {formatGameName(game.game_slug)}"
+                                        class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 [mask-image:linear-gradient(to_right,transparent_0%,transparent_20%,black_100%)]" />
+                                    <!-- Game name overlay -->
+                                    <span class="relative z-10">{formatGameName(game.game_slug)}</span>
+                                </Button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>
+                                <p>Dernière session: {new Date(game.lastPlayedTime).toLocaleDateString()}</p>
+                            </Tooltip.Content>
+                        </Tooltip.Root>
+                    {/each}
+                </div>
+            </Card>
+        {/if}
     </div>
-    <!-- Recent games buttons -->
-    {#if recentGames && recentGames.length > 0}
-        <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1 text-sm text-muted-foreground">
-                <Clock class="h-4 w-4" />
-                <span>Récemment joués:</span>
-            </div>
-            <div class="flex gap-1">
-                {#each recentGames as game}
-                    <Tooltip.Root>
-                        <Tooltip.Trigger>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                class="relative overflow-hidden text-xs"
-                                onclick={() => handleRecentGameClick(game.game_slug)}>
-                                <!-- Masked transparent game cover background -->
-                                <img
-                                    src={GamesStore.getGameCover(game.game_slug)}
-                                    alt="Cover for {formatGameName(game.game_slug)}"
-                                    class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 [mask-image:linear-gradient(to_right,transparent_0%,transparent_20%,black_100%)]" />
-                                <!-- Game name overlay -->
-                                <span class="relative z-10">{formatGameName(game.game_slug)}</span>
-                            </Button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>
-                            <p>Dernière session: {new Date(game.lastPlayedTime).toLocaleDateString()}</p>
-                        </Tooltip.Content>
-                    </Tooltip.Root>
-                {/each}
-            </div>
-        </div>
-    {/if}
 </div>
