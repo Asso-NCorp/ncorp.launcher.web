@@ -9,8 +9,9 @@
     import { initHeadMenu } from "./layout-slots.svelte";
     import { GamesStore } from "$src/lib/stores/games.svelte";
     import { onNavigate } from "$app/navigation";
+    import type { PageData } from "./$types";
 
-    let { children }: { children?: Snippet } = $props();
+    let { children, data }: { children?: Snippet; data: PageData } = $props();
 
     const slots = initHeadMenu();
 
@@ -29,7 +30,7 @@
         {@render slots.title()}
     {/if}
     <div class="flex items-center justify-between">
-        <GamesSearchBar />
+        <GamesSearchBar recentGames={data.recentGames} />
         {#if slots.head}
             {@render slots.head()}
         {/if}

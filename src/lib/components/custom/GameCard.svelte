@@ -7,7 +7,7 @@
     import { goto } from "$app/navigation";
     import GameActionButton from "./GameActionButton.svelte";
     import { t } from "$src/lib/translations";
-    import { FolderOpen, LucideZap, VerifiedIcon } from "@lucide/svelte";
+    import { FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
     import { GamesStore } from "$src/lib/stores/games.svelte";
     import type { InstallableGame } from "$src/lib/shared-models";
@@ -127,21 +127,28 @@
                 </Button>
             </div>
         {/if}
+
         <div class="absolute right-2 top-2 z-10 flex items-center">
             {#if game.isInstalled && !game.isInstalling && !showDetails}
                 <div transition:fly={{ y: -30, duration: 200 }}><InstalledBadge /></div>
             {/if}
-            {#if !showDetails && game.sizeGb}
+            {#if !showDetails}
                 <div class="flex" transition:fly={{ y: -30, duration: 200 }}>
-                    <Badge variant="secondary" class="rounded-[var(--radius)] py-0.5">
-                        {#if game.sizeGb < 1}
-                            {Math.round(game.sizeGb * 1024)} {$t("MB")}
-                        {:else}
-                            {Math.round(game.sizeGb)} {$t("GB")}
+                    <Badge variant="secondary" class=" flex items-center text-nowrap rounded-[var(--radius)] px-1">
+                        {#if game.sizeGb}
+                            {#if game.sizeGb < 1}
+                                {Math.round(game.sizeGb * 1024)} {$t("MB")}
+                            {:else}
+                                {Math.round(game.sizeGb)} {$t("GB")}
+                            {/if}
                         {/if}
                     </Badge>
+                    <Badge variant="secondary" class="flex items-center  px-1" title="Nombre de joueurs">
+                        <Users class="h-4 w-4" />
+                        <span>{game.maxPlayers}</span>
+                    </Badge>
                     {#if game.isCompressedAvailable}
-                        <Badge variant="default" class="py-0.5">
+                        <Badge variant="default">
                             <LucideZap class="h-4 w-4" />
                         </Badge>
                     {/if}
