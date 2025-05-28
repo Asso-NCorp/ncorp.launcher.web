@@ -1,8 +1,12 @@
 <script lang="ts">
     import { browser } from "$app/environment";
     import { onMount, onDestroy } from "svelte";
-    import Progress from "$lib/components/ui/progress/progress.svelte";
-    import { fade, scale } from "svelte/transition";
+    import Checkbox from "$lib/components/ui/checkbox/checkbox.svelte";
+    import {
+        liveServerConnection, // Corrected: Was liveAgentConnection, but code uses liveServerConnection
+    } from "$src/lib/states/live-server.svelte";
+    import Input from "$lib/components/ui/input/input.svelte"; // Added Input import
+    import { Label } from "../ui/label";
 
     // Props
     interface $$Props {
@@ -12,7 +16,8 @@
         onwinner?: (event: CustomEvent<{ name: string }>) => void;
         onspinComplete?: () => void;
         onerror?: (event: CustomEvent<{ message: string }>) => void;
-        winnerGifFiles?: string[]; // <-- Add this prop
+        winnerGifFiles?: string[];
+        prizeToWinText?: string; // ADDED: prizeToWinText prop
     }
     let {
         users = [],
@@ -22,24 +27,17 @@
         onspinComplete,
         onerror,
         winnerGifFiles = [],
+        prizeToWinText = $bindable(""),
     }: $$Props = $props();
 
+    let shouldBroadcastWin = $state(true);
     let selectedUser: string | null = $state(null);
     let spinning = $state(false);
-    let winner: string | null = $state(null);
+    let winner: string | null = $state(null); // Still needed to display winner text below wheel
     let logoImage: HTMLImageElement;
     let logoImageLoaded = $state(false);
     const LOGO_SIZE = 80;
-    let showWinnerAnimation = $state(false);
-    let winnerAnimationVisible = $state(true);
-    let winnerAnimationTimeoutId: any;
-    // Progress bar for winner animation
-    let winnerProgressPercent = $state(0);
-    let progressIntervalId: any;
-    // Winner GIF management
-    let availableWinnerGifs = $state<string[]>([...winnerGifFiles]); // <-- Initialize with prop
-    let usedWinnerGifs = $state<string[]>([]);
-    let currentWinnerGif = $state<string | null>(null);
+
     let canvasEl: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D;
     let currentAngle = 0;
@@ -49,11 +47,13 @@
     let isHighlightBlinkOn = $state(false);
     const POINTER_ANGLE = -Math.PI / 2;
     const segmentColors = ["#60A5FA", "#F87171", "#4ADE80", "#FACC15", "#F472B6", "#818CF8"];
-    const SPIN_DURATION = 6000; // 6 secondes (ajuste ici pour plus ou moins long)
+    const SPIN_DURATION = 6000;
     const EXTRA_ROTATIONS = 6;
-    const WINNER_ANNOUNCEMENT_DURATION = 5000; // 5 seconds for the winner announcement display
-    const FLICKER_INTERVAL = 150; // Interval for flickering effect in ms
-    const FLICKER_DURATION = 2000; // Total duration for flickering effect in ms
+    // const WINNER_ANNOUNCEMENT_DURATION = 5000; // Now managed by WinnerOverlay
+    // const FLICKER_INTERVAL = 150; // Now managed by WinnerOverlay
+    // const FLICKER_DURATION = 2000; // Now managed by WinnerOverlay
+    const WINNER_ANIMATION_BLINKS = 12; // Number of blinks for the winner animation
+    const WINNER_ANIMATION_DURATION = 5000; // Duration of the winner animation in ms
 
     // Easing quintic-out (plus progressif et smooth)
     function easeOutQuint(x: number) {
@@ -195,7 +195,7 @@
             highlightedSegmentIndex = -1;
             isHighlightBlinkOn = false;
             winner = null;
-            selectedUser = "Erreur pendant l'animation";
+            selectedUser = "Erreur pendant l\'animation";
             onerror?.(new CustomEvent("error", { detail: { message: "Erreur animation" } }));
             animationFrameId && cancelAnimationFrame(animationFrameId);
             drawWheel(users);
@@ -211,6 +211,12 @@
     }
 
     export function spinWheel() {
+        if (!prizeToWinText.trim()) {
+            selectedUser = "Veuillez entrer un lot à gagner !";
+            winner = null;
+            spinning = false;
+            return;
+        }
         if (users.length === 0) {
             selectedUser = "Plus d'utilisateurs !";
             winner = null;
@@ -267,97 +273,35 @@
         }
         blink();
     }
-    function getRandomWinnerGif(): string {
-        // If all GIFs have been used, reset the pool
-        if (availableWinnerGifs.length === 0) {
-            availableWinnerGifs = [...usedWinnerGifs];
-            usedWinnerGifs = [];
-            console.log("All winner GIFs shown, resetting pool.");
-        }
-
-        if (availableWinnerGifs.length > 0) {
-            const randomIndex = Math.floor(Math.random() * availableWinnerGifs.length);
-            const selectedGif = availableWinnerGifs[randomIndex];
-
-            // Move from available to used
-            availableWinnerGifs.splice(randomIndex, 1);
-            usedWinnerGifs.push(selectedGif);
-
-            return selectedGif;
-        }
-        return ""; // Should not be reached if logic above is correct
-    }
-
-    // Export function to reset GIF pool manually if needed
-    export function resetWinnerGifPool() {
-        if (winnerGifFiles && winnerGifFiles.length > 0) {
-            availableWinnerGifs = [...winnerGifFiles];
-        } else {
-            availableWinnerGifs = []; // Or some default if no files passed
-        }
-        usedWinnerGifs = [];
-        currentWinnerGif = null;
-        console.log("Winner GIF pool explicitly reset.");
-    }
-    function startWinnerAnimation() {
-        showWinnerAnimation = true;
-        winnerAnimationVisible = true;
-        winnerProgressPercent = 0;
-
-        // Select a random winner GIF
-        currentWinnerGif = getRandomWinnerGif();
-
-        if (winnerAnimationTimeoutId) clearTimeout(winnerAnimationTimeoutId);
-        if (progressIntervalId) clearInterval(progressIntervalId);
-
-        let flickerCount = 0,
-            maxFlickers = 12,
-            flickerInterval = 200;
-
-        function flicker() {
-            winnerAnimationVisible = !winnerAnimationVisible;
-            flickerCount++;
-            if (flickerCount < maxFlickers) {
-                winnerAnimationTimeoutId = setTimeout(flicker, flickerInterval);
-            } else {
-                winnerAnimationVisible = true;
-
-                // Start progress bar animation after flickering ends
-                const totalDisplayTime = 5000; // 5 seconds
-                const progressUpdateInterval = 50; // Update every 50ms for smooth animation
-                const progressStep = (100 / totalDisplayTime) * progressUpdateInterval;
-
-                progressIntervalId = setInterval(() => {
-                    winnerProgressPercent += progressStep;
-                    if (winnerProgressPercent >= 100) {
-                        winnerProgressPercent = 100;
-                        clearInterval(progressIntervalId);
-                    }
-                }, progressUpdateInterval);
-
-                winnerAnimationTimeoutId = setTimeout(() => {
-                    showWinnerAnimation = false;
-                    currentWinnerGif = null; // Clear the GIF when animation ends
-                    winnerProgressPercent = 0;
-                    clearInterval(progressIntervalId);
-                }, totalDisplayTime);
-            }
-        }
-        winnerAnimationTimeoutId = setTimeout(flicker, 500);
-    }
 
     function finalizeSelection(idx: number) {
         if (idx >= 0 && idx < users.length) {
             winner = users[idx].name;
-            startWinnerAnimation();
+
+            if (
+                shouldBroadcastWin &&
+                winner &&
+                liveServerConnection &&
+                liveServerConnection.connectionState === "Connected"
+            ) {
+                let selectedGifUrl: string | null = null;
+                if (winnerGifFiles && winnerGifFiles.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * winnerGifFiles.length);
+                    selectedGifUrl = winnerGifFiles[randomIndex];
+                }
+                liveServerConnection.connection
+                    .invoke("AnnounceLotteryWinner", winner, prizeToWinText, selectedGifUrl)
+                    .catch((err) => console.error("Error announcing winner:", err));
+            }
+
             onwinner?.(new CustomEvent("winner", { detail: { name: winner } }));
             spinning = false;
             highlightedSegmentIndex = -1;
             isHighlightBlinkOn = false;
-            drawWheel(users);
+            drawWheel(users); // Redraw to clear highlight if any
             onspinComplete?.();
         } else {
-            winner = null;
+            winner = null; // No winner determined
             spinning = false;
             highlightedSegmentIndex = -1;
             isHighlightBlinkOn = false;
@@ -365,22 +309,19 @@
             onspinComplete?.();
         }
     }
+
     export function resetWheel() {
         spinning = false;
         winner = null;
         selectedUser = null;
-        showWinnerAnimation = false;
-        winnerAnimationVisible = true;
-        currentWinnerGif = null;
-        winnerProgressPercent = 0;
-        winnerAnimationTimeoutId && clearTimeout(winnerAnimationTimeoutId);
-        progressIntervalId && clearInterval(progressIntervalId);
+        // Removed winnerOverlay.hideWinner() call
         currentAngle = 0;
         animationFrameId && cancelAnimationFrame(animationFrameId);
         highlightedSegmentIndex = -1;
         isHighlightBlinkOn = false;
         drawWheel(users);
     }
+
     function setupCanvasDimensions() {
         if (canvasEl && wheelContainerEl) {
             const containerWidth = wheelContainerEl.clientWidth;
@@ -396,6 +337,7 @@
             drawWheel(users);
         }
     }
+
     function shuffle(array: any[]) {
         let m = array.length,
             t,
@@ -408,13 +350,6 @@
         }
         return array;
     }
-
-    $effect(() => {
-        if (winnerGifFiles && winnerGifFiles.length > 0) {
-            availableWinnerGifs = [...winnerGifFiles];
-            usedWinnerGifs = []; // Reset used GIFs if the prop changes
-        }
-    });
 
     onMount(() => {
         if (browser) {
@@ -435,10 +370,9 @@
             logoImage.onerror = () => {};
         }
     });
+
     onDestroy(() => {
         animationFrameId && cancelAnimationFrame(animationFrameId);
-        winnerAnimationTimeoutId && clearTimeout(winnerAnimationTimeoutId);
-        progressIntervalId && clearInterval(progressIntervalId);
         if (browser) window.removeEventListener("resize", setupCanvasDimensions);
     });
 </script>
@@ -448,35 +382,6 @@
     class="wheel-container relative flex w-full max-w-md flex-col items-center justify-center lg:h-auto lg:flex-grow">
     <canvas bind:this={canvasEl} class="rounded-full"></canvas>
 </div>
-
-{#if showWinnerAnimation && winner}
-    <div
-        transition:fade={{ duration: 300 }}
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div
-            class="scale-110 transform text-center transition-all duration-300"
-            class:opacity-100={winnerAnimationVisible}
-            class:opacity-20={!winnerAnimationVisible}>
-            <img src="/img/cat_vibe.gif" alt="Cat Vibe" class="mx-auto mb-4 h-52 w-auto rounded-full shadow-lg" />
-            <div class="mb-4 text-6xl font-bold text-white drop-shadow-2xl md:text-8xl">🎉 GAGNANT ! 🎉</div>
-            <div
-                class="bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-4xl font-bold text-transparent text-yellow-400 drop-shadow-xl md:text-6xl">
-                {winner}
-            </div>
-            <div class="mt-8 text-xl text-white/80">Félicitations ! 🎊</div>
-            {#if currentWinnerGif}
-                <img
-                    src={`/img/winners/${currentWinnerGif}`}
-                    alt="Winner Celebration"
-                    class="mx-auto mt-4 h-96 w-auto" />
-            {/if}
-
-            <div class="mx-auto mt-6 w-full max-w-md">
-                <Progress value={winnerProgressPercent} max={100} class="h-1" />
-            </div>
-        </div>
-    </div>
-{/if}
 
 <div
     class="results-section mt-6 flex min-h-[80px] w-full max-w-md flex-col items-center justify-center rounded-lg border border-border bg-card p-4 text-center shadow-lg">
@@ -493,10 +398,24 @@
     {/if}
 </div>
 
+<div class="mt-4 w-full max-w-md space-y-3">
+    <div class="flex w-full max-w-sm flex-col gap-1.5">
+        <Label for="text">Lot à gagner</Label>
+        <Input type="text" placeholder="Ex: Massage gratuit" bind:value={prizeToWinText} class="w-full" />
+    </div>
+    <div class="flex items-center justify-center space-x-2">
+        <Checkbox id="broadcastWinCheckbox" bind:checked={shouldBroadcastWin} />
+        <label
+            for="broadcastWinCheckbox"
+            class="text-sm font-medium leading-none text-muted-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Annoncer le gagnant globalement ?
+        </label>
+    </div>
+</div>
+
 <style>
-    /* ... existing styles ... */
     .flicker-text {
-        animation: flicker 1.5s infinite alternate; /* Simplified for example, use FLICKER_INTERVAL based if needed */
+        animation: flicker 1.5s infinite alternate;
         text-shadow:
             0 0 7px #fff,
             0 0 10px #fff,

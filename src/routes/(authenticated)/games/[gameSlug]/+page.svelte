@@ -17,7 +17,7 @@
     import { toast } from "svelte-sonner";
 
     let { data }: { data: PageData } = $props();
-    const game = GamesStore.get(data.gameSlug);
+    const game = data.game;
 
     if (game?.screenshots) {
         var randomScreenshot = getRandomScreenshot(game);

@@ -21,6 +21,7 @@
     let usernames = $state([...initialUserDisplayNames]);
     let winner: string | null = $state(null);
     let isWheelSpinning = $state(false);
+    let prizeToWin = $state(""); // ADDED: State for prizeToWinText binding
 
     // Reference to the wheel component
     let wheelComponent: FortuneWheel;
@@ -109,6 +110,7 @@
                 users={usernames}
                 logoPath={logoImagePath}
                 {winnerGifFiles}
+                bind:prizeToWinText={prizeToWin}
                 onwinner={handleWinner}
                 onerror={handleError}
                 onspin={() => (isWheelSpinning = true)}
@@ -118,7 +120,7 @@
         <div class="controls mt-6 flex flex-wrap justify-center gap-4">
             <Button
                 onclick={spinWheel}
-                disabled={isWheelSpinning || usernames.length === 0}
+                disabled={isWheelSpinning || usernames.length === 0 || !prizeToWin.trim()}
                 class="flex-grow sm:flex-grow-0">
                 Tourner la Roue
             </Button>
@@ -161,9 +163,14 @@
                                 user.role === "admin" && "text-primary",
                             )}>
                             <div class="flex items-center gap-2">
-                                <Avatar.Root class="h-8 w-8 ring-primary">
-                                    <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} />
-                                    <Avatar.Fallback>{user.name?.charAt(0)}{user.name?.charAt(1)}</Avatar.Fallback>
+                                <Avatar.Root class="size-8 ring-primary">
+                                    <Avatar.Image
+                                        src="/api/avatars/{user.id}"
+                                        alt={user.name}
+                                        class="object-cover object-center" />
+                                    <Avatar.Fallback class="text-muted-foreground">
+                                        {user.name?.charAt(0)}{user.name?.charAt(1)}
+                                    </Avatar.Fallback>
                                 </Avatar.Root>
                                 <span>{user.name}</span>
                             </div>

@@ -37,6 +37,8 @@
     import type { LayoutProps } from "./$types";
     import { Progress } from "$src/lib/components/ui/progress";
     import Separator from "$src/lib/components/ui/separator/separator.svelte";
+    import { toast } from "svelte-sonner";
+    import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
@@ -148,6 +150,8 @@
         });
     };
 
+    let winnerOverlay: WinnerOverlay;
+
     onMount(async () => {
         try {
             await getLocalApi().authenticate({ redirect: false });
@@ -163,6 +167,24 @@
             SignalREventBinder.bindAllEvents(liveServerConnection, liveAgentConnection, {
                 showConfigGamesDirDialogSetter: (v) => (showConfigGamesDirDialog = v),
             });
+
+            // MODIFIED: Changed event name to match server-side and added prizeToWinText
+            liveServerConnection.connection.off("LotteryWinnerAnnouncement");
+            liveServerConnection.connection.on(
+                "LotteryWinnerAnnouncement",
+                (winningDisplayName: string, prizeText: string, randomGifUrl: string) => {
+                    if (winnerOverlay) {
+                        // Pass prizeText to showWinner. Adjust showWinner in WinnerOverlay.svelte if necessary.
+                        winnerOverlay.showWinner(winningDisplayName, randomGifUrl, undefined, undefined, prizeText);
+                    } else {
+                        let message = `Le gagnant du tirage au sort est : ${winningDisplayName}`;
+                        if (prizeText) {
+                            message += ` et remporte : ${prizeText}`;
+                        }
+                        toast.success(message);
+                    }
+                },
+            );
 
             if (!global.localGamesFolder) {
                 showConfigGamesDirDialog = true;
@@ -190,6 +212,7 @@
 </script>
 
 <Lights direction="top" class="absolute top-0 h-56 dark:hidden" />
+<WinnerOverlay bind:this={winnerOverlay} />
 
 <AlertDialog.Root open={showConfigGamesDirDialog}>
     <AlertDialog.Content>

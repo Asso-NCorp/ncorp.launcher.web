@@ -20,12 +20,14 @@
     <DropdownMenu.Trigger class="{buttonVariants({ variant: 'ghost' })} w-full">
         <SideMenuItem href="/" class="w-full py-0 pb-0 text-base" collapsed={global.sidebarCollapsed}>
             <div class="relative">
-                <Avatar.Root class="size-9 text-lg uppercase ring-2 ring-primary/40">
-                    <Avatar.Image src="/api/avatars/{user.id}" alt={name} />
-                    <Avatar.Fallback class="bg-primary text-base text-primary-foreground">
-                        {name[0]}{name[1]}
+                <Avatar.Root class="size-8 ring-primary">
+                    <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} class="object-cover object-center" />
+                    <Avatar.Fallback class="text-muted-foreground">
+                        {user.name?.charAt(0)}{user.name?.charAt(1)}
                     </Avatar.Fallback>
                 </Avatar.Root>
+
+                <!-- Status dot -->
                 <UserStatusDot status={"Connected"} />
             </div>
 

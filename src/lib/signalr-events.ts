@@ -78,6 +78,8 @@ export class SignalREventBinder {
             await GamesStore.getAvailableGames();
         });
 
+
+
         this.offAndOn(liveServerConnection, "UserActivityChanged", (userId: string, activity: UserActivity) => {
             liveUsers.updateUserActivity(userId, activity);
         });
