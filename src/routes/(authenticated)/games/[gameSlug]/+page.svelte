@@ -19,6 +19,8 @@
     let { data }: { data: PageData } = $props();
     const game = data.game;
 
+    let reactiveGame = $derived(GamesStore.get(game?.folderSlug) || game);
+
     if (game?.screenshots) {
         var randomScreenshot = getRandomScreenshot(game);
         if (randomScreenshot) {
@@ -89,7 +91,7 @@
                     title="Ouvrir le dossier du jeu">
                     <FolderOpen />
                 </Button>
-                <GameActionButton {game} uninstallVariant="ghost" />
+                <GameActionButton game={reactiveGame} uninstallVariant="ghost" />
             </div>
         </div>
         <div class="flex items-center gap-2">
