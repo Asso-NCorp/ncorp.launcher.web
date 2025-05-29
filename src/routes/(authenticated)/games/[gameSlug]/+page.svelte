@@ -86,7 +86,7 @@
             <div class="flex">
                 <Button
                     variant="secondary"
-                    disabled={!game.isInstalled}
+                    disabled={!reactiveGame.isInstalled}
                     onclick={handleOpenGameFolder}
                     title="Ouvrir le dossier du jeu">
                     <FolderOpen />
