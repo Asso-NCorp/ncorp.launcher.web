@@ -2,7 +2,16 @@
     import "$src/app.css";
     import Header from "$src/lib/components/custom/Header.svelte";
     import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
-    import { AlertTriangle, Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar } from "@lucide/svelte";
+    import {
+        AlertTriangle,
+        Folder,
+        Gamepad2,
+        MoveRight,
+        ChevronLeft,
+        Menu,
+        Calendar,
+        CircleAlertIcon,
+    } from "@lucide/svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
     import { getLocalApi, cn } from "$src/lib/utils";
@@ -33,17 +42,23 @@
     import dayjs from "dayjs";
     import relativeTime from "dayjs/plugin/relativeTime";
     import utc from "dayjs/plugin/utc";
+    import customParseFormat from "dayjs/plugin/customParseFormat";
     import "dayjs/locale/fr";
     import type { LayoutProps } from "./$types";
     import { Progress } from "$src/lib/components/ui/progress";
     import Separator from "$src/lib/components/ui/separator/separator.svelte";
     import { toast } from "svelte-sonner";
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
+    import * as Alert from "$lib/components/ui/alert/index.js";
+    import typewriter from "$src/lib/actions/typewriter";
+    import Typewriter from "svelte-typewriter";
+    import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
     dayjs.extend(relativeTime);
     dayjs.extend(utc);
+    dayjs.extend(customParseFormat);
     dayjs.locale("fr");
 
     // Create UTC-first dayjs instance
@@ -308,6 +323,9 @@
                     {/if}
                     <Header class="flex-1" />
                     <div class="ml-auto flex h-full">
+                        <!-- Header message -->
+                        <HeaderMessage globalSettings={data.globalSettings} />
+
                         <div class="flex h-full w-auto gap-1 border-l">
                             <div class="flex flex-1 flex-col items-start justify-center">
                                 <DropdownMenu.Root>

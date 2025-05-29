@@ -1,14 +1,11 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
-    import NcorpGlitch from "./NcorpGlitch.svelte";
     import { GamesStore } from "$src/lib/stores/games.svelte";
     import { Progress } from "../ui/progress";
     import { fly } from "svelte/transition";
     import { cn } from "$src/lib/utils";
     import GridPattern from "./GridPattern.svelte";
     import Card from "../ui/card/card.svelte";
-    import Loader from "./Loader.svelte";
-    import ScrollArea from "../ui/scroll-area/scroll-area.svelte";
     import Button from "../ui/button/button.svelte";
 
     let {

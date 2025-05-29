@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { RefreshCcwDot, RefreshCw, Search, X, Clock } from "@lucide/svelte";
+    import { RefreshCw, Search, X, Clock } from "@lucide/svelte";
     import Input from "../ui/input/input.svelte";
     import { t } from "$src/lib/translations";
     import { GamesStore } from "$src/lib/stores/games.svelte";
@@ -8,13 +8,8 @@
     import GamesTitleSortButton from "./buttons/GamesTitleSortButton.svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import { toast } from "svelte-sonner";
-    import { page } from "$app/state";
     import { goto } from "$app/navigation";
     import Card from "../ui/card/card.svelte";
-
-    const user = page.data.user;
-    const role = user?.role;
-    const isAdmin = role === "admin" || role === "superadmin"; // Vérification du rôle de l'utilisateur
 
     // Accept recentGames prop
     let { recentGames }: { recentGames?: Array<{ game_slug: string; lastPlayedTime: Date; totalPlayTime: number }> } =
