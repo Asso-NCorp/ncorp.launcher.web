@@ -49,6 +49,10 @@ export class SignalREventBinder {
             });
         });
 
+        this.offAndOn(liveServerConnection, "UserGameProgressChanged", (userId: string, gameSlug: string, progress: number) => {
+            liveUsers.updateUserGameProgress(userId, progress);
+        });
+
         this.offAndOn(liveAgentConnection, "GameInstalled", (gameSlug: string) => {
             toast.success(`Installation terminée : ${gameSlug}`, {
                 action: {

@@ -82,6 +82,12 @@ export interface LiveUser {
      * @memberof LiveUser
      */
     status?: UserConnectionStatus;
+    /**
+     * 
+     * @type {number}
+     * @memberof LiveUser
+     */
+    gameInstallProgress?: number;
 }
 
 
@@ -111,6 +117,7 @@ export function LiveUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'activity': json['activity'] == null ? undefined : UserActivityFromJSON(json['activity']),
         'isSpeaking': json['isSpeaking'] == null ? undefined : json['isSpeaking'],
         'status': json['status'] == null ? undefined : UserConnectionStatusFromJSON(json['status']),
+        'gameInstallProgress': json['gameInstallProgress'] == null ? undefined : json['gameInstallProgress'],
     };
 }
 
@@ -133,6 +140,7 @@ export function LiveUserToJSONTyped(value?: LiveUser | null, ignoreDiscriminator
         'activity': UserActivityToJSON(value['activity']),
         'isSpeaking': value['isSpeaking'],
         'status': UserConnectionStatusToJSON(value['status']),
+        'gameInstallProgress': value['gameInstallProgress'],
     };
 }
 

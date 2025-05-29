@@ -60,6 +60,18 @@ class LiveUsers {
         }
     }
 
+    updateUserGameProgress(userId: string, progress: number) {
+        const user = this.getUser(userId);
+        if (user) {
+            user.gameInstallProgress = progress;
+            if (progress >= 100) {
+                user.gameInstallProgress = 0; // Reset progress when installation is complete
+            }
+        } else {
+            logger.info(`[updateUserGameProgress] : User ${userId} not found.`);
+        }
+    }
+
     async updateUserStatus(userId: string, status: UserConnectionStatus) {
         let user = this.getUser(userId);
         if (user) {
