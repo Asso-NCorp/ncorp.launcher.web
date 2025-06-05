@@ -50,7 +50,7 @@
                     <span class="truncate p-1 text-primary/70">{user.activity.gameTitle}</span>
                 </div>
 
-                {#if user.gameInstallProgress && user.gameInstallProgress > 0}
+                {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
                     <Progress
                         value={user.gameInstallProgress}
                         class="absolute -bottom-2 right-0 h-0.5 w-full"

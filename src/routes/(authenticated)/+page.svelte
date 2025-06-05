@@ -4,27 +4,28 @@
     import { Avatar, AvatarFallback, AvatarImage } from "$lib/components/ui/avatar";
     import { Badge } from "$lib/components/ui/badge";
     import { Separator } from "$lib/components/ui/separator";
+    import * as Tooltip from "$lib/components/ui/tooltip";
     import { GamesStore } from "$lib/stores/games.svelte";
-
     import dayjs from "dayjs";
-    import utc from "dayjs/plugin/utc";
     import duration from "dayjs/plugin/duration";
     import relativeTime from "dayjs/plugin/relativeTime";
     import localizedFormat from "dayjs/plugin/localizedFormat";
-    import "dayjs/locale/fr"; // Import French locale
+    import customParseFormat from "dayjs/plugin/customParseFormat";
+    import "dayjs/locale/fr";
     import { goto } from "$app/navigation";
     import { Button } from "$src/lib/components/ui/button";
 
-    dayjs.extend(utc);
+    // Configure dayjs
     dayjs.extend(duration);
     dayjs.extend(relativeTime);
     dayjs.extend(localizedFormat);
-    dayjs.locale("fr"); // Set French locale globally for dayjs
+    dayjs.extend(customParseFormat);
+    dayjs.locale("fr");
 
-    const { data }: { data: PageData } = $props();
+    let { data }: { data: PageData } = $props();
 
     function formatDuration(totalSeconds: number | null): string {
-        if (totalSeconds == null || totalSeconds < 1) return "0s"; // Return 0s if less than 1 second
+        if (totalSeconds == null || totalSeconds < 1) return "0s";
 
         const d = dayjs.duration(totalSeconds, "seconds");
         const hours = d.hours();
@@ -40,13 +41,10 @@
             parts.push(`${minutes}min`);
         }
         if (seconds > 0 && hours === 0) {
-            // Only show seconds if no hours are present
             parts.push(`${seconds}s`);
         }
 
         if (parts.length === 0) {
-            // Should only happen if totalSeconds was < 1 and positive, or exactly 0 after rounding, covered by first check.
-            // If somehow totalSeconds was >0 but h,m,s are all 0, show original seconds if it was < 60
             if (totalSeconds > 0 && totalSeconds < 60) return `${Math.floor(totalSeconds)}s`;
             return "0s";
         }
@@ -54,11 +52,44 @@
         return parts.join(" ");
     }
 
+    // Helper function to parse date strings or correct Date objects for timezone issues
+    function parseDateCorrectly(date: string | Date): dayjs.Dayjs {
+        if (typeof date === "string") {
+            const match = date.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
+            if (match) {
+                const [, year, month, day, hours, minutes, seconds] = match;
+                const localDate = new Date(
+                    parseInt(year, 10),
+                    parseInt(month, 10) - 1,
+                    parseInt(day, 10),
+                    parseInt(hours, 10),
+                    parseInt(minutes, 10),
+                    parseInt(seconds, 10),
+                );
+                return dayjs(localDate);
+            }
+            return dayjs(date);
+        } else {
+            // Correct for timezone misinterpretation on Date objects
+            const offset = date.getTimezoneOffset() * 60000;
+            const correctedDate = new Date(date.getTime() + offset);
+            return dayjs(correctedDate);
+        }
+    }
+
     function formatRelativeTime(date: string | Date): string {
-        return dayjs.utc(date).fromNow();
+        return parseDateCorrectly(date).fromNow();
+    }
+
+    function formatAbsoluteTime(date: string | Date): string {
+        return parseDateCorrectly(date).format("dddd D MMMM YYYY [à] HH:mm");
     }
 
     function formatGameName(gameSlug: string): string {
+        const game = GamesStore.get(gameSlug);
+        if (game && game.title) {
+            return game.title;
+        }
         return gameSlug.replace(/[-_]/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
     }
 
@@ -81,17 +112,17 @@
     <div class="grid gap-6 lg:grid-cols-3">
         <!-- Statistiques personnelles -->
         {#if data.gameSessions && data.gameSessions.length > 0}
-            {@const relevantSessions = data.gameSessions.filter((s) => s.total_seconds && s.total_seconds > 0)}
+            {@const relevantSessions = data.gameSessions.filter((s: any) => s.total_seconds && s.total_seconds > 0)}
 
             {#if relevantSessions.length > 0}
                 {@const totalPlayTime = relevantSessions.reduce(
-                    (sum, session) => sum + (session.total_seconds || 0),
+                    (sum: number, session: any) => sum + (session.total_seconds || 0),
                     0,
                 )}
-                {@const uniqueGames = new Set(relevantSessions.map((s) => s.game_slug)).size}
-                {@const sessionsThisWeek = relevantSessions.filter((s) => {
-                    const sessionDate = dayjs.utc(s.start_time);
-                    const weekAgo = dayjs.utc().subtract(7, "days");
+                {@const uniqueGames = new Set(relevantSessions.map((s: any) => s.game_slug)).size}
+                {@const sessionsThisWeek = relevantSessions.filter((s: any) => {
+                    const sessionDate = parseDateCorrectly(s.start_time);
+                    const weekAgo = dayjs().subtract(7, "days");
                     return sessionDate.isAfter(weekAgo);
                 }).length}
 
@@ -140,7 +171,6 @@
                         {@const game = GamesStore.get(activity.game_slug)}
                         <div
                             class="relative flex items-center gap-4 overflow-hidden p-4 pl-40 transition-colors hover:bg-muted/50">
-                            <!-- MODIFIED: added relative, overflow-hidden -->
                             <Avatar class="h-10 w-10">
                                 <AvatarImage
                                     src={`/api/avatars/${activity.user.id}`}
@@ -151,7 +181,6 @@
                             </Avatar>
 
                             <div class="z-10 flex-1 space-y-1">
-                                <!-- Added z-10 to ensure text is above the image -->
                                 <div class="flex items-center gap-2">
                                     <span class="font-medium">
                                         {#if activity.isCurrentUser}
@@ -169,7 +198,14 @@
                                     </Button>
                                 </div>
                                 <div class="flex items-center gap-4 text-sm text-muted-foreground">
-                                    <span>{formatRelativeTime(activity.lastPlayedTime)}</span>
+                                    <Tooltip.Root>
+                                        <Tooltip.Trigger>
+                                            <span>{formatRelativeTime(activity.lastPlayedTime)}</span>
+                                        </Tooltip.Trigger>
+                                        <Tooltip.Content>
+                                            <p>{formatAbsoluteTime(activity.lastPlayedTime)}</p>
+                                        </Tooltip.Content>
+                                    </Tooltip.Root>
                                     <span>•</span>
                                     <span class="font-medium text-success">
                                         {formatDuration(activity.totalPlayTime)}
@@ -177,7 +213,7 @@
                                 </div>
                             </div>
                             <div class="z-10 text-xs text-muted-foreground">
-                                {dayjs.utc(activity.lastPlayedTime).format("D MMM HH:mm")}
+                                {parseDateCorrectly(activity.lastPlayedTime).format("D MMM HH:mm")}
                             </div>
 
                             {#if game}

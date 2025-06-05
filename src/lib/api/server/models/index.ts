@@ -71,6 +71,7 @@ export * from './LanguageSupportIdentitiesOrValues';
 export * from './LanguageSupportType';
 export * from './LanguageSupportTypeIdentityOrValue';
 export * from './LiveUser';
+export * from './LoginRequest';
 export * from './MultiplayerMode';
 export * from './MultiplayerModeIdentitiesOrValues';
 export * from './Platform';

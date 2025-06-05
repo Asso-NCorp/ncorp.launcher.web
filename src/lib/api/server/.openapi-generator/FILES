@@ -1,3 +1,4 @@
+apis/AuthApi.ts
 apis/ServerApi.ts
 apis/index.ts
 index.ts
@@ -72,6 +73,7 @@ models/LanguageSupportIdentitiesOrValues.ts
 models/LanguageSupportType.ts
 models/LanguageSupportTypeIdentityOrValue.ts
 models/LiveUser.ts
+models/LoginRequest.ts
 models/MultiplayerMode.ts
 models/MultiplayerModeIdentitiesOrValues.ts
 models/Platform.ts
