@@ -1,4 +1,5 @@
 import { type Icon as IconType } from "@lucide/svelte";
+import type { InstallableGame } from "./shared-models";
 
 export type SideMenuSubItemProps = {
     href?: string;
@@ -9,3 +10,15 @@ export type SideMenuSubItemProps = {
     onClick?: () => void;
     iconOnly?: boolean;
 };
+
+type InstallableGameUI = {
+    isSelected: boolean;
+    isInstalled: boolean;
+    isInstalling: boolean;
+    isLoading: boolean;
+    isUpdating: boolean;
+    installError?: string;
+    installProgress: number;
+}
+
+export type InstallableGameExtended = InstallableGame & InstallableGameUI;

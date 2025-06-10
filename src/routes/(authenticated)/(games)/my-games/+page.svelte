@@ -5,7 +5,7 @@
     import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
     import { Button } from "$src/lib/components/ui/button";
     import { fly } from "svelte/transition";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { global } from "$src/lib/states/global.svelte";
     import { cleanHeadMenu, setHeadMenu } from "../layout-slots.svelte";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
@@ -46,6 +46,6 @@
     <ScrollArea class="flex-1">
         <GamesDataTable
             games={GamesStore.games.filter((game) => game.isInstalled || game.isInstalling)}
-            loading={GamesStore.gamesLoading} />
+            loading={GamesStore.isLoading} />
     </ScrollArea>
 {/if}

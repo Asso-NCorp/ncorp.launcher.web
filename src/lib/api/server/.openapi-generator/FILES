@@ -74,6 +74,7 @@ models/LanguageSupportType.ts
 models/LanguageSupportTypeIdentityOrValue.ts
 models/LiveUser.ts
 models/LoginRequest.ts
+models/LoginResponse.ts
 models/MultiplayerMode.ts
 models/MultiplayerModeIdentitiesOrValues.ts
 models/Platform.ts

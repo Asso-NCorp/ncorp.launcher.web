@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { Progress } from "../ui/progress";
     import { fly } from "svelte/transition";
     import { cn } from "$src/lib/utils";

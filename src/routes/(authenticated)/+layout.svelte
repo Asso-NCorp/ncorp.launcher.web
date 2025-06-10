@@ -12,6 +12,7 @@
         Calendar,
         CircleAlertIcon,
     } from "@lucide/svelte";
+    import { version } from "$lib/version";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
     import { getLocalApi, cn } from "$src/lib/utils";
@@ -33,7 +34,7 @@
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
     import ProfileDropdown from "$src/lib/components/custom/dropdowns/ProfileDropdown.svelte";
     import { SignalREventBinder } from "$src/lib/signalr-events";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import NcorpGlitch from "$src/lib/components/custom/NcorpGlitch.svelte";
     import { global } from "$src/lib/states/global.svelte";
     import * as DropdownMenu from "$src/lib/components/ui/dropdown-menu/index.js";
@@ -302,8 +303,9 @@
                         <div class="h-8 w-[1px] bg-border" />
                         <NcorpGlitch
                             class="inline-block font-clash text-lg font-semibold tracking-widest"
-                            text="NCORP"
+                            text="LAUNCHER"
                             glitchEnabled={false} />
+                        <span class="text-xs text-muted-foreground">v{version}</span>
                     {/if}
                 </div>
                 <!-- Header Content - spans remaining width -->
@@ -318,7 +320,7 @@
                             <ChevronLeft size={18} />
                         {/if}
                     </button>
-                    {#if loading || GamesStore.gamesLoading}
+                    {#if loading || GamesStore.isLoading}
                         <Loader size={24} class="!text-primary" />
                     {/if}
                     <Header class="flex-1" />

@@ -2,7 +2,7 @@
     import { RefreshCw, Search, X, Clock } from "@lucide/svelte";
     import Input from "../ui/input/input.svelte";
     import { t } from "$src/lib/translations";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { global } from "$src/lib/states/global.svelte";
     import Button from "../ui/button/button.svelte";
     import GamesTitleSortButton from "./buttons/GamesTitleSortButton.svelte";

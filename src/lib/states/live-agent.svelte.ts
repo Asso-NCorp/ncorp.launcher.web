@@ -3,7 +3,7 @@ import { PUBLIC_AGENT_URL } from '$env/static/public';
 import { browser } from '$app/environment';
 import SignalRInfiniteRetryPolicy from '../misc/signalrInfiniteRetryPolicy';
 import { logger } from '../stores/loggerStore';
-import { GamesStore } from '../stores/games.svelte';
+import { GamesStore } from './games.svelte';
 
 class SignalRAgent {
     connection: signalR.HubConnection;

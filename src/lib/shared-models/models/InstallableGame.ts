@@ -63,6 +63,12 @@ export interface InstallableGame {
     platforms?: Array<string> | null;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof InstallableGame
+     */
+    gameModeTypes?: Array<string> | null;
+    /**
+     * 
      * @type {string}
      * @memberof InstallableGame
      */
@@ -111,24 +117,6 @@ export interface InstallableGame {
     isInstalled?: boolean;
     /**
      * 
-     * @type {number}
-     * @memberof InstallableGame
-     */
-    installProgress?: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof InstallableGame
-     */
-    isInstalling?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof InstallableGame
-     */
-    installError?: string | null;
-    /**
-     * 
      * @type {boolean}
      * @memberof InstallableGame
      */
@@ -141,34 +129,10 @@ export interface InstallableGame {
     useNotifications?: boolean;
     /**
      * 
-     * @type {Date}
-     * @memberof InstallableGame
-     */
-    addedDate?: Date | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof InstallableGame
-     */
-    isLoading?: boolean;
-    /**
-     * 
      * @type {boolean}
      * @memberof InstallableGame
      */
     isPlaying?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof InstallableGame
-     */
-    isSelected?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof InstallableGame
-     */
-    needsUpdate?: boolean;
 }
 
 /**
@@ -195,6 +159,7 @@ export function InstallableGameFromJSONTyped(json: any, ignoreDiscriminator: boo
         'genres': json['genres'] == null ? undefined : json['genres'],
         'genresStr': json['genresStr'] == null ? undefined : json['genresStr'],
         'platforms': json['platforms'] == null ? undefined : json['platforms'],
+        'gameModeTypes': json['gameModeTypes'] == null ? undefined : json['gameModeTypes'],
         'editorName': json['editorName'] == null ? undefined : json['editorName'],
         'mainProcessName': json['mainProcessName'] == null ? undefined : json['mainProcessName'],
         'cover': json['cover'] == null ? undefined : json['cover'],
@@ -203,16 +168,9 @@ export function InstallableGameFromJSONTyped(json: any, ignoreDiscriminator: boo
         'startCommand': json['startCommand'] == null ? undefined : json['startCommand'],
         'maxPlayers': json['maxPlayers'] == null ? undefined : json['maxPlayers'],
         'isInstalled': json['isInstalled'] == null ? undefined : json['isInstalled'],
-        'installProgress': json['installProgress'] == null ? undefined : json['installProgress'],
-        'isInstalling': json['isInstalling'] == null ? undefined : json['isInstalling'],
-        'installError': json['installError'] == null ? undefined : json['installError'],
         'isCompressedAvailable': json['isCompressedAvailable'] == null ? undefined : json['isCompressedAvailable'],
         'useNotifications': json['useNotifications'] == null ? undefined : json['useNotifications'],
-        'addedDate': json['addedDate'] == null ? undefined : (new Date(json['addedDate'])),
-        'isLoading': json['isLoading'] == null ? undefined : json['isLoading'],
         'isPlaying': json['isPlaying'] == null ? undefined : json['isPlaying'],
-        'isSelected': json['isSelected'] == null ? undefined : json['isSelected'],
-        'needsUpdate': json['needsUpdate'] == null ? undefined : json['needsUpdate'],
     };
 }
 
@@ -233,6 +191,7 @@ export function InstallableGameToJSONTyped(value?: Omit<InstallableGame, 'genres
         'version': value['version'],
         'genres': value['genres'],
         'platforms': value['platforms'],
+        'gameModeTypes': value['gameModeTypes'],
         'editorName': value['editorName'],
         'mainProcessName': value['mainProcessName'],
         'cover': value['cover'],
@@ -241,16 +200,9 @@ export function InstallableGameToJSONTyped(value?: Omit<InstallableGame, 'genres
         'startCommand': value['startCommand'],
         'maxPlayers': value['maxPlayers'],
         'isInstalled': value['isInstalled'],
-        'installProgress': value['installProgress'],
-        'isInstalling': value['isInstalling'],
-        'installError': value['installError'],
         'isCompressedAvailable': value['isCompressedAvailable'],
         'useNotifications': value['useNotifications'],
-        'addedDate': value['addedDate'] == null ? undefined : ((value['addedDate'] as any).toISOString()),
-        'isLoading': value['isLoading'],
         'isPlaying': value['isPlaying'],
-        'isSelected': value['isSelected'],
-        'needsUpdate': value['needsUpdate'],
     };
 }
 

@@ -2,7 +2,7 @@ import { logger } from "../stores/loggerStore";
 import { getServerApi } from "../utils";
 import { global } from "./global.svelte";
 import type { LiveUser, UserActivity, UserConnectionStatus } from '$src/lib/shared-models';
-import { GamesStore } from "../stores/games.svelte";
+import { GamesStore } from "./games.svelte";
 
 class LiveUsers {
     users = $state<LiveUser[]>([]);

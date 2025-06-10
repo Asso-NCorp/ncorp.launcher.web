@@ -10,28 +10,30 @@ export const load: LayoutServerLoad = async ({ locals }) => {
         };
     }
 
-    // Get user's last 3 played games sorted by lastPlayedTime
-    const userGameSessions = await db.$queryRaw<Array<{
-        id: number;
-        game_slug: string;
-        start_time: Date;
-        end_time: Date | null;
-        total_seconds: number | null;
-    }>>`
-        SELECT 
-            gs.id,
-            gs.game_slug,
-            gs.start_time,
-            gs.end_time,
-            gs.total_seconds
-        FROM game_session gs
-        WHERE gs.user_id = ${user.id}
-        AND gs.total_seconds > 0
-        ORDER BY gs.start_time DESC
-    `;
+    // Get user's game sessions with valid playtime, ordered by start time
+    const userGameSessions = await db.game_session.findMany({
+        where: {
+            user_id: user.id,
+            total_seconds: {
+                gt: 60 // Only consider sessions with more than 1 minute of playtime
+            }
+        },
+        orderBy: {
+            start_time: 'desc'
+        },
+        select: {
+            game_slug: true,
+            start_time: true,
+            total_seconds: true
+        }
+    });
 
     // Group by game_slug and get the 3 most recently played games
-    const gameMap = new Map();
+    const gameMap = new Map<string, {
+        game_slug: string;
+        lastPlayedTime: Date;
+        totalPlayTime: number;
+    }>();
 
     for (const session of userGameSessions) {
         if (!gameMap.has(session.game_slug)) {
@@ -41,7 +43,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
                 totalPlayTime: session.total_seconds || 0
             });
         } else {
-            const existing = gameMap.get(session.game_slug);
+            const existing = gameMap.get(session.game_slug)!;
             existing.totalPlayTime += session.total_seconds || 0;
             if (session.start_time > existing.lastPlayedTime) {
                 existing.lastPlayedTime = session.start_time;

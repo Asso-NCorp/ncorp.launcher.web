@@ -3,7 +3,7 @@
     import { ArrowBigDownDash, ArrowBigUpDash, Play, StopCircle, ZapIcon } from "@lucide/svelte";
     import { t } from "$src/lib/translations";
     import { cn, getLocalApi } from "$src/lib/utils";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { type InstallableGame } from "$src/lib/shared-models";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";

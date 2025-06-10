@@ -1,17 +1,17 @@
 
 import { toast } from "svelte-sonner";
 import { FetchError } from "../shared-models";
-import type { InstallableGame } from "../shared-models";
+import type { InstallableGameExtended as InstallableGame } from "../types";
 import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi } from "../utils";
 import { liveAgentConnection } from "../states/live-agent.svelte";
-import { logger } from "./loggerStore";
+import { extendGames } from "../utils/games";
 
 class GameStore {
     games: InstallableGame[] = $state([]);
     selected: InstallableGame[] = $derived(this.games.filter(game => game.isSelected));
-    gamesLoading = $state(false);
+    isLoading = $state(false);
     private allGames: InstallableGame[] = $state([]);
 
     setGames(games: InstallableGame[]) {
@@ -140,7 +140,7 @@ class GameStore {
         if (!game.isInstalled) {
             try {
                 game.isInstalling = true;
-                var result = await getLocalApi().install({
+                const result = await getLocalApi().install({
                     installableGame: game,
                 });
                 if (!result.isSuccess) {
@@ -183,12 +183,12 @@ class GameStore {
             toast.error("Aucun jeu sélectionné");
             return;
         }
-        if (this.gamesLoading) {
+        if (this.isLoading) {
             toast.error("Jeux déjà en cours de chargement");
             return;
         }
 
-        this.gamesLoading = true;
+        this.isLoading = true;
         let successCount = 0;
 
         try {
@@ -205,7 +205,7 @@ class GameStore {
             if (successCount > 0) toast.success(`L'installation de ${successCount} jeu(x) a été ajoutée à la file d'attente`);
             else toast.error("Aucun jeu n'a pu être installé");
         } finally {
-            this.gamesLoading = false;
+            this.isLoading = false;
         }
     };
 
@@ -238,12 +238,12 @@ class GameStore {
             toast.error("Aucun jeu sélectionné");
             return;
         }
-        if (this.gamesLoading) {
+        if (this.isLoading) {
             toast.error("Jeux déjà en cours de chargement");
             return;
         }
 
-        this.gamesLoading = true;
+        this.isLoading = true;
         let successCount = 0;
 
         try {
@@ -265,19 +265,19 @@ class GameStore {
             if (successCount > 0) toast.success(`${successCount} jeu(x) désinstallé(s)`);
             else toast.error("Aucun jeu n'a pu être désinstallé");
         } finally {
-            this.gamesLoading = false;
+            this.isLoading = false;
         }
     };
 
 
 
     getAvailableGames = async () => {
-        if (this.gamesLoading) {
+        if (this.isLoading) {
             console.warn("Games are already loading");
             return false;
         }
 
-        this.gamesLoading = true;
+        this.isLoading = true;
         let games: InstallableGame[] = [];
         let installedGames: InstallableGame[] = [];
         const serverApi = getServerApi();
@@ -285,26 +285,26 @@ class GameStore {
 
         try {
             // Get games from the server
-            games = await serverApi.getAvailableGames({
+            games = extendGames(await serverApi.getAvailableGames({
                 sort: global.gamesSortOrder,
-            });
+            }));
         } catch (error) {
             console.error(error);
             toast.error("Impossible de récupérer les jeux disponibles. Veuillez vérifier la connexion au serveur");
             return false;
         } finally {
-            this.gamesLoading = false;
+            this.isLoading = false;
         }
 
         try {
             // Get installed games locally
-            installedGames = await localApi.getInstalledGames();
+            installedGames = extendGames(await localApi.getInstalledGames());
         } catch (error) {
             console.error(error);
             toast.error("Impossible de récupérer les jeux installés. Veuillez vérifier l'agent");
             installedGames = [];
         } finally {
-            this.gamesLoading = false;
+            this.isLoading = false;
         }
 
         try {
@@ -326,7 +326,7 @@ class GameStore {
             console.error(error);
             return false;
         } finally {
-            this.gamesLoading = false;
+            this.isLoading = false;
         }
 
         try {
@@ -339,8 +339,8 @@ class GameStore {
             toast.error("Impossible de synchroniser les jeux installés. Veuillez vérifier l'agent");
             return false;
         } finally {
-            GamesStore.gamesLoading = false;
-            this.gamesLoading = false;
+            GamesStore.isLoading = false;
+            this.isLoading = false;
         }
 
         return true;

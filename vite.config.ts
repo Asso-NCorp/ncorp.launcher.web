@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => {
 	return {
 		define: {
 			__ORIGIN__: JSON.stringify(process.env.VITE_ORIGIN),
-			__PORT__: JSON.stringify(process.env.VITE_PORT)
+			__PORT__: JSON.stringify(process.env.VITE_PORT),
+			'import.meta.env.VITE_APP_VERSION': JSON.stringify(process.env.npm_package_version),
 		},
 		server: {
 			host: process.env.PUBLIC_SERVER_HOST,

@@ -21,8 +21,7 @@ export async function GET({ params }) {
         if (["cover_", "screenshot_"].includes(filename) === false) {
             try {
                 await getServerApi().downloadImage({ igdbImage: filename });
-            } catch (error) {
-                console.error(error);
+            } catch {
             }
             if (fs.existsSync(filePath)) {
                 return new Response(fs.readFileSync(filePath), {

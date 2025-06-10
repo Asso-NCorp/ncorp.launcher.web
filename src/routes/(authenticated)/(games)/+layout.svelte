@@ -7,9 +7,9 @@
     import { onMount, type Snippet } from "svelte";
     import { global, type GameDisplayMode } from "$src/lib/states/global.svelte";
     import { initHeadMenu } from "./layout-slots.svelte";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { onNavigate } from "$app/navigation";
-    import type { PageData } from "./$types";
+    import type { LayoutData, PageData } from "../$types";
 
     let { children, data }: { children?: Snippet; data: PageData } = $props();
 

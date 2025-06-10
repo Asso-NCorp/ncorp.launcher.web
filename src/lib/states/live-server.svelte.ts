@@ -3,9 +3,9 @@ import { PUBLIC_BACKEND_API_URL } from '$env/static/public';
 import { browser } from '$app/environment';
 import SignalRInfiniteRetryPolicy from '../misc/signalrInfiniteRetryPolicy';
 import { logger } from '../stores/loggerStore';
-import { GamesStore } from '../stores/games.svelte';
 import { authClient } from '../auth/client';
 import { liveUsers } from './live-users.svelte';
+import { GamesStore } from './games.svelte';
 
 class SignalRAgent {
     connection: signalR.HubConnection;
@@ -85,7 +85,7 @@ class SignalRAgent {
         this.connectionState = this.connection.state;
     }
 
-    async broadcastMessage(func: string, ...args: any[]): Promise<void> {
+    async broadcastMessage(func: string, ...args: unknown[]): Promise<void> {
         if (!this.isConnected) return;
         if (args.length === 0)
             await this.connection.invoke(func);

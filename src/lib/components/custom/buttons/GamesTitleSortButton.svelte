@@ -3,7 +3,7 @@
     import { Button } from "../../ui/button";
     import { t } from "$src/lib/translations";
     import * as Tooltip from "$lib/components/ui/tooltip";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { global } from "$src/lib/states/global.svelte";
 
     const handleGameSortOrderChange = () => {

@@ -19,7 +19,7 @@
     import GenresSelection from "$lib/components/game/GenresSelection.svelte";
     import GameDetailsForm from "$src/lib/components/game/GameDetailsForm.svelte";
     import GamesList from "./games-list.svelte";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
 
     const folders = page.data["folders"] as string[];

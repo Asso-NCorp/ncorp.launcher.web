@@ -9,7 +9,7 @@
     import { t } from "$src/lib/translations";
     import { FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import type { InstallableGame } from "$src/lib/shared-models";
     import Button from "../ui/button/button.svelte";
     import { getLocalApi } from "$src/lib/utils";

@@ -4,9 +4,8 @@
     import { ArrowDown, Gamepad2 } from "@lucide/svelte";
     import { fly } from "svelte/transition";
     import UserStatusDot from "./UserStatusDot.svelte";
-    import Button from "../ui/button/button.svelte";
     import { goto } from "$app/navigation";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import Progress from "../ui/progress/progress.svelte";
     let { user }: { user: LiveUser } = $props();
 </script>

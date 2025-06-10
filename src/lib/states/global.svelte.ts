@@ -1,4 +1,3 @@
-import { getLocalApi, getServerApi } from "../utils";
 import type { sidelink } from "@prisma/client";
 import type { User } from "../auth/client";
 
@@ -9,10 +8,6 @@ export type GameDisplayMode = "grid" | "list";
  * @description Holds the global state of the application
  */
 class GlobalState {
-
-
-    private serverApi = getServerApi();
-    private localApi = getLocalApi();
 
     /**
      * @description The current collapsed state of the sidebar

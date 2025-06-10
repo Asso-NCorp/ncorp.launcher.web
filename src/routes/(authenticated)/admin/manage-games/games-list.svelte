@@ -3,7 +3,7 @@
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 
     import { Skeleton } from "$src/lib/components/ui/skeleton";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { buttonVariants } from "$src/lib/components/ui/button/button.svelte";
     import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
     import type { InstallableGame } from "$src/lib/shared-models";
@@ -22,7 +22,7 @@
 </script>
 
 <ScrollArea class="h-full max-h-[calc(100vh-100px)] w-full">
-    {#if GamesStore.gamesLoading}
+    {#if GamesStore.isLoading}
         <Skeleton />
     {:else}
         <Table.Root>

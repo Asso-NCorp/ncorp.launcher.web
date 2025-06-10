@@ -8,7 +8,7 @@
     import GameActionButton from "$src/lib/components/custom/GameActionButton.svelte";
     import { fly } from "svelte/transition";
     import { t } from "$src/lib/translations";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { global } from "$src/lib/states/global.svelte";
     import { type PageData } from "./$types";
     import BiggerPicture from "bigger-picture/vanilla";
@@ -119,7 +119,7 @@
             {/if}
         </div>
     </div>
-{:else if game === undefined && GamesStore.games.length > 0 && GamesStore.gamesLoading == false}
+{:else if game === undefined && GamesStore.games.length > 0 && GamesStore.isLoading == false}
     <p class="text-center text-2xl text-secondary-foreground">{$t("game_not_found")} 🤨</p>
     <img src="/img/huhcat.gif" alt="404" class="mx-auto w-1/4 pt-10" />
     <Button variant="outline" href="/all-games">

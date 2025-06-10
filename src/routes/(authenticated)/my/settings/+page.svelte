@@ -10,7 +10,7 @@
     import { getLocalApi, getServerApi } from "$src/lib/utils";
     import { toast } from "svelte-sonner";
     import { global } from "$src/lib/states/global.svelte";
-    import { GamesStore } from "$src/lib/stores/games.svelte";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     import { onMount } from "svelte";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
 

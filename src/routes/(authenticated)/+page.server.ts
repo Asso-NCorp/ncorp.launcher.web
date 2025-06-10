@@ -1,14 +1,71 @@
 import { db } from "$srv/db";
 import type { PageServerLoad } from "./$types";
-import type { user as UserType } from '@prisma/client'; // Import User type
 
-export const load: PageServerLoad = async ({ locals }) => {
-    const user = locals.user;
+// Types for better code organization
+type UserInfo = {
+    id: string;
+    name: string;
+    displayUsername: string | null;
+    image: string | null;
+};
 
-    // Récupérer les sessions de jeu de l'utilisateur actuel
-    const userGameSessions = await db.game_session.findMany({
+type GameSession = {
+    id: string;
+    user_id: string;
+    game_slug: string;
+    start_time: Date;
+    end_time: Date | null;
+    total_seconds: number | null;
+    user: UserInfo;
+};
+
+type GameSummary = {
+    game_slug: string;
+    totalPlayTime: number;
+    sessionCount: number;
+    user: UserInfo;
+    lastPlayedTime: Date;
+    isCurrentUser: boolean;
+};
+
+type ActivitySession = {
+    id: string;
+    game_slug: string;
+    start_time: Date;
+    end_time: Date | null;
+    total_seconds: number;
+    user: UserInfo;
+    isCurrentUser: boolean;
+};
+
+/**
+ * Fetch current user's game sessions
+ */
+async function getCurrentUserSessions(userId: string): Promise<GameSession[]> {
+    return await db.game_session.findMany({
+        where: { user_id: userId },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    displayUsername: true,
+                    image: true,
+                }
+            }
+        },
+        orderBy: { start_time: 'desc' },
+        take: 50, // Increased to get more sessions
+    });
+}
+
+/**
+ * Fetch other users' game sessions
+ */
+async function getOtherUsersSessions(currentUserId: string): Promise<GameSession[]> {
+    return await db.game_session.findMany({
         where: {
-            user_id: user!.id,
+            user_id: { not: currentUserId }
         },
         include: {
             user: {
@@ -21,131 +78,238 @@ export const load: PageServerLoad = async ({ locals }) => {
             }
         },
         orderBy: { start_time: 'desc' },
-        take: 10,
-    });    // Récupérer les sessions des autres utilisateurs (max 3 par utilisateur)
-    const otherUsersActivities = await db.$queryRaw<Array<{
-        id: string;
-        user_id: string;
-        game_slug: string;
-        start_time: Date;
-        end_time: Date | null;
-        total_seconds: number;
-        name: string;
-        displayUsername: string;
-        image: string | null;
-    }>>`
-        SELECT
-            gs.id,
-            gs.game_slug,
-            gs.start_time,
-            gs.end_time,
-            gs.total_seconds,
-            u.id AS user_id,
-            u.name,
-            u.displayUsername,
-            u.image
-        FROM
-            user u
-        INNER JOIN
-            game_session gs ON gs.user_id = u.id
-        LEFT JOIN
-            game_session gs_check ON gs.user_id = gs_check.user_id AND gs.start_time < gs_check.start_time
-        WHERE
-            u.id != ${user!.id}
-        GROUP BY
-            gs.id, gs.game_slug, gs.start_time, gs.end_time, gs.total_seconds,
-            u.id, u.name, u.displayUsername, u.image
-        HAVING
-            COUNT(gs_check.id) < 3
-        ORDER BY
-            gs.start_time DESC
-        LIMIT 20
-    `;
+        take: 100 // Increased to get more sessions from other users
+    });
+}
 
-    // Filtrer les sessions de l'utilisateur actuel avec total_seconds > 0
-    const validUserGameSessions = userGameSessions.filter(session => (session.total_seconds || 0) > 0);
+/**
+ * Filter sessions with valid play time (more than 0 seconds)
+ */
+function filterValidSessions(sessions: GameSession[]): GameSession[] {
+    return sessions.filter(session => (session.total_seconds || 0) > 0);
+}
 
-    // Grouper les sessions de l'utilisateur par jeu et calculer le temps total et le nombre de sessions
-    const userGameSummaries = Array.from(
-        validUserGameSessions.reduce((acc, session) => {
-            const gameSlug = session.game_slug;
-            let gameSummary = acc.get(gameSlug);
-            if (!gameSummary) {
-                gameSummary = {
-                    game_slug: gameSlug,
-                    totalPlayTime: 0,
-                    sessionCount: 0,
-                    user: session.user as UserType, // User details for current user
-                    lastPlayedTime: session.start_time, // Initialize with first session's time
-                };
-                acc.set(gameSlug, gameSummary);
-            }
-            gameSummary.totalPlayTime += (session.total_seconds || 0);
-            gameSummary.sessionCount += 1;
-            if (session.start_time > gameSummary.lastPlayedTime) {
-                gameSummary.lastPlayedTime = session.start_time;
-            }
-            return acc;
-        }, new Map<string, { game_slug: string; totalPlayTime: number; sessionCount: number; user: UserType; lastPlayedTime: Date }>())
-            .values()
-    ).sort((a, b) => b.totalPlayTime - a.totalPlayTime); // Trier par temps de jeu décroissant pour les stats personnelles
+/**
+ * Group user sessions by game and calculate totals
+ */
+function createUserGameSummaries(sessions: GameSession[]): GameSummary[] {
+    const gameMap = new Map<string, GameSummary>();
 
-    // Préparer les résumés de l'utilisateur actuel pour allActivities
-    const currentUserActivitySummaries = userGameSummaries
-        .map(summary => ({
-            ...summary,
+    for (const session of sessions) {
+        const gameSlug = session.game_slug;
+        let summary = gameMap.get(gameSlug);
+
+        if (!summary) {
+            summary = {
+                game_slug: gameSlug,
+                totalPlayTime: 0,
+                sessionCount: 0,
+                user: session.user as UserInfo,
+                lastPlayedTime: session.start_time,
+                isCurrentUser: true,
+            };
+            gameMap.set(gameSlug, summary);
+        }
+
+        summary.totalPlayTime += (session.total_seconds || 0);
+        summary.sessionCount += 1;
+
+        if (session.start_time > summary.lastPlayedTime) {
+            summary.lastPlayedTime = session.start_time;
+        }
+    }
+
+    return Array.from(gameMap.values())
+        .sort((a, b) => b.totalPlayTime - a.totalPlayTime);
+}
+
+/**
+ * Convert current user sessions to activity sessions
+ */
+function createCurrentUserActivitySessions(sessions: GameSession[]): ActivitySession[] {
+    return sessions
+        .filter(session => (session.total_seconds || 0) >= 60) // At least 1 minute
+        .map(session => ({
+            id: session.id,
+            game_slug: session.game_slug,
+            start_time: session.start_time,
+            end_time: session.end_time,
+            total_seconds: session.total_seconds || 0,
+            user: session.user,
             isCurrentUser: true,
-        }))
-        .filter(summary => summary.totalPlayTime >= 60); // MODIFIED: Ensure at least 1 minute of playtime
+        }));
+}
 
-    // Traiter les activités des autres utilisateurs pour les résumer par utilisateur et par jeu
-    const filteredOtherUsersActivities = otherUsersActivities
-        .filter(session => (session.total_seconds || 0) > 0);
+/**
+ * Convert other users' sessions to activity sessions
+ */
+function createOtherUsersActivitySessions(sessions: GameSession[]): ActivitySession[] {
+    return sessions
+        .filter(session => (session.total_seconds || 0) >= 60) // At least 1 minute
+        .map(session => ({
+            id: session.id,
+            game_slug: session.game_slug,
+            start_time: session.start_time,
+            end_time: session.end_time,
+            total_seconds: session.total_seconds || 0,
+            user: session.user,
+            isCurrentUser: false,
+        }));
+}
 
-    const otherUsersActivitySummaries = Array.from(
-        filteredOtherUsersActivities.reduce((acc, session) => {
-            const key = `${session.user_id}-${session.game_slug}`;
-            let entry = acc.get(key);
-            if (!entry) {
-                entry = {
-                    user: {
-                        id: session.user_id,
-                        name: session.name,
-                        displayUsername: session.displayUsername,
-                        image: session.image,
-                    },
-                    game_slug: session.game_slug,
-                    totalPlayTime: 0,
-                    sessionCount: 0,
-                    isCurrentUser: false,
-                    lastPlayedTime: session.start_time,
-                };
-                acc.set(key, entry);
+/**
+ * Combine and sort all activity sessions by start time
+ */
+function combineAndSortActivitySessions(currentUserSessions: ActivitySession[], otherUsersSessions: ActivitySession[]): ActivitySession[] {
+    return [...currentUserSessions, ...otherUsersSessions]
+        .sort((a, b) => b.start_time.getTime() - a.start_time.getTime())
+        .slice(0, 30); // Limit to 30 most recent activities
+}
+
+/**
+ * Calculate trending games based on recent activity (last 7 days)
+ * Algorithm prioritizes UNIQUE PLAYERS as primary sort criteria
+ * Games with more unique players will ALWAYS rank higher regardless of playtime
+ */
+function calculateTrendingGames(allSessions: GameSession[]): Array<{
+    game_slug: string;
+    totalPlayTime: number;
+    sessionCount: number;
+    uniquePlayers: number;
+    lastPlayedTime: Date;
+    trendingScore: number;
+    players: Array<{ id: string; name: string; displayUsername: string | null; image: string | null }>;
+}> {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Filter sessions from the last 7 days
+    const recentSessions = allSessions.filter(session =>
+        (session.total_seconds || 0) > 0 &&
+        session.start_time >= sevenDaysAgo
+    );
+
+    const gameStats = new Map<string, {
+        game_slug: string;
+        totalPlayTime: number;
+        sessionCount: number;
+        uniquePlayers: Set<string>;
+        lastPlayedTime: Date;
+        recentSessions: number;
+        players: Map<string, { id: string; name: string; displayUsername: string | null; image: string | null }>;
+    }>();
+
+    for (const session of recentSessions) {
+        const gameSlug = session.game_slug;
+        let stats = gameStats.get(gameSlug);
+
+        if (!stats) {
+            stats = {
+                game_slug: gameSlug,
+                totalPlayTime: 0,
+                sessionCount: 0,
+                uniquePlayers: new Set(),
+                lastPlayedTime: session.start_time,
+                recentSessions: 0,
+                players: new Map(),
+            };
+            gameStats.set(gameSlug, stats);
+        }
+
+        stats.totalPlayTime += (session.total_seconds || 0);
+        stats.sessionCount += 1;
+        stats.uniquePlayers.add(session.user_id);
+        stats.recentSessions += 1;
+
+        // Add player info
+        stats.players.set(session.user_id, {
+            id: session.user.id,
+            name: session.user.name,
+            displayUsername: session.user.displayUsername,
+            image: session.user.image,
+        });
+
+        if (session.start_time > stats.lastPlayedTime) {
+            stats.lastPlayedTime = session.start_time;
+        }
+    }
+
+    // Convert to array and calculate trending score
+    const result = Array.from(gameStats.values())
+        .map(stats => {
+            // Updated trending score calculation - prioritize unique players
+            const uniquePlayerCount = stats.uniquePlayers.size;
+            const hoursPlayed = stats.totalPlayTime / 3600;
+
+            // Simple trending score for display (not used for sorting)
+            // Sorting is now purely based on unique players first
+            const trendingScore = Math.round(
+                (uniquePlayerCount * 10) +
+                (hoursPlayed * 1) +
+                (stats.sessionCount * 0.5)
+            );
+
+            return {
+                game_slug: stats.game_slug,
+                totalPlayTime: stats.totalPlayTime,
+                sessionCount: stats.sessionCount,
+                uniquePlayers: uniquePlayerCount,
+                lastPlayedTime: stats.lastPlayedTime,
+                trendingScore: trendingScore,
+                players: Array.from(stats.players.values()),
+            };
+        })
+        .filter(game => game.uniquePlayers >= 1) // At least 1 player
+        .sort((a, b) => {
+            // Primary sort: unique players (descending) - MOST IMPORTANT
+            if (b.uniquePlayers !== a.uniquePlayers) {
+                return b.uniquePlayers - a.uniquePlayers;
             }
-            entry.totalPlayTime += (session.total_seconds || 0);
-            entry.sessionCount += 1;
-            if (session.start_time > entry.lastPlayedTime) {
-                entry.lastPlayedTime = session.start_time;
+            // Secondary sort: total play time (descending) - only for ties
+            if (b.totalPlayTime !== a.totalPlayTime) {
+                return b.totalPlayTime - a.totalPlayTime;
             }
-            return acc;
-        }, new Map<string, {
-            user: { id: string; name: string; displayUsername: string; image: string | null };
-            game_slug: string;
-            totalPlayTime: number;
-            sessionCount: number;
-            isCurrentUser: boolean;
-            lastPlayedTime: Date;
-        }>()).values()
-    )
-        .filter(summary => summary.totalPlayTime >= 60); // MODIFIED: Ensure at least 1 minute of playtime
+            // Tertiary sort: session count (descending) - final tie-breaker
+            if (b.sessionCount !== a.sessionCount) {
+                return b.sessionCount - a.sessionCount;
+            }
+            // Final sort: recency (more recent = higher)
+            return b.lastPlayedTime.getTime() - a.lastPlayedTime.getTime();
+        })
+        .slice(0, 5);
 
-    // Combiner et trier tous les résumés d'activité
-    const allActivities = [...currentUserActivitySummaries, ...otherUsersActivitySummaries]
-        .sort((a, b) => b.lastPlayedTime.getTime() - a.lastPlayedTime.getTime());
+    return result;
+}
+
+export const load: PageServerLoad = async ({ locals }) => {
+    const user = locals.user;
+    if (!user) throw new Error('User not authenticated');
+
+    // Fetch data from database
+    const [userGameSessions, otherUsersSessions] = await Promise.all([
+        getCurrentUserSessions(user.id),
+        getOtherUsersSessions(user.id)
+    ]);
+
+    // Combine all sessions for trending calculation
+    const allSessions = [...userGameSessions, ...otherUsersSessions];
+
+    // Process current user's data for game summaries (personal stats)
+    const validUserSessions = filterValidSessions(userGameSessions);
+    const userGameSummaries = createUserGameSummaries(validUserSessions);
+
+    // Process individual sessions for activity feed (shows each session separately)
+    const currentUserActivitySessions = createCurrentUserActivitySessions(validUserSessions);
+    const otherUsersActivitySessions = createOtherUsersActivitySessions(filterValidSessions(otherUsersSessions));
+
+    // Combine all individual sessions for the activity feed
+    const allActivities = combineAndSortActivitySessions(currentUserActivitySessions, otherUsersActivitySessions);    // Calculate trending games
+    const trendingGames = calculateTrendingGames(allSessions);
 
     return {
-        gameSessions: userGameSessions, // Conserver pour les statistiques qui nécessitent des sessions individuelles (ex: sessions cette semaine)
-        userGameSummaries, // Pour les statistiques personnelles groupées par jeu
-        allActivities: allActivities.slice(0, 30) // Flux d'activité principal avec résumés par utilisateur/jeu
+        gameSessions: userGameSessions, // Individual sessions for detailed statistics
+        userGameSummaries, // Personal game statistics grouped by game
+        allActivities, // Combined activity feed with individual sessions (not grouped)
+        trendingGames // Trending games based on recent activity
     };
 };
