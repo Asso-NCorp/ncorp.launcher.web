@@ -19,11 +19,11 @@
     let initialLoadComplete = $state(false);
 
     // Track the previous screenshots object to detect when it's cleared
-    let previousScreenshotsCount = $state(0);
-
-    // Effect to update allScreenshots when screenshots prop changes
+    let previousScreenshotsCount = $state(0); // Effect to update allScreenshots when screenshots prop changes
     $effect(() => {
         const currentCount = Object.keys(screenshots).length;
+        const incomingKeys = new Set(Object.keys(screenshots));
+        const existingKeys = new Set(allScreenshots.map((s) => s.key));
 
         // Check if screenshots were cleared (form was submitted successfully)
         if (previousScreenshotsCount > 0 && currentCount === 0) {
@@ -34,15 +34,30 @@
             return;
         }
 
+        // Check if this is a completely new set of screenshots (different keys)
+        const hasCommonKeys = Array.from(incomingKeys).some((key) => existingKeys.has(key));
+        const isCompletelyNewSet = currentCount > 0 && !hasCommonKeys && initialLoadComplete;
+
+        // If it's a completely new set of screenshots, replace everything
+        if (isCompletelyNewSet) {
+            allScreenshots = Object.entries(screenshots).map(([key, value]) => ({
+                key,
+                value: value as string,
+                selected: true,
+            }));
+            previousScreenshotsCount = currentCount;
+            return;
+        }
+
         // Only process incoming screenshots if we haven't loaded yet
         // or if we have more screenshots than before (new ones were added externally)
         if (!initialLoadComplete || currentCount > allScreenshots.length) {
             // Get existing keys to avoid duplicates
-            const existingKeys = new Set(allScreenshots.map((s) => s.key));
+            const existingKeysSet = new Set(allScreenshots.map((s) => s.key));
 
             // Process new screenshots
             const newScreenshots = Object.entries(screenshots)
-                .filter(([key]) => !existingKeys.has(key))
+                .filter(([key]) => !existingKeysSet.has(key))
                 .map(([key, value]) => ({
                     key,
                     value: value as string,

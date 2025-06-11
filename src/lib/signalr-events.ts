@@ -88,13 +88,6 @@ export class SignalREventBinder {
             liveUsers.updateUserActivity(userId, activity);
         });
 
-        this.offAndOn(liveServerConnection, "GameExited", (userId: string, game: InstallableGame) => {
-            GamesStore.setGamePlayingState(userId, game.folderSlug!, false);
-        });
-
-        this.offAndOn(liveServerConnection, "GameStarted", (userId: string, game: InstallableGame) => {
-            GamesStore.setGamePlayingState(userId, game.folderSlug!, true);
-        });
 
         this.offAndOn(liveServerConnection, "ReceiveChatMessage", (game: InstallableGame, user: LiveUser) => {
             logger.info({ game, user });

@@ -3,7 +3,6 @@ import { PUBLIC_BACKEND_API_URL } from '$env/static/public';
 import { browser } from '$app/environment';
 import SignalRInfiniteRetryPolicy from '../misc/signalrInfiniteRetryPolicy';
 import { logger } from '../stores/loggerStore';
-import { authClient } from '../auth/client';
 import { liveUsers } from './live-users.svelte';
 import { GamesStore } from './games.svelte';
 
@@ -40,10 +39,6 @@ class SignalRAgent {
             console.log('SignalR Server reconnected');
             this.isConnected = true;
             this.connectionState = this.connection.state;
-            const currentUser = await authClient.getSession();
-            if (currentUser) {
-                GamesStore.resetGamePlayingState(currentUser.data!.user!.id!);
-            }
 
             await GamesStore.getAvailableGames();
             await liveUsers.refreshLiveUsers();

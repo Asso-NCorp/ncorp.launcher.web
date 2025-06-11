@@ -10,27 +10,35 @@
     import { FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
-    import type { InstallableGame } from "$src/lib/shared-models";
     import Button from "../ui/button/button.svelte";
     import { getLocalApi } from "$src/lib/utils";
-    let { game }: { game: InstallableGame } = $props();
+    import type { InstallableGameExtended } from "$src/lib/types";
+    let { game }: { game: InstallableGameExtended } = $props();
     let currentScreenshot = $state(game.screenshots ? game.screenshots[0] : "");
     let showDetails = $state(false);
     let canScroll = $state(false);
+    let detailsTimeout: ReturnType<typeof setTimeout> | null = null;
     let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const handleMouseEnter = () => {
-        showDetails = true;
-        // Enable scrolling after 1 second delay
-        scrollTimeout = setTimeout(() => {
-            canScroll = true;
-        }, 1000);
+        // Show details after 1.5 second delay
+        detailsTimeout = setTimeout(() => {
+            showDetails = true;
+            // Enable scrolling after an additional 1 second delay
+            scrollTimeout = setTimeout(() => {
+                canScroll = true;
+            }, 1000);
+        }, 500);
     };
 
     const handleMouseLeave = () => {
         showDetails = false;
         canScroll = false;
-        // Clear the timeout if mouse leaves before delay completes
+        // Clear both timeouts if mouse leaves before delays complete
+        if (detailsTimeout) {
+            clearTimeout(detailsTimeout);
+            detailsTimeout = null;
+        }
         if (scrollTimeout) {
             clearTimeout(scrollTimeout);
             scrollTimeout = null;

@@ -3,7 +3,6 @@ import { toast } from "svelte-sonner";
 import { FetchError } from "../shared-models";
 import type { InstallableGameExtended as InstallableGame } from "../types";
 import { global } from "../states/global.svelte";
-import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi } from "../utils";
 import { liveAgentConnection } from "../states/live-agent.svelte";
 import { extendGames } from "../utils/games";
@@ -75,7 +74,11 @@ class GameStore {
         return '/img/not_found.webp'; // Default cover image
     }
 
-    getGameScreenshot = (gameSlug: string): string => {
+    getGameScreenshot = (gameSlug: string | null | undefined): string => {
+        if (!gameSlug) {
+            return '/img/not_found.webp'; // Default screenshot image
+        }
+
         const game = this.get(gameSlug);
         const gameScreenShots = game?.screenshots || [];
         // Choose first screenshot if available
@@ -83,33 +86,6 @@ class GameStore {
             return `/api/resources/${gameScreenShots[0]}`;
         }
         return '/img/not_found.webp'; // Default screenshot image
-    }
-
-    setGamePlayingState(userId: string, gameSlug: string, isPlaying: boolean) {
-        const game = this.get(gameSlug);
-        if (game) {
-            if (userId === global.currentUser?.id) {
-                game.isPlaying = isPlaying;
-            }
-
-            if (isPlaying) {
-                liveUsers.updateUserActivity(userId, `Joue à ${game.title}`);
-            } else {
-                liveUsers.updateUserActivity(userId, undefined);
-            }
-        } else {
-            console.error(`Game with folder slug ${gameSlug} not found`);
-            liveUsers.updateUserActivity(userId, 'Joue à un jeu');
-        }
-    }
-
-    resetGamePlayingState(userId: string) {
-        this.games.forEach(game => {
-            if (game.isPlaying) {
-                game.isPlaying = false;
-                liveUsers.updateUserActivity(userId, undefined);
-            }
-        });
     }
 
     has(gameSlug: string) {
@@ -155,6 +131,7 @@ class GameStore {
                     game.installError = (error as Error)?.message;
                 }
             } finally {
+                game.isInstalling = false;
             }
         }
     }
