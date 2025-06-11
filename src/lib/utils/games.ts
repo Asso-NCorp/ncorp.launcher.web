@@ -5,7 +5,6 @@ export function extendGames(games: InstallableGame[]): InstallableGameExtended[]
     return games.map(game => ({
         ...game,
         isSelected: false,
-        isInstalled: false,
         isInstalling: false,
         isLoading: false,
         isUpdating: false,

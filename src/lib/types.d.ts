@@ -13,7 +13,6 @@ export type SideMenuSubItemProps = {
 
 type InstallableGameUI = {
     isSelected: boolean;
-    isInstalled: boolean;
     isInstalling: boolean;
     isLoading: boolean;
     isUpdating: boolean;
