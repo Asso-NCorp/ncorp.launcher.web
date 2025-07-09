@@ -26,7 +26,7 @@
     </div>
     <div class="flex min-h-8 flex-col justify-center text-start">
         <span class:text-primary={user.role === "admin"} class="text-lg leading-tight">{user.name}</span>
-        {#if user.activity && user.activity.activityType !== "Idle"}
+        {#if user.activity && user.activity.activityType !== "Idle" && user.status !== "Disconnected"}
             <img
                 src={`${GamesStore.getGameScreenshot(user.activity?.gameSlug)}`}
                 alt={user.activity?.gameTitle}
