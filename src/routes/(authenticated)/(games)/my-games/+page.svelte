@@ -47,10 +47,9 @@
             </AlertDialog.Trigger>
             <AlertDialog.Content>
                 <AlertDialog.Header>
-                    <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                    <AlertDialog.Title>Êtes-vous sûr de vouloir supprimer tous les jeux installés ?</AlertDialog.Title>
                     <AlertDialog.Description>
-                        This action cannot be undone. This will permanently delete your account and remove your data
-                        from our servers.
+                        Cette action ne peut pas être annulée. Cela supprimera définitivement les jeux de votre machine.
                     </AlertDialog.Description>
                 </AlertDialog.Header>
                 <AlertDialog.Footer>
