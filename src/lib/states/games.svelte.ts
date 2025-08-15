@@ -1,4 +1,3 @@
-
 import { toast } from "svelte-sonner";
 import { FetchError } from "../shared-models";
 import type { InstallableGameExtended as InstallableGame } from "../types";
@@ -10,17 +9,17 @@ import { extendGames } from "../utils/games";
 
 class GameStore {
     games: InstallableGame[] = $state([]);
-    selected: InstallableGame[] = $derived(this.games.filter(game => game.isSelected));
+    selected: InstallableGame[] = $derived(this.games.filter((game) => game.isSelected));
     isLoading = $state(false);
     private allGames: InstallableGame[] = $state([]);
 
     setGames(games: InstallableGame[]) {
         this.allGames = games;
-        this.games = games
+        this.games = games;
     }
 
     get(gameSlug: string): InstallableGame | undefined {
-        return this.games.find(game => game.folderSlug === gameSlug);
+        return this.games.find((game) => game.folderSlug === gameSlug);
     }
 
     select(game: InstallableGame) {
@@ -40,7 +39,6 @@ class GameStore {
             game.isSelected = !checked;
         }
     }
-
 
     async syncPlayingGames() {
         await getLocalApi().syncPlayingGames();
@@ -72,8 +70,8 @@ class GameStore {
         if (game && game.cover) {
             return `/api/resources/${game.cover}`;
         }
-        return '/img/not_found.webp'; // Default cover image
-    }
+        return "/img/not_found.webp"; // Default cover image
+    };
 
     getGameScreenshot = (gameSlug: string): string => {
         const game = this.get(gameSlug);
@@ -82,8 +80,8 @@ class GameStore {
         if (gameScreenShots.length > 0) {
             return `/api/resources/${gameScreenShots[0]}`;
         }
-        return '/img/not_found.webp'; // Default screenshot image
-    }
+        return "/img/not_found.webp"; // Default screenshot image
+    };
 
     setGamePlayingState(userId: string, gameSlug: string, isPlaying: boolean) {
         const game = this.get(gameSlug);
@@ -99,12 +97,12 @@ class GameStore {
             }
         } else {
             console.error(`Game with folder slug ${gameSlug} not found`);
-            liveUsers.updateUserActivity(userId, 'Joue à un jeu');
+            liveUsers.updateUserActivity(userId, "Joue à un jeu");
         }
     }
 
     resetGamePlayingState(userId: string) {
-        this.games.forEach(game => {
+        this.games.forEach((game) => {
             if (game.isPlaying) {
                 game.isPlaying = false;
                 liveUsers.updateUserActivity(userId, undefined);
@@ -113,28 +111,27 @@ class GameStore {
     }
 
     has(gameSlug: string) {
-        return this.games.some(game => game.folderSlug === gameSlug);
+        return this.games.some((game) => game.folderSlug === gameSlug);
     }
 
     resetSelected() {
-        this.games.forEach(game => game.isSelected = false);
+        this.games.forEach((game) => (game.isSelected = false));
     }
 
     clearSearch = () => {
-        global.gamesSearchQuery = '';
+        global.gamesSearchQuery = "";
         this.search();
-    }
+    };
 
     search = () => {
         const searchQuery = global.gamesSearchQuery.toLowerCase();
-        if (!searchQuery || searchQuery === '') {
+        if (!searchQuery || searchQuery === "") {
             this.games = this.allGames;
             return;
         }
 
-        this.games = this.allGames.filter(game => game.title!.toLowerCase().includes(searchQuery));
-    }
-
+        this.games = this.allGames.filter((game) => game.title!.toLowerCase().includes(searchQuery));
+    };
 
     installGame = async (game: InstallableGame) => {
         if (!game.isInstalled) {
@@ -157,7 +154,7 @@ class GameStore {
             } finally {
             }
         }
-    }
+    };
 
     cancelGameInstallation = async (game: InstallableGame) => {
         try {
@@ -176,7 +173,7 @@ class GameStore {
                 class: "bg-red-500",
             });
         }
-    }
+    };
 
     installGames = async (games: InstallableGame[]) => {
         if (games.length === 0) {
@@ -202,7 +199,8 @@ class GameStore {
                 }
             }
 
-            if (successCount > 0) toast.success(`L'installation de ${successCount} jeu(x) a été ajoutée à la file d'attente`);
+            if (successCount > 0)
+                toast.success(`L'installation de ${successCount} jeu(x) a été ajoutée à la file d'attente`);
             else toast.error("Aucun jeu n'a pu être installé");
         } finally {
             this.isLoading = false;
@@ -231,7 +229,7 @@ class GameStore {
                 game.isLoading = false;
             }
         }
-    }
+    };
 
     uninstallGames = async (games: InstallableGame[]) => {
         if (games.length === 0) {
@@ -269,8 +267,6 @@ class GameStore {
         }
     };
 
-
-
     getAvailableGames = async () => {
         if (this.isLoading) {
             console.warn("Games are already loading");
@@ -285,9 +281,11 @@ class GameStore {
 
         try {
             // Get games from the server
-            games = extendGames(await serverApi.getAvailableGames({
-                sort: global.gamesSortOrder,
-            }));
+            games = extendGames(
+                await serverApi.getAvailableGames({
+                    sort: global.gamesSortOrder,
+                }),
+            );
         } catch (error) {
             console.error(error);
             toast.error("Impossible de récupérer les jeux disponibles. Veuillez vérifier la connexion au serveur");
@@ -346,8 +344,6 @@ class GameStore {
         return true;
     };
 
-
-
     async deleteGame(gameSlug: string) {
         try {
             const deleted = await getServerApi().deleteGame({ slug: gameSlug });
@@ -355,7 +351,7 @@ class GameStore {
                 toast.error("Erreur lors de la suppression du jeu");
                 return;
             }
-            this.games = this.games.filter(game => game.folderSlug !== gameSlug);
+            this.games = this.games.filter((game) => game.folderSlug !== gameSlug);
             toast.success("Jeu supprimé avec succès");
         } catch (error) {
             toast.error("Erreur lors de la suppression du jeu");
@@ -363,16 +359,26 @@ class GameStore {
         }
     }
 
-
     resetGamesPlayingStates = () => {
-        this.games.forEach(game => {
+        this.games.forEach((game) => {
             if (game.isPlaying) {
                 game.isPlaying = false;
             }
         });
-    }
+    };
 
-
+    uninstallAllInstalledGames = () => {
+        try {
+            this.games.forEach((game) => {
+                if (game.isInstalled) {
+                    this.uninstallGame(game);
+                }
+            });
+        } catch (error) {
+            console.error("Erreur lors de la désinstallation de tous les jeux installés", error);
+            toast.error("Erreur lors de la désinstallation de tous les jeux installés");
+        }
+    };
 }
 
 export const GamesStore = new GameStore();

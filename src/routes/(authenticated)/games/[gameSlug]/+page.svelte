@@ -19,7 +19,7 @@
     let { data }: { data: PageData } = $props();
     const game = data.game;
 
-    let reactiveGame = $derived(GamesStore.get(game?.folderSlug) || game);
+    let reactiveGame = $derived(GamesStore.get(game.folderSlug!) || game);
 
     if (game?.screenshots) {
         var randomScreenshot = getRandomScreenshot(game);

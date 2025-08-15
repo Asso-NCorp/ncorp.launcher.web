@@ -201,7 +201,9 @@
     {#if game.isInstalling && !showDetails}
         <div
             class="pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-2 bg-black bg-opacity-50">
-            <Loader size={40} class="!text-white" />
+            {#if game.installProgress > 0}
+                <Loader size={40} class="!text-white" />
+            {/if}
             <div class="flex flex-col">
                 <div class="text-center text-white">{$t("install_in_progress")} ({game.installProgress}%)</div>
             </div>
