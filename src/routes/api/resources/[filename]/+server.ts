@@ -5,10 +5,11 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import os from "node:os";
 import sharp from "sharp";
 
 // ---- Tuning Sharp (évite le CPU à 100%)
-sharp.concurrency(Math.max(1, Math.min(2, require("os").cpus().length - 1)));
+sharp.concurrency(Math.max(1, Math.min(2, os.cpus().length - 1)));
 sharp.cache({ files: 256, items: 512, memory: 256 * 1024 * 1024 });
 
 // ---- Dossiers
