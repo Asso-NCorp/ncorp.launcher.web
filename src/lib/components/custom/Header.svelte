@@ -11,11 +11,9 @@
     let {
         children,
         class: klazz,
-        loading = false,
     }: {
         children?: Snippet;
         class?: string;
-        loading?: boolean;
     } = $props();
 </script>
 
@@ -62,6 +60,3 @@
             class={cn("[mask-image:radial-gradient(1200px_circle_at_center,white,transparent)]")} />
     </div>
 </header>
-
-<style>
-</style>

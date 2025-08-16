@@ -2,16 +2,7 @@
     import "$src/app.css";
     import Header from "$src/lib/components/custom/Header.svelte";
     import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
-    import {
-        AlertTriangle,
-        Folder,
-        Gamepad2,
-        MoveRight,
-        ChevronLeft,
-        Menu,
-        Calendar,
-        CircleAlertIcon,
-    } from "@lucide/svelte";
+    import { TriangleAlert, Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar } from "@lucide/svelte";
     import { version } from "$lib/version";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
@@ -50,9 +41,6 @@
     import Separator from "$src/lib/components/ui/separator/separator.svelte";
     import { toast } from "svelte-sonner";
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
-    import * as Alert from "$lib/components/ui/alert/index.js";
-    import typewriter from "$src/lib/actions/typewriter";
-    import Typewriter from "svelte-typewriter";
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
@@ -271,7 +259,7 @@
                 <div
                     transition:fly={{ y: -20, duration: 200 }}
                     class="absolute left-1/2 top-0 z-50 mx-auto flex h-auto w-auto -translate-x-1/2 items-center justify-center gap-2 bg-warning px-2 py-1 text-center text-xl shadow-md drop-shadow-md">
-                    <AlertTriangle />
+                    <TriangleAlert />
                     <span>
                         CONNEXION
                         {#if liveServerConnection.connectionState === "Reconnecting"}

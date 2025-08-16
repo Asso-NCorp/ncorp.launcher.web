@@ -2,7 +2,6 @@
     import type { PageData } from "./$types";
     import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
     import { Avatar, AvatarFallback, AvatarImage } from "$lib/components/ui/avatar";
-    import { Badge } from "$lib/components/ui/badge";
     import { Separator } from "$lib/components/ui/separator";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import { GamesStore } from "$lib/states/games.svelte";

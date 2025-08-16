@@ -1,9 +1,9 @@
 <script lang="ts">
-    import type { UserConnectionStatus } from "$src/lib/shared-models";
     import { cn } from "$src/lib/utils";
+    import type { HubConnectionState } from "@microsoft/signalr";
     import { fly } from "svelte/transition";
 
-    let { status, class: klazz }: { status: UserConnectionStatus | undefined; class?: string } = $props();
+    let { status, class: klazz }: { status: HubConnectionState | undefined; class?: string } = $props();
 </script>
 
 <div
