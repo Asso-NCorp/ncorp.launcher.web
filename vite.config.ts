@@ -14,6 +14,11 @@ export default defineConfig(({ mode }) => {
             __PORT__: JSON.stringify(process.env.VITE_PORT),
             "import.meta.env.VITE_APP_VERSION": JSON.stringify(process.env.npm_package_version),
         },
+        optimizeDeps: { exclude: ["sharp"] },
+        ssr: {
+            // important: laisser sharp résolu à l'exécution
+            external: ["sharp", "@img/sharp-linux-x64", "@img/sharp-wasm32"],
+        },
         server: {
             host: process.env.PUBLIC_SERVER_HOST,
             port: 443,
@@ -23,5 +28,10 @@ export default defineConfig(({ mode }) => {
             },
         },
         plugins: [sveltekit()],
+        build: {
+            commonjsOptions: {
+                ignoreDynamicRequires: true,
+            },
+        },
     };
 });
