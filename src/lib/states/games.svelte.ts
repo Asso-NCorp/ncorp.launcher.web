@@ -19,7 +19,7 @@ class GameStore {
     }
 
     get(gameSlug: string): InstallableGame | undefined {
-        return this.games.find((game) => game.folderSlug === gameSlug);
+        return this.allGames.find((game) => game.folderSlug === gameSlug);
     }
 
     select(game: InstallableGame) {
@@ -120,17 +120,42 @@ class GameStore {
 
     clearSearch = () => {
         global.gamesSearchQuery = "";
-        this.search();
+        // By default, all modes are selected
+        this.search(global.gamesSearchQuery, ["SOLO", "COOP", "MULTI"]);
     };
 
-    search = () => {
-        const searchQuery = global.gamesSearchQuery.toLowerCase();
-        if (!searchQuery || searchQuery === "") {
-            this.games = this.allGames;
+    search = (searchQuery: string = global.gamesSearchQuery, modesSelected: string[] = ["SOLO", "COOP", "MULTI"]) => {
+        const query = searchQuery.toLowerCase();
+
+        // Defensive: ensure modesSelected is always an array
+        if (!Array.isArray(modesSelected)) {
+            modesSelected = [];
+        }
+
+        // If no modes selected, show nothing
+        if (modesSelected.length === 0) {
+            this.games = [];
             return;
         }
 
-        this.games = this.allGames.filter((game) => game.title!.toLowerCase().includes(searchQuery));
+        const allModesChecked = modesSelected.length === 3;
+
+        this.games = this.allGames.filter((game) => {
+            // Title filter
+            const titleMatch = !query || game.title?.toLowerCase().includes(query);
+
+            // Modes filter
+            const gameModes = game.gameModes || [];
+
+            if (allModesChecked) {
+                // If all modes checked, include games with no modes or any modes
+                return titleMatch;
+            } else {
+                // Only include games with at least one selected mode
+                if (!Array.isArray(gameModes) || gameModes.length === 0) return false;
+                return titleMatch && gameModes.some((mode) => modesSelected.includes(mode));
+            }
+        });
     };
 
     installGame = async (game: InstallableGame) => {
@@ -380,5 +405,4 @@ class GameStore {
         }
     };
 }
-
 export const GamesStore = new GameStore();

@@ -66,7 +66,7 @@ export interface InstallableGame {
      * @type {Array<string>}
      * @memberof InstallableGame
      */
-    gameModeTypes?: Array<string> | null;
+    gameModes?: Array<string>;
     /**
      * 
      * @type {string}
@@ -159,7 +159,7 @@ export function InstallableGameFromJSONTyped(json: any, ignoreDiscriminator: boo
         'genres': json['genres'] == null ? undefined : json['genres'],
         'genresStr': json['genresStr'] == null ? undefined : json['genresStr'],
         'platforms': json['platforms'] == null ? undefined : json['platforms'],
-        'gameModeTypes': json['gameModeTypes'] == null ? undefined : json['gameModeTypes'],
+        'gameModes': json['gameModes'] == null ? undefined : json['gameModes'],
         'editorName': json['editorName'] == null ? undefined : json['editorName'],
         'mainProcessName': json['mainProcessName'] == null ? undefined : json['mainProcessName'],
         'cover': json['cover'] == null ? undefined : json['cover'],
@@ -191,7 +191,7 @@ export function InstallableGameToJSONTyped(value?: Omit<InstallableGame, 'genres
         'version': value['version'],
         'genres': value['genres'],
         'platforms': value['platforms'],
-        'gameModeTypes': value['gameModeTypes'],
+        'gameModes': value['gameModes'],
         'editorName': value['editorName'],
         'mainProcessName': value['mainProcessName'],
         'cover': value['cover'],

@@ -126,6 +126,7 @@
 
     beforeNavigate(() => {
         loading = true;
+        global.gamesSearchQuery = "";
     });
 
     let heartbeatInterval: ReturnType<typeof setInterval> | undefined;

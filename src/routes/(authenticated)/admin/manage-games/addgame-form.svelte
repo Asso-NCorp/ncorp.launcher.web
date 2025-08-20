@@ -21,6 +21,7 @@
     import GamesList from "./games-list.svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
+    import GameModesSelection from "$src/lib/components/game/GameModesSelection.svelte";
 
     const folders = page.data["folders"] as string[];
     let { data }: { data: { form: SuperValidated<Infer<AddGameFormSchema>> } } = $props();
@@ -166,7 +167,14 @@
         $formData.sizeGb = game.sizeGb || 1;
         $formData.maxPlayers = game.maxPlayers || 1;
         $formData.genres = game.genres || [];
-        $formData.useNotifications = game.useNotifications || false;
+        $formData.useNotifications = game.useNotifications || true;
+        // Normalize and restrict game modes to the allowed literal types
+        {
+            const allowed = new Set(["SOLO", "COOP", "MULTI"]);
+            $formData.gameModes = (game.gameModes || [])
+                .map((m) => String(m).toUpperCase())
+                .filter((m) => allowed.has(m)) as ("SOLO" | "COOP" | "MULTI")[];
+        }
 
         // Handle cover image
         if (game.cover) {
@@ -299,7 +307,13 @@
         <!-- Genres Selection -->
         <GenresSelection {form} genres={$formData.genres || []} onChange={(genres) => ($formData.genres = genres)} />
 
-        <Form.Button disabled={$submitting}>
+        <!-- Game Modes Selection -->
+        <GameModesSelection
+            {form}
+            gameModes={$formData.gameModes || []}
+            onChange={(gameModes) => ($formData.gameModes = gameModes)} />
+
+        <Form.Button disabled={$submitting || $allErrors.length > 0}>
             {#if $submitting}
                 <Loader size={24} />
             {:else}

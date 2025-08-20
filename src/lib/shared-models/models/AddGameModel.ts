@@ -91,6 +91,12 @@ export interface AddGameModel {
      * @memberof AddGameModel
      */
     useNotifications?: boolean;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof AddGameModel
+     */
+    gameModes?: Array<string>;
 }
 
 /**
@@ -122,6 +128,7 @@ export function AddGameModelFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'isInstalled': json['isInstalled'] == null ? undefined : json['isInstalled'],
         'size': json['size'] == null ? undefined : json['size'],
         'useNotifications': json['useNotifications'] == null ? undefined : json['useNotifications'],
+        'gameModes': json['gameModes'] == null ? undefined : json['gameModes'],
     };
 }
 
@@ -148,6 +155,7 @@ export function AddGameModelToJSONTyped(value?: AddGameModel | null, ignoreDiscr
         'isInstalled': value['isInstalled'],
         'size': value['size'],
         'useNotifications': value['useNotifications'],
+        'gameModes': value['gameModes'],
     };
 }
 

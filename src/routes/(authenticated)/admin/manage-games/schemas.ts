@@ -10,10 +10,12 @@ export const addGameFormSchema = z.object({
     genres: z.array(z.string()),
     cover: z.record(z.string()),
     screenshots: z.record(z.string()),
-    folderSlug: z.string({ required_error: "Veuillez sélectionner un dossier" })
+    folderSlug: z
+        .string({ required_error: "Veuillez sélectionner un dossier" })
         .min(1, "Veuillez sélectionner un dossier"),
     mainProcessName: z.string().optional(),
     useNotifications: z.boolean().default(true),
+    gameModes: z.array(z.string()).min(1, "Veuillez sélectionner au moins un mode de jeu"),
 });
 
 export type AddGameFormSchema = typeof addGameFormSchema;

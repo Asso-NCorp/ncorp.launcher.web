@@ -7,7 +7,7 @@
     import { goto } from "$app/navigation";
     import GameActionButton from "./GameActionButton.svelte";
     import { t } from "$src/lib/translations";
-    import { FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
+    import { FolderOpen, LucideZap, Users, Verified, VerifiedIcon } from "@lucide/svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import type { InstallableGame } from "$src/lib/shared-models";
@@ -187,6 +187,9 @@
                 </div>
                 <div class="text-sm text-gray-500">
                     <span>{$t("genres")}: {game.genresStr}</span>
+                </div>
+                <div class="text-sm text-gray-500">
+                    <span>{$t("game_modes")}: {game.gameModes?.join(", ")}</span>
                 </div>
                 <div class="text-sm text-gray-500">
                     <span>{$t("max_players")}: {game.maxPlayers}</span>

@@ -21,7 +21,7 @@
     }
 </script>
 
-<ScrollArea class="h-full max-h-[calc(100vh-100px)] w-full">
+<ScrollArea class="h-full max-h-[calc(100vh-16rem)] w-full">
     {#if GamesStore.isLoading}
         <Skeleton />
     {:else}

@@ -17,7 +17,7 @@
     };
 </script>
 
-<div class="h-full w-full">
+<div class="w-full overflow-y-auto" style="height: calc(100vh - 16rem);">
     {#if loading}
         <Skeleton />
     {:else}
@@ -28,6 +28,7 @@
                     <Table.Head class="w-10"></Table.Head>
                     <Table.Head>Utilisateur</Table.Head>
                     <Table.Head class="text-right">Rôle</Table.Head>
+                    <Table.Head class="text-center">Date d'inscription</Table.Head>
                     <Table.Head class="text-right"></Table.Head>
                 </Table.Row>
             </Table.Header>
@@ -42,6 +43,7 @@
                         </Table.Cell>
                         <Table.Cell class="font-medium">{user.name}</Table.Cell>
                         <Table.Cell class="text-right">{user.role}</Table.Cell>
+                        <Table.Cell class="text-center">{new Date(user.createdAt).toLocaleDateString()}</Table.Cell>
                         <Table.Cell class="text-right">
                             <Popover.Root>
                                 <Popover.Trigger class="text-destructive-foreground">

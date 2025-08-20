@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { RefreshCw, Search, X, Clock } from "@lucide/svelte";
+    import { RefreshCw, Search, X, Clock, ChevronDown } from "@lucide/svelte";
     import Input from "../ui/input/input.svelte";
     import { t } from "$src/lib/translations";
     import { GamesStore } from "$src/lib/states/games.svelte";
@@ -7,6 +7,7 @@
     import Button from "../ui/button/button.svelte";
     import GamesTitleSortButton from "./buttons/GamesTitleSortButton.svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
+    import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
     import { toast } from "svelte-sonner";
     import { goto } from "$app/navigation";
     import Card from "../ui/card/card.svelte";
@@ -17,9 +18,32 @@
 
     // Store pour le terme de recherche
 
+    // Make selectedModes reactive
+    let selectedModes = $state({
+        solo: true,
+        coop: true,
+        multi: true,
+    });
+
+    function getSelectedModesArray() {
+        const arr = [];
+        if (selectedModes.solo) arr.push("SOLO");
+        if (selectedModes.coop) arr.push("COOP");
+        if (selectedModes.multi) arr.push("MULTI");
+        return arr;
+    }
+
+    function getSelectedModesCount() {
+        return Object.values(selectedModes).filter(Boolean).length;
+    }
+
     const handleSearch = () => {
-        GamesStore.search();
+        GamesStore.search(global.gamesSearchQuery, getSelectedModesArray());
     };
+
+    $effect(() => {
+        handleSearch();
+    });
 
     const handleRefreshGamesClick = async () => {
         const refreshed = await GamesStore.getAvailableGames();
@@ -55,6 +79,27 @@
             <X />
         </Button>
         <GamesTitleSortButton />
+
+        <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+                <Button variant="outline" class="ml-2">
+                    Modes de jeu
+                    {#if getSelectedModesCount() > 0}
+                        <div class="ml-2 rounded-sm bg-muted px-1.5 font-mono text-xs">
+                            {getSelectedModesCount()}
+                        </div>
+                    {/if}
+                    <ChevronDown class="ml-auto h-4 w-4 pl-2" />
+                </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+                <DropdownMenu.Label>Filtrer par mode</DropdownMenu.Label>
+                <DropdownMenu.Separator />
+                <DropdownMenu.CheckboxItem bind:checked={selectedModes.solo}>SOLO</DropdownMenu.CheckboxItem>
+                <DropdownMenu.CheckboxItem bind:checked={selectedModes.coop}>COOP</DropdownMenu.CheckboxItem>
+                <DropdownMenu.CheckboxItem bind:checked={selectedModes.multi}>MULTI</DropdownMenu.CheckboxItem>
+            </DropdownMenu.Content>
+        </DropdownMenu.Root>
 
         <Tooltip.Root>
             <Tooltip.Trigger>
