@@ -38,31 +38,6 @@
             </Button>
         </div>
     {/if}
-    {#if GamesStore.games.some((g) => g.isInstalled)}
-        <AlertDialog.Root>
-            <AlertDialog.Trigger>
-                <Button variant="outline" class="border-danger/50">
-                    <Trash class="text-danger/50" /> Supprimer tous les jeux installés
-                </Button>
-            </AlertDialog.Trigger>
-            <AlertDialog.Content>
-                <AlertDialog.Header>
-                    <AlertDialog.Title>Êtes-vous sûr de vouloir supprimer tous les jeux installés ?</AlertDialog.Title>
-                    <AlertDialog.Description>
-                        Cette action ne peut pas être annulée. Cela supprimera définitivement les jeux de votre machine.
-                    </AlertDialog.Description>
-                </AlertDialog.Header>
-                <AlertDialog.Footer>
-                    <AlertDialog.Cancel>Annuler</AlertDialog.Cancel>
-                    <AlertDialog.Action
-                        class="border-primary bg-background text-danger"
-                        onclick={() => GamesStore.uninstallAllInstalledGames()}>
-                        Tout supprimer
-                    </AlertDialog.Action>
-                </AlertDialog.Footer>
-            </AlertDialog.Content>
-        </AlertDialog.Root>
-    {/if}
 {/snippet}
 
 {#if global.gamesDisplayMode === "grid"}

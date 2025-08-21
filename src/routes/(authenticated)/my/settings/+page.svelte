@@ -4,6 +4,8 @@
     import { Switch } from "$lib/components/ui/switch/index.js";
     import * as Dialog from "$lib/components/ui/dialog/index.js";
     import * as Settings from "$src/lib/components/ui/settings";
+    import * as Card from "$src/lib/components/ui/card/index.js";
+    import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
     import { t } from "$src/lib/translations";
     import Separator from "$src/lib/components/ui/separator/separator.svelte";
     import DirectoryChooser from "$src/lib/components/custom/dialog/directorychooser/DirectoryChooser.svelte";
@@ -13,13 +15,12 @@
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { onMount } from "svelte";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
+    import { Trash } from "@lucide/svelte";
 
     const localApi = getLocalApi();
-    let notifications = $state(true);
-    let darkMode = $state(true);
-    let autoUpdate = $state(true);
-    let soundEnabled = $state(true);
     let showDirectoryChoosed = $state(false);
+    let installedGamesCount = $derived(GamesStore.games.filter((g) => g.isInstalled).length);
+    let showUninstallDialog = $state(false);
 
     const getLocalGamesDir = async () => {
         try {
@@ -33,10 +34,6 @@
             console.error(error);
         }
     };
-
-    function toggleSoundEnabled() {
-        soundEnabled = !soundEnabled;
-    }
 
     const handleSaveGamesDirectory = async () => {
         // Save the games directory
@@ -60,6 +57,12 @@
                 class: "bg-red-500",
             });
         }
+    };
+
+    const handleUninstallAllGames = async () => {
+        GamesStore.isLoading = true;
+        await GamesStore.uninstallAllInstalledGames();
+        GamesStore.isLoading = false;
     };
 
     onMount(() => {
@@ -101,12 +104,37 @@
             </Settings.Item>
         </Settings.Section>
 
-        <!-- <Separator></Separator>
+        <Separator></Separator>
 
-        <Settings.Section title="Notifications">
-            <Settings.Item title="Sons de notification">
-                <Switch checked={soundEnabled} onclick={toggleSoundEnabled} />
+        <Settings.Section title="Jeux" class="mt-10">
+            <Settings.Item title="Supprimer tous les jeux installés">
+                <AlertDialog.Root bind:open={showUninstallDialog}>
+                    <AlertDialog.Trigger disabled={installedGamesCount === 0}>
+                        <Button variant="outline" class="border-danger/50" disabled={installedGamesCount === 0}>
+                            <Trash class="text-danger/50" /> Supprimer tous les jeux installés ({installedGamesCount})
+                        </Button>
+                    </AlertDialog.Trigger>
+                    <AlertDialog.Content>
+                        <AlertDialog.Header>
+                            <AlertDialog.Title>
+                                Êtes-vous sûr de vouloir supprimer tous les jeux installés ?
+                            </AlertDialog.Title>
+                            <AlertDialog.Description>
+                                Cette action ne peut pas être annulée. Cela supprimera définitivement les jeux de votre
+                                machine.
+                            </AlertDialog.Description>
+                        </AlertDialog.Header>
+                        <AlertDialog.Footer>
+                            <AlertDialog.Cancel>Annuler</AlertDialog.Cancel>
+                            <AlertDialog.Action
+                                class="border-primary bg-background text-danger"
+                                onclick={handleUninstallAllGames}>
+                                Tout supprimer
+                            </AlertDialog.Action>
+                        </AlertDialog.Footer>
+                    </AlertDialog.Content>
+                </AlertDialog.Root>
             </Settings.Item>
-        </Settings.Section> -->
+        </Settings.Section>
     </div>
 </div>

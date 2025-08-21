@@ -392,16 +392,17 @@ class GameStore {
         });
     };
 
-    uninstallAllInstalledGames = () => {
+    uninstallAllInstalledGames = async () => {
         try {
-            this.games.forEach((game) => {
+            for (const game of this.games) {
                 if (game.isInstalled) {
-                    this.uninstallGame(game);
+                    await this.uninstallGame(game);
                 }
-            });
+            }
+            toast.success("Tous les jeux installés ont été désinstallés");
         } catch (error) {
-            console.error("Erreur lors de la désinstallation de tous les jeux installés", error);
-            toast.error("Erreur lors de la désinstallation de tous les jeux installés");
+            console.error("Erreur lors de la désinstallation", error);
+            toast.error("Erreur lors de la désinstallation");
         }
     };
 }
