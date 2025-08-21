@@ -11,8 +11,18 @@
     export let onChange: (gameModes: string[]) => void;
     export let form: any;
 
-    // Allowed game modes
-    const allowedGameModes = ["SOLO", "COOP", "MULTI"];
+    // Allowed game modes with value/label
+    type GameModeOption = { value: string; label: string };
+
+    const allowedGameModes: GameModeOption[] = [
+        { value: "SOLO", label: "SOLO (1👤)" },
+        { value: "COOP", label: "COOP (2-6👥)" },
+        { value: "MULTI", label: "MULTI (6+👥👥)" },
+    ];
+
+    function getGameModeLabel(value: string): string {
+        return allowedGameModes.find((m) => m.value === value)?.label ?? value;
+    }
 
     // Add a game mode
     function addGameMode(mode: string) {
@@ -45,7 +55,7 @@
                     {#if gameModes && gameModes.length > 0}
                         {#each gameModes as mode}
                             <div class="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-sm">
-                                <span>{mode}</span>
+                                <span>{getGameModeLabel(mode)}</span>
                                 <button
                                     type="button"
                                     class="text-muted-foreground hover:text-foreground"
@@ -70,11 +80,11 @@
                         <DropdownMenu.Label>{$t("select_game_modes")}</DropdownMenu.Label>
                         <DropdownMenu.Separator />
                         <div class="max-h-[300px] overflow-y-auto">
-                            {#each allowedGameModes as mode}
+                            {#each allowedGameModes as opt}
                                 <DropdownMenu.CheckboxItem
-                                    checked={gameModes ? gameModes.includes(mode) : false}
-                                    onCheckedChange={(checked) => toggleGameMode(mode, checked)}>
-                                    {mode}
+                                    checked={gameModes ? gameModes.includes(opt.value) : false}
+                                    onCheckedChange={(checked) => toggleGameMode(opt.value, checked)}>
+                                    {opt.label}
                                 </DropdownMenu.CheckboxItem>
                             {/each}
                         </div>

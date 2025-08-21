@@ -18,19 +18,25 @@
 
     // Store pour le terme de recherche
 
+    // Define typed selected modes and value/label options
+    type SelectedModes = { solo: boolean; coop: boolean; multi: boolean };
+    type GameModeOption = { key: keyof SelectedModes; value: string; label: string };
+
+    const gameModeOptions: GameModeOption[] = [
+        { key: "solo", value: "SOLO", label: "SOLO (1👤)" },
+        { key: "coop", value: "COOP", label: "COOP (2-6👥)" },
+        { key: "multi", value: "MULTI", label: "MULTI (6+👥👥)" },
+    ];
+
     // Make selectedModes reactive
-    let selectedModes = $state({
+    let selectedModes: SelectedModes = $state({
         solo: true,
         coop: true,
         multi: true,
     });
 
     function getSelectedModesArray() {
-        const arr = [];
-        if (selectedModes.solo) arr.push("SOLO");
-        if (selectedModes.coop) arr.push("COOP");
-        if (selectedModes.multi) arr.push("MULTI");
-        return arr;
+        return gameModeOptions.filter((opt) => selectedModes[opt.key]).map((opt) => opt.value);
     }
 
     function getSelectedModesCount() {
@@ -95,9 +101,13 @@
             <DropdownMenu.Content>
                 <DropdownMenu.Label>Filtrer par mode</DropdownMenu.Label>
                 <DropdownMenu.Separator />
-                <DropdownMenu.CheckboxItem bind:checked={selectedModes.solo}>SOLO</DropdownMenu.CheckboxItem>
-                <DropdownMenu.CheckboxItem bind:checked={selectedModes.coop}>COOP</DropdownMenu.CheckboxItem>
-                <DropdownMenu.CheckboxItem bind:checked={selectedModes.multi}>MULTI</DropdownMenu.CheckboxItem>
+                {#each gameModeOptions as opt}
+                    <DropdownMenu.CheckboxItem
+                        checked={selectedModes[opt.key]}
+                        onCheckedChange={(checked) => (selectedModes[opt.key] = checked)}>
+                        {opt.label}
+                    </DropdownMenu.CheckboxItem>
+                {/each}
             </DropdownMenu.Content>
         </DropdownMenu.Root>
 

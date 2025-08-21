@@ -166,7 +166,7 @@
     });
 </script>
 
-<Card.Root class="w-full sticky top-4">
+<Card.Root class="sticky top-4 w-full">
     <Card.Header>
         <Card.Title>
             <BlurFade delay={0.3} class="text-2xl font-bold">Ajouter un utilisateur</BlurFade>
