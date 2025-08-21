@@ -16,6 +16,7 @@
     import { page } from "$app/state";
     import { global } from "$src/lib/states/global.svelte";
     import type { User } from "$src/lib/auth/client";
+    import { GamesStore } from "$src/lib/states/games.svelte";
     let { children, class: klazz }: { children?: Snippet; class?: string } = $props();
 
     const user = page.data["user"] as User;
@@ -57,7 +58,7 @@
                         icon={FolderOpen}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/my-games"
-                        label={$t("my_games")}
+                        label={$t("my_games") + ` (${GamesStore.installedGames.length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={CloudLightning}

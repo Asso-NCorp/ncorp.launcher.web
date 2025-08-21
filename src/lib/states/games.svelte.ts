@@ -11,6 +11,7 @@ class GameStore {
     games: InstallableGame[] = $state([]);
     selected: InstallableGame[] = $derived(this.games.filter((game) => game.isSelected));
     isLoading = $state(false);
+    installedGames: InstallableGame[] = $derived(this.games.filter((game) => game.isInstalled));
     private allGames: InstallableGame[] = $state([]);
 
     setGames(games: InstallableGame[]) {

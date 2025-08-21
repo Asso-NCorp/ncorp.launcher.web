@@ -9,7 +9,7 @@ export default {
         loading_games: "Chargement des jeux",
         admin_menu: "Menu admin",
         available_games: "Jeux disponibles",
-        my_games: "Mes jeux",
+        my_games: "Jeux installés",
         install_selection: "Installer la sélection",
         uninstall_selection: "Désinstaller la sélection",
         search_game: "Rechercher un jeu",
