@@ -1,0 +1,182 @@
+/* datatables.theme.css */
+/* Uses your theme HSL vars: hsl(var(--...)) so it follows .theme-xxxx automatically */
+
+/* Wrapper */
+.dataTables_wrapper {
+    color: hsl(var(--foreground));
+}
+
+/* Length + Search controls */
+.dataTables_length,
+.dataTables_filter,
+.dataTables_info {
+    color: hsl(var(--muted-foreground));
+}
+
+.dataTables_length select,
+.dataTables_filter input {
+    background-color: hsl(var(--input));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 0.5rem 0.75rem;
+    outline: none;
+    transition: box-shadow .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+.dataTables_length select:focus,
+.dataTables_filter input:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 .25rem hsl(var(--ring) / 0.35);
+}
+
+/* Table */
+table.dataTable {
+    width: 100% !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    overflow: hidden;
+    /* keep rounded corners */
+}
+
+/* Header */
+table.dataTable thead th,
+table.dataTable thead td {
+    background-color: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+}
+
+/* Body cells */
+table.dataTable tbody th,
+table.dataTable tbody td {
+    color: hsl(var(--foreground));
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0.65rem 1rem;
+}
+
+/* Row states */
+table.dataTable tbody tr:hover {
+    background-color: hsl(var(--muted) / 0.75);
+}
+
+table.dataTable.stripe tbody tr:nth-child(odd),
+table.dataTable.display tbody tr.odd {
+    background-color: hsl(var(--background-subtle));
+}
+
+table.dataTable.display tbody tr.even {
+    background-color: hsl(var(--card));
+}
+
+table.dataTable tbody tr.selected>* {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+}
+
+/* Pagination */
+.dataTables_paginate {
+    margin-top: 0.5rem;
+}
+
+.dataTables_paginate .paginate_button {
+    background: transparent;
+    color: hsl(var(--foreground)) !important;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 0.35rem 0.65rem;
+    margin: 0 0.125rem;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+.dataTables_paginate .paginate_button:hover {
+    background-color: hsl(var(--muted) / 0.2);
+    border-color: hsl(var(--border));
+}
+
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    border-color: hsl(var(--primary));
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    opacity: .5;
+    cursor: not-allowed !important;
+}
+
+/* Processing overlay */
+.dataTables_processing {
+    color: hsl(var(--foreground));
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 20px hsl(var(--background) / 0.35);
+}
+
+/* Ordering indicators (optional minimal reset) */
+table.dataTable thead .sorting,
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc {
+    background-image: none;
+    /* remove default icons if you style your own */
+}
+
+/* Compact mode support */
+table.dataTable.compact thead th,
+table.dataTable.compact thead td,
+table.dataTable.compact tbody th,
+table.dataTable.compact tbody td {
+    padding: 0.45rem 0.65rem;
+}
+
+/* Toolbar top (v2) */
+.dt-layout-row {
+    color: hsl(var(--muted-foreground));
+}
+
+/* Label couleurs */
+.dt-length label,
+.dt-search label {
+    color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Select "entries per page" */
+.dt-length select.dt-input {
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: var(--radius) !important;
+    padding: 0.45rem 0.6rem !important;
+    outline: none !important;
+    transition: box-shadow .15s, border-color .15s, background-color .15s !important;
+}
+
+.dt-length select.dt-input:focus {
+    border-color: hsl(var(--ring)) !important;
+    box-shadow: 0 0 0 .25rem hsl(var(--ring) / 0.35) !important;
+}
+
+/* Input "Search" */
+.dt-search input.dt-input[type="search"] {
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: var(--radius) !important;
+    padding: 0.45rem 0.6rem !important;
+    outline: none !important;
+    transition: box-shadow .15s, border-color .15s, background-color .15s !important;
+}
+
+.dt-search input.dt-input[type="search"]:focus {
+    border-color: hsl(var(--ring)) !important;
+    box-shadow: 0 0 0 .25rem hsl(var(--ring) / 0.35) !important;
+}

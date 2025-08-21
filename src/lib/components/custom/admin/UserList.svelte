@@ -1,71 +1,123 @@
 <script lang="ts">
     import { Skeleton } from "$lib/components/ui/skeleton";
-    import * as Table from "$lib/components/ui/table/index.js";
-    import * as Avatar from "$lib/components/ui/avatar/index.js";
     import { authClient, type User } from "$src/lib/auth/client";
-    import Button from "../../ui/button/button.svelte";
-    import * as Popover from "$lib/components/ui/popover/index.js";
     import { liveUsers } from "$src/lib/states/live-users.svelte";
-    let { loading, users, onSelect }: { loading: boolean; users: User[]; onSelect: (user: User) => void } = $props();
+    import DataTable, { type Api } from "datatables.net-dt";
+    import { onMount, onDestroy } from "svelte";
+
+    let {
+        loading,
+        users = $bindable(),
+        onSelect,
+    }: { loading: boolean; users: User[]; onSelect: (user: User) => void } = $props();
+
+    let table: HTMLTableElement | null = null;
+    let tableApi: Api<any> | null = null;
 
     const handleDelete = async (user: User) => {
         await authClient.admin.removeUser({
             userId: user.id,
         });
 
-        await liveUsers.refreshLiveUsers();
+        window.location.reload();
     };
+
+    onMount(() => {
+        if (!table) return;
+        tableApi = new DataTable(table, {
+            data: users,
+            searching: true,
+            paging: false,
+            info: true,
+            responsive: true,
+            pageLength: 15,
+            lengthMenu: [10, 15, 25, 50],
+            order: [[3, "desc"]],
+            columns: [
+                {
+                    title: "",
+                    data: null,
+                    orderable: false,
+                    className: "w-10",
+                    render: (data, type, row: User) => {
+                        if (type === "display") {
+                            const alt = row.name ?? "";
+                            return `<img src="/api/avatars/${row.id}" alt="${alt}" class="h-8 w-8 rounded-full ring-2 ring-primary object-cover" />`;
+                        }
+                        return row.id;
+                    },
+                },
+                { title: "Utilisateur", data: "name", className: "font-medium" },
+                { title: "Rôle", data: "role", className: "text-right" },
+                {
+                    title: "Date d'inscription",
+                    data: "createdAt",
+                    className: "text-center w-10",
+                    render: (data, type) => (type === "display" ? new Date(data).toLocaleDateString() : data),
+                },
+                { title: "", data: null, orderable: false, defaultContent: "" },
+            ],
+            createdRow: (row, data: User) => {
+                // row click selects the user
+                row.addEventListener("click", () => onSelect(data));
+
+                // actions cell (last)
+                const td = row.cells[4];
+                const btn = document.createElement("button");
+                btn.textContent = "Supprimer";
+                btn.className = "px-3 py-1 border text-destructive-foreground hover:bg-destructive/10";
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (confirm("Êtes-vous sûr ? Cette action est irréversible.")) {
+                        handleDelete(data);
+                    }
+                });
+                td.classList.add("text-right");
+                td.appendChild(btn);
+            },
+        });
+    });
+
+    onDestroy(() => {
+        if (tableApi) tableApi.destroy();
+    });
+
+    // Refresh the table when users changes
+    $effect(() => {
+        if (tableApi) {
+            tableApi.clear();
+            tableApi.rows.add(users);
+            tableApi.draw();
+        }
+    });
 </script>
 
-<div class="w-full overflow-y-auto" style="height: calc(100vh - 16rem);">
-    {#if loading}
-        <Skeleton />
-    {:else}
-        <span>Sélectionnez un utilisateur</span>
-        <Table.Root>
-            <Table.Header>
-                <Table.Row>
-                    <Table.Head class="w-10"></Table.Head>
-                    <Table.Head>Utilisateur</Table.Head>
-                    <Table.Head class="text-right">Rôle</Table.Head>
-                    <Table.Head class="text-center">Date d'inscription</Table.Head>
-                    <Table.Head class="text-right"></Table.Head>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>
-                {#each users as user (user)}
-                    <Table.Row class="cursor-pointer" onclick={() => onSelect(user)}>
-                        <Table.Cell>
-                            <Avatar.Root class="size-8 ring-primary">
-                                <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} />
-                                <Avatar.Fallback>{user.name?.charAt(0)}{user.name?.charAt(1)}</Avatar.Fallback>
-                            </Avatar.Root>
-                        </Table.Cell>
-                        <Table.Cell class="font-medium">{user.name}</Table.Cell>
-                        <Table.Cell class="text-right">{user.role}</Table.Cell>
-                        <Table.Cell class="text-center">{new Date(user.createdAt).toLocaleDateString()}</Table.Cell>
-                        <Table.Cell class="text-right">
-                            <Popover.Root>
-                                <Popover.Trigger class="text-destructive-foreground">
-                                    <Button variant="outline">Supprimer</Button>
-                                </Popover.Trigger>
-                                <Popover.Content>
-                                    <div class="flex flex-col gap-2">
-                                        <span>Êtes-vous sûr ?</span>
-                                        <span>Cette action est irréversible.</span>
-                                        <div class="flex gap-2">
-                                            <Button variant="outline">Annuler</Button>
-                                            <Button variant="destructive" onclick={() => handleDelete(user)}>
-                                                Supprimer
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </Popover.Content>
-                            </Popover.Root>
-                        </Table.Cell>
-                    </Table.Row>
-                {/each}
-            </Table.Body>
-        </Table.Root>
-    {/if}
-</div>
+<svelte:head>
+    <link rel="stylesheet" href="/css/datatables.min.css" />
+    <link rel="stylesheet" href="/css/datatables.theme.css" />
+</svelte:head>
+
+{#if loading}
+    <Skeleton />
+{:else}
+    <span>Sélectionnez un utilisateur</span>
+    <table class="min-w-full divide-y divide-border" bind:this={table}>
+        <thead class="bg-card">
+            <tr>
+                <th class="w-10"></th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Utilisateur</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rôle</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date d'inscription</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-border bg-popover"></tbody>
+    </table>
+{/if}
+
+<style>
+    table tbody th,
+    table tbody td {
+        padding: 8px 10px;
+    }
+</style>

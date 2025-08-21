@@ -33,11 +33,11 @@
 <main class="flex h-full flex-col space-y-4">
     <BlurFade delay={0.3} class="text-3xl font-bold">{$t("users_management")}</BlurFade>
     <div class="grid grid-cols-3 gap-8">
-        <div class="col-span-1">
-            <UserList {users} loading={false} onSelect={(user) => (selectedUser = user)} />
+        <div class="col-span-2">
+            <UserList bind:users loading={false} onSelect={(user) => (selectedUser = user)} />
         </div>
 
-        <div class="col-span-2">
+        <div class="col-span-1">
             {#if selectedUser}
                 <EditUserForm data={{ editForm: data.editForm }} user={selectedUser} />
             {:else}

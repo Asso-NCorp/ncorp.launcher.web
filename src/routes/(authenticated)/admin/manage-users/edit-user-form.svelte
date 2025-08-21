@@ -82,13 +82,13 @@
     });
 </script>
 
-<Card.Root class="w-full">
+<Card.Root class="w-full sticky top-4">
     <Card.Header>
         <Card.Title>
             <BlurFade delay={0.3} class="text-2xl font-bold">Modifier un utilisateur</BlurFade>
         </Card.Title>
     </Card.Header>
-    <Card.Content>
+    <Card.Content class="max-h-[calc(100vh-12rem)] overflow-y-auto">
         <form method="POST" action="?/update" class="flex flex-col gap-4" use:enhance>
             {#if $allErrors.length > 0}
                 <Alert.Root variant="destructive">
