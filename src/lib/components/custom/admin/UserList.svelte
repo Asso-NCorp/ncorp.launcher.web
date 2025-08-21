@@ -38,11 +38,11 @@
                     title: "",
                     data: null,
                     orderable: false,
-                    className: "w-10",
+                    className: "w-14",
                     render: (data, type, row: User) => {
                         if (type === "display") {
                             const alt = row.name ?? "";
-                            return `<img src="/api/avatars/${row.id}" alt="${alt}" class="h-8 w-8 rounded-full ring-2 ring-primary object-cover" />`;
+                            return `<img src="/api/avatars/${row.id}" alt="${alt}" class="size-8 rounded-full ring-2 ring-primary object-cover" />`;
                         }
                         return row.id;
                     },
