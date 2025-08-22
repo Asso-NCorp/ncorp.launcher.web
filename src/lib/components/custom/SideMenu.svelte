@@ -52,7 +52,7 @@
                         icon={Gamepad2}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/all-games"
-                        label={$t("available_games")}
+                        label={$t("available_games") + ` (${GamesStore.allGames.length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={FolderOpen}

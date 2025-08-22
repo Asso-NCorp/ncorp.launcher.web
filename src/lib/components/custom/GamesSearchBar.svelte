@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { RefreshCw, Search, X, Clock, ChevronDown } from "@lucide/svelte";
+    import { RefreshCw, Search, X, Clock, ChevronDown, User, Users, UsersRound } from "@lucide/svelte";
     import Input from "../ui/input/input.svelte";
     import { t } from "$src/lib/translations";
     import { GamesStore } from "$src/lib/states/games.svelte";
@@ -20,23 +20,25 @@
 
     // Define typed selected modes and value/label options
     type SelectedModes = { solo: boolean; coop: boolean; multi: boolean };
-    type GameModeOption = { key: keyof SelectedModes; value: string; label: string };
+    type IconComponent = typeof User;
+    type GameModeOption = { key: keyof SelectedModes; value: string; text: string; icons: IconComponent[] };
 
     const gameModeOptions: GameModeOption[] = [
-        { key: "solo", value: "SOLO", label: "SOLO (1👤)" },
-        { key: "coop", value: "COOP", label: "COOP (2-6👥)" },
-        { key: "multi", value: "MULTI", label: "MULTI (6+👥👥)" },
+        { key: "solo", value: "SOLO", text: "SOLO (1)", icons: [User] },
+        { key: "coop", value: "COOP", text: "COOP (2-6)", icons: [User, Users] },
+        { key: "multi", value: "MULTI", text: "MULTI (6+)", icons: [Users, UsersRound] },
     ];
 
-    // Make selectedModes reactive
+    // Make selectedModes reactive - start with none selected (means ALL)
     let selectedModes: SelectedModes = $state({
-        solo: true,
-        coop: true,
-        multi: true,
+        solo: false,
+        coop: false,
+        multi: false,
     });
 
     function getSelectedModesArray() {
-        return gameModeOptions.filter((opt) => selectedModes[opt.key]).map((opt) => opt.value);
+        const chosen = gameModeOptions.filter((opt) => selectedModes[opt.key]).map((opt) => opt.value);
+        return chosen.length === 0 ? gameModeOptions.map((o) => o.value) : chosen; // empty = all
     }
 
     function getSelectedModesCount() {
@@ -103,9 +105,19 @@
                 <DropdownMenu.Separator />
                 {#each gameModeOptions as opt}
                     <DropdownMenu.CheckboxItem
+                        class="mode-item"
                         checked={selectedModes[opt.key]}
-                        onCheckedChange={(checked) => (selectedModes[opt.key] = checked)}>
-                        {opt.label}
+                        onCheckedChange={(checked) => (selectedModes[opt.key] = !!checked)}>
+                        <span class="flex items-center gap-2">
+                            <span class="flex items-center gap-1">
+                                {opt.text}
+                                <span class="flex items-center gap-0.5">
+                                    {#each opt.icons as I}
+                                        <I class="h-4 w-4 opacity-80" />
+                                    {/each}
+                                </span>
+                            </span>
+                        </span>
                     </DropdownMenu.CheckboxItem>
                 {/each}
             </DropdownMenu.Content>
