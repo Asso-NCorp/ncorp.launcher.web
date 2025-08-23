@@ -71,7 +71,7 @@
     };
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2 px-1">
     <div class="flex">
         <Input
             bind:value={global.gamesSearchQuery}
