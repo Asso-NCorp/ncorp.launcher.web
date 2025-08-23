@@ -10,14 +10,18 @@
     import { cleanHeadMenu, setHeadMenu } from "../layout-slots.svelte";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
 
-    setHeadMenu(head, title);
     const filter1Month = $derived(
         GamesStore.games.filter((game) => {
             const added = game.dateAdded ? new Date(game.dateAdded).getTime() : 0;
             return added > Date.now() - 30 * 24 * 60 * 60 * 1000;
         }),
     );
+
+    // Defer registering snippets until they are defined (prevents intermittent undefined registration)
     $effect(() => {
+        if (typeof head === "function" && typeof title === "function") {
+            setHeadMenu(head, title);
+        }
         return cleanHeadMenu;
     });
 </script>
