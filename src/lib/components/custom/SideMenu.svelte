@@ -2,7 +2,15 @@
     import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
     import type { Snippet } from "svelte";
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
-    import { CloudLightning, DownloadCloud, FolderOpen, Gamepad2, MicVocal } from "@lucide/svelte";
+    import {
+        CloudLightning,
+        DownloadCloud,
+        FolderOpen,
+        Gamepad2,
+        MicVocal,
+        PackageOpen,
+        PackagePlus,
+    } from "@lucide/svelte";
     import SideMenuItem from "./SideMenuItem.svelte";
     import { cn, getLocalApi } from "$src/lib/utils";
     import { t } from "$src/lib/translations";
@@ -55,13 +63,13 @@
                         label={$t("available_games") + ` (${GamesStore.allGames.length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
-                        icon={FolderOpen}
+                        icon={PackageOpen}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/my-games"
                         label={$t("my_games") + ` (${GamesStore.installedGames.length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
-                        icon={CloudLightning}
+                        icon={PackagePlus}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/recently-added-games"
                         label={$t("recently_added_games")}

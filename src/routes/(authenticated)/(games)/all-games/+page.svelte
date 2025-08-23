@@ -16,11 +16,7 @@
     const sortedGames = $derived(
         [...GamesStore.games].sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0)),
     );
-    const filteredGames = $derived(
-        sortedGames
-            .filter((game) => game.isSelected && !game.isInstalled)
-            .sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0)), // enforce desc order explicitly
-    );
+    const filteredGames = $derived(sortedGames.filter((game) => game.isSelected && !game.isInstalled));
     const featuredGames = $derived(
         sortedGames
             .filter((game) => game.isFeatured)

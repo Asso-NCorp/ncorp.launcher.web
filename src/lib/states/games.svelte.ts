@@ -322,7 +322,7 @@ class GameStore {
 
         try {
             // Get installed games locally
-            installedGames = extendGames(await localApi.getInstalledGames());
+            if (global.localGamesFolder) installedGames = extendGames(await localApi.getInstalledGames());
         } catch (error) {
             console.error(error);
             toast.error("Impossible de récupérer les jeux installés. Veuillez vérifier l'agent");
