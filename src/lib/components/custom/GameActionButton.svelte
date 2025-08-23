@@ -7,13 +7,14 @@
     import { type InstallableGame } from "$src/lib/shared-models";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
+    import type { InstallableGameExtended } from "$src/lib/types";
 
     let {
         game: installableGame,
         class: klazz,
         uninstallVariant = "destructive",
     }: {
-        game: InstallableGame;
+        game: InstallableGameExtended;
         class?: string;
         uninstallVariant?:
             | "ghost"

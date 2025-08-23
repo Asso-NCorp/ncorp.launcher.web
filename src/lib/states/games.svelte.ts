@@ -177,6 +177,11 @@ class GameStore {
                     console.error(error);
                     game.installError = (error as Error)?.message;
                 }
+                toast.error("Erreur lors de l'installation", {
+                    class: "bg-red-500",
+                });
+                game.isInstalling = false;
+                game.isInstalled = false;
             } finally {
             }
         }
