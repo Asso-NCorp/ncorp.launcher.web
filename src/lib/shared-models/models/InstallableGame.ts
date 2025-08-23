@@ -102,13 +102,13 @@ export interface InstallableGame {
      * @type {string}
      * @memberof InstallableGame
      */
-    cover?: string;
+    cover?: string | null;
     /**
      * 
      * @type {string}
      * @memberof InstallableGame
      */
-    logo?: string;
+    logo?: string | null;
     /**
      * 
      * @type {Array<string>}
