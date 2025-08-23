@@ -12,8 +12,9 @@
     import { GamesStore } from "$src/lib/states/games.svelte";
     import type { InstallableGame } from "$src/lib/shared-models";
     import Button from "../ui/button/button.svelte";
-    import { getLocalApi } from "$src/lib/utils";
-    let { game }: { game: InstallableGame } = $props();
+    import { getLocalApi, isRecentlyAdded } from "$src/lib/utils";
+    import type { InstallableGameExtended } from "$src/lib/types";
+    let { game }: { game: InstallableGameExtended } = $props();
     let currentScreenshot = $state(game.screenshots ? game.screenshots[0] : "");
     let showDetails = $state(false);
     let canScroll = $state(false);
@@ -129,6 +130,13 @@
         {/if}
 
         <div class="absolute right-2 top-2 z-10 flex items-center">
+            {#if isRecentlyAdded(game) && !game.isPlaying && !showDetails}
+                <Badge
+                    variant="secondary"
+                    class="rounded-[var(--radius)] bg-info text-center text-xs font-bold uppercase text-white">
+                    <div>{$t?.("new") || "NEW"}</div>
+                </Badge>
+            {/if}
             {#if game.isInstalled && !game.isInstalling && !showDetails}
                 <div transition:fly={{ y: -30, duration: 200 }}><InstalledBadge /></div>
             {/if}
