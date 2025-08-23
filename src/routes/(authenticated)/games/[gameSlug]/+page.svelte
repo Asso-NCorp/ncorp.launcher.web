@@ -77,12 +77,21 @@
             {$t("back")}
         </Button>
         <div class="flex items-center justify-between">
-            <h1
-                in:fly|global={{ y: -40, delay: 300, duration: 200 }}
-                out:fly|global={{ y: 40, duration: 10 }}
-                class="font-clash text-3xl font-bold">
-                {game.title}
-            </h1>
+            {#if game.logo}
+                <LazyImage
+                    src={getGameResourceUrl(game, game.logo)}
+                    alt={game.title}
+                    class="h-28 max-h-28 w-auto object-contain"
+                    placeholderWidth="320"
+                    placeholderHeight="80" />
+            {:else}
+                <h1
+                    in:fly|global={{ y: -40, delay: 300, duration: 200 }}
+                    out:fly|global={{ y: 40, duration: 10 }}
+                    class="font-clash text-3xl font-bold">
+                    {game.title}
+                </h1>
+            {/if}
             <div class="flex">
                 <Button
                     variant="secondary"

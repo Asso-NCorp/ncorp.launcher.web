@@ -84,6 +84,10 @@ export interface SearchGameRequest {
     gameSlug?: string;
 }
 
+export interface SearchLogosRequest {
+    gameName?: string;
+}
+
 export interface SetLocalGamesDirRequest {
     path?: string;
 }
@@ -660,6 +664,42 @@ export class ServerApi extends runtime.BaseAPI {
      */
     async searchGame(requestParameters: SearchGameRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Game>> {
         const response = await this.searchGameRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async searchLogosRaw(requestParameters: SearchLogosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['gameName'] != null) {
+            queryParameters['gameName'] = requestParameters['gameName'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Server/SearchLogos`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     */
+    async searchLogos(requestParameters: SearchLogosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
+        const response = await this.searchLogosRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

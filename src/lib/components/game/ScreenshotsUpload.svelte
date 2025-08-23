@@ -1,8 +1,6 @@
 <script lang="ts">
     import { Upload, ImagePlus } from "@lucide/svelte";
     import { t } from "$src/lib/translations";
-    import { TabsContent, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
-    import { Tabs } from "$lib/components/ui/tabs";
     import * as Card from "$lib/components/ui/card";
     import SelectableImage from "$lib/components/custom/SelectableImage.svelte";
 
@@ -20,6 +18,9 @@
 
     // Track the previous screenshots object to detect when it's cleared
     let previousScreenshotsCount = $state(0);
+
+    // Track dragging state
+    let isDragging = $state(false);
 
     // Effect to update allScreenshots when screenshots prop changes
     $effect(() => {
@@ -93,6 +94,38 @@
         const random = Math.floor(Math.random() * 10000);
         return `screenshot_${timestamp}_${random}.${extension}`;
     }
+
+    // Process a single file (used for drag & drop and file input)
+    function processFile(file: File) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            // Get the base64 data from the result
+            const base64Data = event.target?.result as string;
+
+            // Determine file extension from the original file
+            let extension = "jpg";
+            if (file.name && file.name.includes(".")) {
+                extension = file.name.split(".").pop() || "jpg";
+            }
+
+            // Generate a unique filename
+            const fileName = generateFileName(extension);
+
+            // Add to allScreenshots array
+            allScreenshots = [
+                ...allScreenshots,
+                {
+                    key: fileName,
+                    value: base64Data,
+                    selected: true,
+                },
+            ];
+
+            // Update parent component with all screenshots
+            updateSelectedScreenshots();
+        };
+        reader.readAsDataURL(file);
+    }
 </script>
 
 <Card.Root>
@@ -106,85 +139,57 @@
         </Card.Description>
     </Card.Header>
     <Card.Content>
-        <Tabs value="upload" class="w-full">
-            <TabsList class="grid w-full grid-cols-2">
-                <TabsTrigger value="upload">{$t("upload")}</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upload" class="pt-4">
-                <div class="flex flex-col gap-4">
-                    <div
-                        class="flex h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-4 hover:bg-muted/50"
-                        onclick={() => document.getElementById("screenshots-upload")?.click()}>
-                        <Upload class="size-8 text-muted-foreground" />
-                        <p class="text-sm text-muted-foreground">{$t("drag_drop_or_click_multiple")}</p>
-                    </div>
-                    <input
-                        type="file"
-                        id="screenshots-upload"
-                        accept="image/*"
-                        multiple
-                        class="hidden"
-                        onchange={(e) => {
-                            const files = (e.target as HTMLInputElement).files;
-                            if (files && files.length > 0) {
-                                for (let i = 0; i < files.length; i++) {
-                                    const file = files[i];
-                                    const reader = new FileReader();
-                                    reader.onload = (event) => {
-                                        // Get the base64 data from the result
-                                        const base64Data = event.target?.result as string;
+        <!-- Dropzone -->
+        <div
+            class={`flex h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-4 text-center transition-colors hover:bg-muted/50 ${isDragging ? "bg-muted/70" : ""}`}
+            on:click={() => document.getElementById("screenshots-upload")?.click()}
+            on:dragenter|preventDefault={() => (isDragging = true)}
+            on:dragover|preventDefault={() => (isDragging = true)}
+            on:dragleave={() => (isDragging = false)}
+            on:drop|preventDefault={(e) => {
+                isDragging = false;
+                const files = e.dataTransfer?.files;
+                if (files) {
+                    for (let i = 0; i < files.length; i++) processFile(files[i]);
+                }
+            }}>
+            <Upload class="size-8 text-muted-foreground" />
+            <p class="text-sm text-muted-foreground">{$t("drag_drop_or_click_multiple")}</p>
+        </div>
 
-                                        // Determine file extension from the original file
-                                        let extension = "jpg";
-                                        if (file.name && file.name.includes(".")) {
-                                            extension = file.name.split(".").pop() || "jpg";
-                                        }
+        <input
+            type="file"
+            id="screenshots-upload"
+            accept="image/*"
+            multiple
+            class="hidden"
+            on:change={(e) => {
+                const files = (e.target as HTMLInputElement).files;
+                if (files) {
+                    for (let i = 0; i < files.length; i++) processFile(files[i]);
+                }
+            }} />
 
-                                        // Generate a unique filename
-                                        const fileName = generateFileName(extension);
-
-                                        // Add to allScreenshots array
-                                        allScreenshots = [
-                                            ...allScreenshots,
-                                            {
-                                                key: fileName,
-                                                value: base64Data,
-                                                selected: true,
-                                            },
-                                        ];
-
-                                        // Update parent component with all screenshots
-                                        updateSelectedScreenshots();
-                                    };
-                                    reader.readAsDataURL(file);
-                                }
-                            }
-                        }} />
-
-                    {#if allScreenshots.length > 0}
-                        <div class="mt-4">
-                            <div class="mb-2 flex items-center justify-between">
-                                <h4 class="text-sm font-medium">
-                                    {$t("screenshots")}
-                                    <span class="text-xs text-muted-foreground">(click to select/unselect)</span>
-                                </h4>
-                                <span class="text-xs text-muted-foreground">
-                                    {allScreenshots.filter((s) => s.selected).length} of {allScreenshots.length} selected
-                                </span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2">
-                                {#each allScreenshots as screenshot, index}
-                                    <SelectableImage
-                                        src={screenshot.value}
-                                        alt={`Screenshot ${index + 1}`}
-                                        selected={screenshot.selected}
-                                        onSelectChanged={(selected) => toggleScreenshot(index, selected)} />
-                                {/each}
-                            </div>
-                        </div>
-                    {/if}
+        {#if allScreenshots.length > 0}
+            <div class="mt-4">
+                <div class="mb-2 flex items-center justify-between">
+                    <h4 class="text-sm font-medium">
+                        {$t("screenshots")}
+                    </h4>
+                    <span class="text-xs text-muted-foreground">
+                        {allScreenshots.filter((s) => s.selected).length} sur {allScreenshots.length} sélectionnés
+                    </span>
                 </div>
-            </TabsContent>
-        </Tabs>
+                <div class="grid grid-cols-3 gap-2">
+                    {#each allScreenshots as screenshot, index}
+                        <SelectableImage
+                            src={screenshot.value}
+                            alt={`Screenshot ${index + 1}`}
+                            selected={screenshot.selected}
+                            onSelectChanged={(selected) => toggleScreenshot(index, selected)} />
+                    {/each}
+                </div>
+            </div>
+        {/if}
     </Card.Content>
 </Card.Root>

@@ -2,7 +2,6 @@
     import GamesDataTable from "$src/lib/components/custom/GamesDataTable.svelte";
     import GamesGrid from "$src/lib/components/custom/GamesGrid.svelte";
     import { ArrowBigDownDash, ArrowBigUpDash } from "@lucide/svelte";
-    import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
     import { Button } from "$src/lib/components/ui/button";
     import { fly } from "svelte/transition";
     import { GamesStore } from "$src/lib/states/games.svelte";
@@ -12,16 +11,27 @@
     import { Badge } from "$src/lib/components/ui/badge";
     import { t } from "$src/lib/translations";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
+    import FeaturedGame from "$src/lib/components/custom/FeaturedGame.svelte";
 
     setHeadMenu(head, title);
 
     let filteredGames = $derived(GamesStore.games.filter((game) => game.isSelected && !game.isInstalled));
+    const featuredGames = $derived(GamesStore.games.filter((game) => game.isFeatured).slice(0, 5));
     $effect(() => {
         return cleanHeadMenu;
     });
 </script>
 
 {#snippet title()}
+    {#if featuredGames.length > 0}
+        <!-- Featured slider placed before search bar (which lives outside this file) -->
+        <div class="mb-6 flex flex-col gap-2">
+            <BlurFade delay={0.3} class="text-3xl font-bold">Jeux en vedette</BlurFade>
+            <div class="px-1">
+                <FeaturedGame games={featuredGames} loading={GamesStore.isLoading} interval={5000} class="h-[30rem]" />
+            </div>
+        </div>
+    {/if}
     <BlurFade delay={0.3} class="text-3xl font-bold">Liste de tous les jeux disponibles</BlurFade>
 {/snippet}
 {#snippet head()}
@@ -54,12 +64,11 @@
     {/if}
 {/snippet}
 
-{#if global.gamesDisplayMode === "grid"}
-    <ScrollArea class="flex-1">
+<!-- Single scroll context: removed inner overflow/max-h container -->
+<div class="mt-0">
+    {#if global.gamesDisplayMode === "grid"}
         <GamesGrid games={GamesStore.games} />
-    </ScrollArea>
-{:else}
-    <ScrollArea class="flex-1">
+    {:else}
         <GamesDataTable games={GamesStore.games} loading={GamesStore.isLoading} />
-    </ScrollArea>
-{/if}
+    {/if}
+</div>

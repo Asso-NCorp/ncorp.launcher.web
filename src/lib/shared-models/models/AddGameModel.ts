@@ -45,10 +45,34 @@ export interface AddGameModel {
     mainProcessName?: string | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof AddGameModel
+     */
+    isFeatured?: boolean;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AddGameModel
+     */
+    dateAdded?: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AddGameModel
+     */
+    dateUpdated?: Date;
+    /**
+     * 
      * @type {{ [key: string]: string; }}
      * @memberof AddGameModel
      */
     cover?: { [key: string]: string; };
+    /**
+     * 
+     * @type {{ [key: string]: string; }}
+     * @memberof AddGameModel
+     */
+    logo?: { [key: string]: string; };
     /**
      * 
      * @type {{ [key: string]: string; }}
@@ -120,7 +144,11 @@ export function AddGameModelFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'folderSlug': json['folderSlug'] == null ? undefined : json['folderSlug'],
         'genres': json['genres'] == null ? undefined : json['genres'],
         'mainProcessName': json['mainProcessName'] == null ? undefined : json['mainProcessName'],
+        'isFeatured': json['isFeatured'] == null ? undefined : json['isFeatured'],
+        'dateAdded': json['dateAdded'] == null ? undefined : (new Date(json['dateAdded'])),
+        'dateUpdated': json['dateUpdated'] == null ? undefined : (new Date(json['dateUpdated'])),
         'cover': json['cover'] == null ? undefined : json['cover'],
+        'logo': json['logo'] == null ? undefined : json['logo'],
         'screenshots': json['screenshots'] == null ? undefined : json['screenshots'],
         'description': json['description'] == null ? undefined : json['description'],
         'startCommand': json['startCommand'] == null ? undefined : json['startCommand'],
@@ -147,7 +175,11 @@ export function AddGameModelToJSONTyped(value?: AddGameModel | null, ignoreDiscr
         'folderSlug': value['folderSlug'],
         'genres': value['genres'],
         'mainProcessName': value['mainProcessName'],
+        'isFeatured': value['isFeatured'],
+        'dateAdded': value['dateAdded'] == null ? undefined : ((value['dateAdded']).toISOString().substring(0,10)),
+        'dateUpdated': value['dateUpdated'] == null ? undefined : ((value['dateUpdated']).toISOString().substring(0,10)),
         'cover': value['cover'],
+        'logo': value['logo'],
         'screenshots': value['screenshots'],
         'description': value['description'],
         'startCommand': value['startCommand'],

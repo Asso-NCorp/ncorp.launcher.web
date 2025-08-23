@@ -63,8 +63,8 @@
                     <SideMenuSubItem
                         icon={CloudLightning}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
-                        href="/small-games"
-                        label={$t("max_10gb_games")}
+                        href="/recently-added-games"
+                        label={$t("recently_added_games")}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={MicVocal}

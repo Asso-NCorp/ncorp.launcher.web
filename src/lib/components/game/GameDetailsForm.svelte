@@ -12,6 +12,7 @@
     import { global } from "$src/lib/states/global.svelte";
     import * as Tooltip from "$lib/components/ui/tooltip/index.js";
     import Loader from "../custom/Loader.svelte";
+    import DateField from "../custom/DateField.svelte";
 
     // Props
     const {
@@ -93,6 +94,11 @@
     <Form.FieldErrors />
 </Form.Field>
 
+<div class="flex gap-2">
+    <DateField label="Date ajoutée" placeholder="Sélectionner une date" bind:value={$formData.dateAdded} />
+    <DateField label="Date mise à jour" placeholder="Sélectionner une date" bind:value={$formData.dateUpdated} />
+</div>
+
 <Form.Field {form} name="sizeGb">
     <Form.Control>
         {#snippet children({ props })}
@@ -130,6 +136,16 @@
                 Notifications de lancement/installation
             </Label>
             <Checkbox {...props} bind:checked={$formData.useNotifications} />
+        {/snippet}
+    </Form.Control>
+    <Form.FieldErrors />
+</Form.Field>
+
+<Form.Field {form} name="isFeatured">
+    <Form.Control>
+        {#snippet children({ props })}
+            <Label for="isFeatured" title="Si oui, ce jeu sera mis en avant">Jeu en vedette</Label>
+            <Checkbox {...props} bind:checked={$formData.isFeatured} />
         {/snippet}
     </Form.Control>
     <Form.FieldErrors />

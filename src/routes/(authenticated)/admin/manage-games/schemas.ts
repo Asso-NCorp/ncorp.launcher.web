@@ -16,6 +16,10 @@ export const addGameFormSchema = z.object({
     mainProcessName: z.string().optional(),
     useNotifications: z.boolean().default(true),
     gameModes: z.array(z.string()).min(1, "Veuillez sélectionner au moins un mode de jeu"),
+    logo: z.record(z.string()).optional(),
+    dateUpdated: z.coerce.date().optional(),
+    dateAdded: z.coerce.date().optional(),
+    isFeatured: z.boolean().default(false),
 });
 
 export type AddGameFormSchema = typeof addGameFormSchema;

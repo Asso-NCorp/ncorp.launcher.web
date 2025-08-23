@@ -214,6 +214,25 @@
             liveServerConnection.connection.stop();
         }
     });
+
+    let headerEl: HTMLElement | null = null;
+
+    function applyHeaderHeight() {
+        if (!headerEl) return;
+        const h = headerEl.offsetHeight;
+        document.documentElement.style.setProperty("--header-height", `${h}px`);
+    }
+
+    onMount(() => {
+        applyHeaderHeight();
+        const ro = new ResizeObserver(applyHeaderHeight);
+        if (headerEl) ro.observe(headerEl);
+        window.addEventListener("resize", applyHeaderHeight);
+        return () => {
+            window.removeEventListener("resize", applyHeaderHeight);
+            ro.disconnect();
+        };
+    });
 </script>
 
 <Lights direction="top" class="absolute top-0 h-56 dark:hidden" />
@@ -275,6 +294,8 @@
             {/if}
             <!-- Header with Logo Grid -->
             <div
+                id="header"
+                bind:this={headerEl}
                 class="header-container z-[100] flex h-12 flex-shrink-0 bg-card shadow-sm backdrop-blur dark:shadow-none">
                 <!-- Logo Section - aligned with sidebar -->
                 <div
@@ -484,6 +505,11 @@
 </ThemeProvider>
 
 <style>
+    :root {
+        /* Fallback (h-12 => 48px) overridden at runtime */
+        --header-height: 48px;
+    }
+
     @keyframes fade-in {
         from {
             opacity: 0;

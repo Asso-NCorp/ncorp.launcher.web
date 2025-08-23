@@ -1,86 +1,141 @@
 <script lang="ts">
-    import * as Table from "$lib/components/ui/table/index.js";
-    import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
-
     import { Skeleton } from "$src/lib/components/ui/skeleton";
     import { GamesStore } from "$src/lib/states/games.svelte";
-    import { buttonVariants } from "$src/lib/components/ui/button/button.svelte";
-    import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
     import type { InstallableGame } from "$src/lib/shared-models";
+    import DataTable, { type Api } from "datatables.net";
+    import { onMount, onDestroy, mount } from "svelte";
+    import DeleteGameButton from "$src/lib/components/custom/DeleteGameButton.svelte";
 
     let { gameSelected }: { gameSelected: (game: InstallableGame) => void } = $props();
 
-    // State to track which dialog is open (if any)
-    let openDialogId = $state<string | null>(null);
+    let tableEl: HTMLTableElement | null = null;
+    let tableApi: Api<any> | null = null;
 
-    // Function to handle game deletion
-    function handleDeleteGame(folderSlug: string) {
-        GamesStore.deleteGame(folderSlug);
-        // Close the dialog after deletion
-        openDialogId = null;
+    // Apply global search input classes once (must be before any DataTable() call)
+    if ((DataTable as any)?.ext?.classes) {
+        DataTable.ext.classes.search.input =
+            "!flex !h-10 !w-96 !rounded-md !border !border-input !bg-background-darker !px-3 !py-2 !text-base !ring-offset-background file:!border-0 file:!bg-transparent file:!text-sm file:!font-medium placeholder:!text-muted-foreground focus-visible:!outline-none focus-visible:!ring-2 focus-visible:!ring-ring focus-visible:!ring-offset-2 disabled:!cursor-not-allowed disabled:!opacity-50 md:!text-sm";
     }
+
+    onMount(() => {
+        if (!tableEl) return;
+        if (tableApi) return;
+        tableApi = new DataTable(tableEl, {
+            data: GamesStore.games,
+            searching: true,
+            paging: false,
+            info: false,
+            language: { search: "Rechercher..." },
+            columns: [
+                {
+                    title: "Titre",
+                    data: "title",
+                    width: "80%",
+                    className: "relative font-bold h-16 cursor-pointer",
+                    render: (data, type, row) => {
+                        if (type === "display") {
+                            return `
+								<div class="absolute inset-0 w-2/3 bg-cover bg-center mask-linear mask-dir-to-r mask-point-to-[80%]"
+									style="background-image:url('/api/resources/${row.cover}')"></div>
+								<div class="absolute inset-y-0 right-0 w-1/2"></div>
+								<span
+									data-folder="${row.folderSlug}"
+									class="select-game absolute right-4 top-1/2 -translate-y-1/2 z-10 text-right text-sm sm:text-base font-bold shadow-lg hover:underline hover:text-primary-600 transition-colors duration-200">
+									${data}
+								</span>
+							`;
+                        }
+                        return data;
+                    },
+                },
+                {
+                    title: "",
+                    data: null,
+                    orderable: false,
+                    className: "text-right align-middle",
+                    render: () => "",
+                },
+            ],
+            order: [[0, "asc"]],
+            createdRow: (row, data: InstallableGame) => {
+                // Mount the delete button Svelte component into last cell
+                const td = row.cells[1];
+                mount(DeleteGameButton, {
+                    target: td,
+                    props: { game: data },
+                });
+            },
+            rowCallback: (row: HTMLTableRowElement, data: InstallableGame) => {
+                const firstCell = row.cells[0];
+                if (firstCell && !firstCell.dataset.selectBound) {
+                    firstCell.addEventListener("click", () => {
+                        gameSelected(data);
+                    });
+                    firstCell.dataset.selectBound = "1";
+                }
+            },
+        });
+    });
+
+    onDestroy(() => {
+        if (tableApi) {
+            tableApi.destroy();
+            tableApi = null;
+        }
+    });
+
+    $effect(() => {
+        // Access to establish dependency
+        GamesStore.games;
+        if (tableApi) {
+            tableApi.clear();
+            if (GamesStore.games?.length) {
+                tableApi.rows.add(GamesStore.games);
+            }
+            tableApi.draw(false);
+        }
+    });
 </script>
 
-<ScrollArea class="h-full max-h-[calc(100vh-16rem)] w-full">
+<div class="relative">
     {#if GamesStore.isLoading}
-        <Skeleton />
-    {:else}
-        <Table.Root>
-            <Table.Caption>Jeux disponibles</Table.Caption>
-            <Table.Header>
-                <Table.Row>
-                    <Table.Head>Nom</Table.Head>
-                    <Table.Head class="text-right"></Table.Head>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>
-                {#each GamesStore.games as game}
-                    <Table.Row>
-                        <Table.Cell class="relative w-full" onclick={() => gameSelected(game)}>
-                            <div
-                                class="absolute inset-0 w-2/3 bg-cover bg-center mask-linear mask-dir-to-r mask-point-to-[80%]"
-                                style="background-image: url('/api/resources/{game.cover}')">
-                            </div>
-                            <div class="absolute inset-y-0 right-0 w-1/2"></div>
-                            <span
-                                class="hover:text-primary-600 absolute right-4 top-1/2 z-10
-                                    -translate-y-1/2 text-right text-sm font-bold
-                                    shadow-lg transition-colors duration-200 hover:underline sm:text-base">
-                                {game.title}
-                            </span>
-                        </Table.Cell>
-                        <Table.Cell class="text-right">
-                            <AlertDialog.Root open={openDialogId === game.folderSlug}>
-                                <AlertDialog.Trigger
-                                    class={buttonVariants({ variant: "outline" })}
-                                    onclick={() => (openDialogId = game.folderSlug || null)}>
-                                    Supprimer
-                                </AlertDialog.Trigger>
-                                <AlertDialog.Content>
-                                    <AlertDialog.Header>
-                                        <AlertDialog.Title>Êtes-vous sûr ?</AlertDialog.Title>
-                                        <AlertDialog.Description>
-                                            Cette action est irréversible.
-                                            <br />
-                                            Seul le fichier
-                                            <code>game.ini</code>
-                                            sera supprimé du dossier.
-                                        </AlertDialog.Description>
-                                    </AlertDialog.Header>
-                                    <AlertDialog.Footer>
-                                        <AlertDialog.Cancel onclick={() => (openDialogId = null)}>
-                                            Annuler
-                                        </AlertDialog.Cancel>
-                                        <AlertDialog.Action onclick={() => handleDeleteGame(game.folderSlug || "")}>
-                                            Supprimer
-                                        </AlertDialog.Action>
-                                    </AlertDialog.Footer>
-                                </AlertDialog.Content>
-                            </AlertDialog.Root>
-                        </Table.Cell>
-                    </Table.Row>
-                {/each}
-            </Table.Body>
-        </Table.Root>
+        <div class="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+            <Skeleton />
+        </div>
     {/if}
-</ScrollArea>
+    <table class="min-w-full divide-y divide-border" bind:this={tableEl}>
+        <thead class="bg-card">
+            <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">Titre</th>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-border bg-popover"></tbody>
+    </table>
+</div>
+
+<svelte:head>
+    <link rel="stylesheet" href="/css/datatables.min.css" />
+    <link rel="stylesheet" href="/css/datatables.theme.css" />
+</svelte:head>
+
+<style>
+    /* Keep row height consistent */
+    table.dataTable tbody tr {
+        height: 4rem;
+    }
+
+    /* Hover */
+    table.dataTable tbody tr.selected,
+    table.dataTable tbody tr:hover {
+        background: hsl(var(--muted) / 0.25);
+    }
+
+    /* Sticky header (works after DT builds) */
+    table.dataTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: hsl(var(--card));
+    }
+</style>

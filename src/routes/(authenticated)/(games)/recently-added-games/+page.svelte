@@ -11,14 +11,19 @@
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
 
     setHeadMenu(head, title);
-
+    const filter1Month = $derived(
+        GamesStore.games.filter((game) => {
+            const added = game.dateAdded ? new Date(game.dateAdded).getTime() : 0;
+            return added > Date.now() - 30 * 24 * 60 * 60 * 1000;
+        }),
+    );
     $effect(() => {
         return cleanHeadMenu;
     });
 </script>
 
 {#snippet title()}
-    <BlurFade delay={0.3} class="text-3xl font-bold">Jeux de moins de 10 Go</BlurFade>
+    <BlurFade delay={0.3} class="text-3xl font-bold">Jeux récemment ajoutés</BlurFade>
 {/snippet}
 
 {#snippet head()}
@@ -31,10 +36,10 @@
 
 {#if global.gamesDisplayMode === "grid"}
     <ScrollArea class="flex-1">
-        <GamesGrid games={GamesStore.games.filter((game) => game.sizeGb! <= 10)} />
+        <GamesGrid games={filter1Month} />
     </ScrollArea>
 {:else}
     <ScrollArea class="flex-1">
-        <GamesDataTable games={GamesStore.games.filter((game) => game.sizeGb! <= 10)} loading={GamesStore.isLoading} />
+        <GamesDataTable games={filter1Month} loading={GamesStore.isLoading} />
     </ScrollArea>
 {/if}

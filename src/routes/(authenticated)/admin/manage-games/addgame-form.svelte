@@ -7,7 +7,6 @@
     import { CircleAlert } from "@lucide/svelte";
     import { addGameFormSchema, type AddGameFormSchema } from "./schemas";
     import { page } from "$app/state";
-    import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import { browser } from "$app/environment";
     import type { Game, InstallableGame } from "$lib/shared-models";
     import * as Form from "$lib/components/ui/form/index.js";
@@ -22,7 +21,13 @@
     import { GamesStore } from "$src/lib/states/games.svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import GameModesSelection from "$src/lib/components/game/GameModesSelection.svelte";
+    import { onMount } from "svelte";
+    import LogoImageUpload from "$lib/components/game/LogoImageUpload.svelte";
+    import { getServerApi } from "$src/lib/utils";
+    import { logger } from "$src/lib/stores/loggerStore";
 
+    // Provide available logos (adjust data source as needed)
+    let logos = $state<string[]>([]);
     const folders = page.data["folders"] as string[];
     let { data }: { data: { form: SuperValidated<Infer<AddGameFormSchema>> } } = $props();
 
@@ -33,7 +38,9 @@
             if (result.result.type === "success") {
                 toast.success("Jeu ajouté avec succès", { class: "bg-green-500" });
                 $formData.cover = {};
+                $formData.logo = {};
                 $formData.screenshots = {};
+                logos = [];
                 await GamesStore.getAvailableGames();
             } else if (result.result.type === "redirect") {
                 goto(result.result.location);
@@ -49,11 +56,26 @@
 
     const { form: formData, enhance, allErrors, submitting } = form;
 
+    function fmtDate(d: Date) {
+        return d.toISOString().slice(0, 10);
+    }
+    function clearTemporalFields() {
+        $formData.dateAdded = null as any;
+        $formData.dateUpdated = null as any;
+    }
+
     // Handle game selection from search
-    function handleGameSelect(game: Game) {
+    async function handleGameSelect(game: Game) {
+        clearTemporalFields();
         // Populate form fields with game data
         $formData.title = game.name || "";
         $formData.description = game.summary || "";
+
+        // Set logo if available
+
+        if (game.name) {
+            logos = await getServerApi().searchLogos({ gameName: game.name });
+        }
 
         // Set max players if available
         if (game.gameModes?.values?.length) {
@@ -158,6 +180,7 @@
     }
 
     const handleInstallableGameSelect = async (game: InstallableGame) => {
+        clearTemporalFields();
         // Populate basic game information
         $formData.title = game.title || "";
         $formData.folderSlug = game.folderSlug || "";
@@ -168,6 +191,11 @@
         $formData.maxPlayers = game.maxPlayers || 1;
         $formData.genres = game.genres || [];
         $formData.useNotifications = game.useNotifications || true;
+        $formData.isFeatured = game.isFeatured || false;
+        // UPDATED: only set if provided, otherwise keep cleared (null)
+        $formData.dateAdded = game.dateAdded ? fmtDate(new Date(game.dateAdded)) : null;
+        $formData.dateUpdated = game.dateUpdated ? fmtDate(new Date(game.dateUpdated)) : null;
+
         // Normalize and restrict game modes to the allowed literal types
         {
             const allowed = new Set(["SOLO", "COOP", "MULTI"]);
@@ -175,6 +203,8 @@
                 .map((m) => String(m).toUpperCase())
                 .filter((m) => allowed.has(m)) as ("SOLO" | "COOP" | "MULTI")[];
         }
+
+        logos = await getServerApi().searchLogos({ gameName: game.title || "" });
 
         // Handle cover image
         if (game.cover) {
@@ -209,6 +239,41 @@
         } else {
             // Clear cover if none exists
             $formData.cover = {};
+        }
+
+        // Handle logo image
+        if (game.logo) {
+            try {
+                // Fetch the logo image
+                const logoUrl = `/api/resources/${game.logo}`;
+                const logoResponse = await fetch(logoUrl);
+                const logoBlob = await logoResponse.blob();
+
+                // Convert to base64
+                const logoBase64 = await new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.readAsDataURL(logoBlob);
+                });
+
+                // Generate a filename or use the existing one
+                const logoFileName = game.logo.includes("/")
+                    ? game.logo.split("/").pop() || `logo_${Date.now()}.jpg`
+                    : game.logo;
+
+                // Set the logo in the form data
+                $formData.logo = { [logoFileName]: logoBase64 };
+            } catch (error) {
+                console.error("Error fetching logo image:", error);
+                // Fallback to using the URL directly
+                const logoFileName = game.logo.includes("/")
+                    ? game.logo.split("/").pop() || `logo_${Date.now()}.jpg`
+                    : game.logo;
+                $formData.logo = { [logoFileName]: `/api/resources/${game.logo}` };
+            }
+        } else {
+            // Clear logo if none exists
+            $formData.logo = {};
         }
 
         // Handle screenshots
@@ -272,16 +337,32 @@
             update: true,
         });
     };
+
+    // Remove dynamic left column height logic
+
+    function handleReset(event: Event) {
+        event.preventDefault();
+        // Reset form via superforms (if available)
+        if (typeof form.reset === "function") form.reset();
+        // Explicitly clear media-related stores
+        $formData.cover = {};
+        $formData.logo = {};
+        $formData.screenshots = {};
+        // Optionally clear other derived arrays if desired
+        // $formData.genres = [];
+        // $formData.gameModes = [];
+        clearTemporalFields();
+    }
 </script>
 
-<BlurFade delay={0.3} class="text-3xl font-bold">Gestion des jeux</BlurFade>
 <div class="grid grid-cols-3 gap-8">
-    <div>
-        <!-- Games list -->
-        <GamesList gameSelected={handleInstallableGameSelect} />
+    <div class="sticky flex flex-col" style="height:calc(100vh - var(--header-height) - 2rem);">
+        <div class="min-h-0 flex-1 overflow-y-auto pr-2">
+            <GamesList gameSelected={handleInstallableGameSelect} />
+        </div>
     </div>
+
     <form method="POST" class="flex flex-col gap-4" use:enhance>
-        <BlurFade delay={0.3} class="text-3xl font-bold">Ajouter/Modifier un jeu</BlurFade>
         {#if $allErrors.length > 0}
             <Alert.Root variant="destructive">
                 <CircleAlert class="size-4" />
@@ -289,9 +370,7 @@
                 <Alert.Description>
                     <ul>
                         {#each $allErrors as error}
-                            <li>
-                                {error.messages.join(". ")}
-                            </li>
+                            <li>{error.messages.join(". ")}</li>
                         {/each}
                     </ul>
                 </Alert.Description>
@@ -320,14 +399,34 @@
                 Valider
             {/if}
         </Form.Button>
-        {#if browser && import.meta.env.DEV}
+
+        <Form.Button variant="secondary" type="button" onclick={handleReset} disabled={$submitting}>
+            Annuler
+        </Form.Button>
+
+        <!-- {#if browser && import.meta.env.DEV}
             <SuperDebug data={$formData} />
-        {/if}
+        {/if} -->
     </form>
 
-    <!-- Right column for images -->
-    <div class="flex flex-col gap-6">
+    <!-- Right column now sticky -->
+
+    <div class="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto">
+        <!-- Replaced CoverImageUpload (Logo) with LogoImageUpload -->
+        <LogoImageUpload
+            logo={$formData.logo || {}}
+            {logos}
+            heightClass="h-60"
+            title="Logo"
+            description="Uploader ou choisir un logo"
+            onChange={(logo) => {
+                $formData.logo = logo || {};
+            }} />
+
         <CoverImageUpload
+            title="Couverture"
+            heightClass="h-40"
+            description="Sélectionner ou uploader une image de couverture"
             cover={$formData.cover || {}}
             onChange={(cover) => {
                 $formData.cover = cover || {};

@@ -54,9 +54,11 @@ export const actions: Actions = {
                 mainProcessName: form.data.mainProcessName,
                 useNotifications: form.data.useNotifications,
                 gameModes: form.data.gameModes,
+                logo: form.data.logo,
+                isFeatured: form.data.isFeatured,
+                dateUpdated: new Date(),
+                dateAdded: form.data.dateAdded,
             };
-
-            console.log("Adding game", model);
 
             const result = await getServerApi(event.cookies.get("token")).addGame({
                 addGameModel: model,

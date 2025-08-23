@@ -69,6 +69,24 @@ export interface InstallableGame {
     gameModes?: Array<string>;
     /**
      * 
+     * @type {boolean}
+     * @memberof InstallableGame
+     */
+    isFeatured?: boolean;
+    /**
+     * 
+     * @type {Date}
+     * @memberof InstallableGame
+     */
+    dateUpdated?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof InstallableGame
+     */
+    dateAdded?: Date | null;
+    /**
+     * 
      * @type {string}
      * @memberof InstallableGame
      */
@@ -85,6 +103,12 @@ export interface InstallableGame {
      * @memberof InstallableGame
      */
     cover?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof InstallableGame
+     */
+    logo?: string;
     /**
      * 
      * @type {Array<string>}
@@ -160,9 +184,13 @@ export function InstallableGameFromJSONTyped(json: any, ignoreDiscriminator: boo
         'genresStr': json['genresStr'] == null ? undefined : json['genresStr'],
         'platforms': json['platforms'] == null ? undefined : json['platforms'],
         'gameModes': json['gameModes'] == null ? undefined : json['gameModes'],
+        'isFeatured': json['isFeatured'] == null ? undefined : json['isFeatured'],
+        'dateUpdated': json['dateUpdated'] == null ? undefined : (new Date(json['dateUpdated'])),
+        'dateAdded': json['dateAdded'] == null ? undefined : (new Date(json['dateAdded'])),
         'editorName': json['editorName'] == null ? undefined : json['editorName'],
         'mainProcessName': json['mainProcessName'] == null ? undefined : json['mainProcessName'],
         'cover': json['cover'] == null ? undefined : json['cover'],
+        'logo': json['logo'] == null ? undefined : json['logo'],
         'screenshots': json['screenshots'] == null ? undefined : json['screenshots'],
         'description': json['description'] == null ? undefined : json['description'],
         'startCommand': json['startCommand'] == null ? undefined : json['startCommand'],
@@ -192,9 +220,13 @@ export function InstallableGameToJSONTyped(value?: Omit<InstallableGame, 'genres
         'genres': value['genres'],
         'platforms': value['platforms'],
         'gameModes': value['gameModes'],
+        'isFeatured': value['isFeatured'],
+        'dateUpdated': value['dateUpdated'] == null ? undefined : ((value['dateUpdated'] as any).toISOString().substring(0,10)),
+        'dateAdded': value['dateAdded'] == null ? undefined : ((value['dateAdded'] as any).toISOString().substring(0,10)),
         'editorName': value['editorName'],
         'mainProcessName': value['mainProcessName'],
         'cover': value['cover'],
+        'logo': value['logo'],
         'screenshots': value['screenshots'],
         'description': value['description'],
         'startCommand': value['startCommand'],
