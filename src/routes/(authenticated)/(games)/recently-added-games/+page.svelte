@@ -23,7 +23,7 @@
 </script>
 
 {#snippet title()}
-    <BlurFade delay={0.3} class="text-3xl font-bold">Jeux récemment ajoutés</BlurFade>
+    <BlurFade delay={0.3} class="pt-0 text-3xl font-bold">Jeux récemment ajoutés (30 derniers jours)</BlurFade>
 {/snippet}
 
 {#snippet head()}

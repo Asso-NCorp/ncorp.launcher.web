@@ -12,12 +12,23 @@
     import { t } from "$src/lib/translations";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import FeaturedGame from "$src/lib/components/custom/FeaturedGame.svelte";
-
-    setHeadMenu(head, title);
-
-    let filteredGames = $derived(GamesStore.games.filter((game) => game.isSelected && !game.isInstalled));
-    const featuredGames = $derived(GamesStore.games.filter((game) => game.isFeatured).slice(0, 5));
+    // Sort all games by most recent update first (non-mutating)
+    const sortedGames = $derived(
+        [...GamesStore.games].sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0)),
+    );
+    const filteredGames = $derived(
+        sortedGames
+            .filter((game) => game.isSelected && !game.isInstalled)
+            .sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0)), // enforce desc order explicitly
+    );
+    const featuredGames = $derived(
+        sortedGames
+            .filter((game) => game.isFeatured)
+            .sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0))
+            .slice(0, 10),
+    );
     $effect(() => {
+        setHeadMenu(head, title);
         return cleanHeadMenu;
     });
 </script>
@@ -64,11 +75,10 @@
     {/if}
 {/snippet}
 
-<!-- Single scroll context: removed inner overflow/max-h container -->
 <div class="mt-0">
     {#if global.gamesDisplayMode === "grid"}
-        <GamesGrid games={GamesStore.games} />
+        <GamesGrid games={sortedGames} />
     {:else}
-        <GamesDataTable games={GamesStore.games} loading={GamesStore.isLoading} />
+        <GamesDataTable games={sortedGames} loading={GamesStore.isLoading} />
     {/if}
 </div>
