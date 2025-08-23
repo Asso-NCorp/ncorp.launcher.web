@@ -105,8 +105,6 @@
     style={`min-height:${minHeight}px;`}
     tabindex="0"
     onkeydown={key}
-    onmouseenter={() => (paused = true)}
-    onmouseleave={() => (paused = false)}
     onfocus={() => (paused = true)}
     onblur={() => (paused = false)}>
     {#if loading}
@@ -200,7 +198,10 @@
         </Button>
 
         <!-- Thumbnail rail with per-thumbnail progress (replaced native button) -->
-        <div class="absolute bottom-0 left-0 right-0 flex justify-center gap-2 px-4 pb-2">
+        <div
+            class="absolute bottom-0 left-0 right-0 flex justify-center gap-2 px-4 pb-2"
+            onmouseenter={() => (paused = true)}
+            onmouseleave={() => (paused = false)}>
             {#each games as g, i}
                 <Button
                     type="button"
