@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const addGameFormSchema = z.object({
-    title: z.string().min(2).max(50),
+    title: z.string().min(2).max(80),
     description: z.string().min(2),
     sizeGb: z.coerce.number().positive().default(1),
     startCommand: z.string().min(2).max(500).default("game_start.cmd"),
