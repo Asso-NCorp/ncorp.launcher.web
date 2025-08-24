@@ -128,6 +128,8 @@
             removedFolderSlugs = [];
             message = "Enregistré";
             toast.success("Modifications enregistrées avec succès");
+
+            await GamesStore.getAvailableGames();
         } catch (e) {
             error = "Erreur lors de l'enregistrement";
             console.error(e);
