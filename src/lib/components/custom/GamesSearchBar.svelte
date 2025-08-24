@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { RefreshCw, Search, X, Clock, ChevronDown, User, Users, UsersRound } from "@lucide/svelte";
+    import { RefreshCw, Search, X, Clock, ChevronDown, User, Users } from "@lucide/svelte";
     import Input from "../ui/input/input.svelte";
     import { t } from "$src/lib/translations";
     import { GamesStore } from "$src/lib/states/games.svelte";
@@ -21,12 +21,18 @@
     // Define typed selected modes and value/label options
     type SelectedModes = { solo: boolean; coop: boolean; multi: boolean };
     type IconComponent = typeof User;
-    type GameModeOption = { key: keyof SelectedModes; value: string; text: string; icons: IconComponent[] };
+    type GameModeOption = {
+        key: keyof SelectedModes;
+        value: string;
+        count: string;
+        text: string;
+        icons: IconComponent[];
+    };
 
     const gameModeOptions: GameModeOption[] = [
-        { key: "solo", value: "SOLO", text: "SOLO (1)", icons: [User] },
-        { key: "coop", value: "COOP", text: "COOP (2-6)", icons: [User, Users] },
-        { key: "multi", value: "MULTI", text: "MULTI (6+)", icons: [Users, UsersRound] },
+        { key: "solo", value: "SOLO", text: "SOLO", count: "1", icons: [User] },
+        { key: "coop", value: "COOP", text: "COOP", count: "2-6", icons: [User] },
+        { key: "multi", value: "MULTI", text: "MULTI", count: "6+", icons: [Users] },
     ];
 
     // Make selectedModes reactive - start with none selected (means ALL)
@@ -109,12 +115,14 @@
                         checked={selectedModes[opt.key]}
                         onCheckedChange={(checked) => (selectedModes[opt.key] = !!checked)}>
                         <span class="flex items-center gap-2">
-                            <span class="flex items-center gap-1">
-                                {opt.text}
+                            <span class="flex items-center">
+                                {opt.text} (
                                 <span class="flex items-center gap-0.5">
                                     {#each opt.icons as I}
                                         <I class="h-4 w-4 opacity-80" />
                                     {/each}
+                                    {opt.count}
+                                    )
                                 </span>
                             </span>
                         </span>
