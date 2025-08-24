@@ -111,6 +111,7 @@ export * from './StringTR';
 export * from './TR';
 export * from './Theme';
 export * from './ThemeIdentitiesOrValues';
+export * from './UpdateFeaturedGamesDto';
 export * from './UserActivity';
 export * from './UserActivityType';
 export * from './UserConnectionEntry';

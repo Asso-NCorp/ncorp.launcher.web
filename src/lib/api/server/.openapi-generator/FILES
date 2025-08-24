@@ -113,6 +113,7 @@ models/StringTR.ts
 models/TR.ts
 models/Theme.ts
 models/ThemeIdentitiesOrValues.ts
+models/UpdateFeaturedGamesDto.ts
 models/UserActivity.ts
 models/UserActivityType.ts
 models/UserConnectionEntry.ts

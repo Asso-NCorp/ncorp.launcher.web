@@ -3,7 +3,17 @@
     import SideMenuItem from "./SideMenuItem.svelte";
     import { cn, getLocalApi, getServerApi } from "$src/lib/utils";
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
-    import { FerrisWheel, FolderOpen, Link, List, PlusIcon, RefreshCcwDot, Settings2, Users } from "@lucide/svelte";
+    import {
+        FerrisWheel,
+        FolderOpen,
+        Link,
+        List,
+        PlusIcon,
+        RefreshCcwDot,
+        Settings2,
+        Star,
+        Users,
+    } from "@lucide/svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import { t } from "$src/lib/translations";
     import { Button } from "../ui/button";
@@ -42,6 +52,12 @@
         label={$t("manage_games")}
         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
         icon={Settings2}
+        iconOnly={global.sidebarCollapsed} />
+    <SideMenuSubItem
+        href="/admin/manage-games/featured"
+        label={$t("featured_games")}
+        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+        icon={Star}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/manage-users"

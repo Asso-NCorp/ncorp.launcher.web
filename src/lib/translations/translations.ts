@@ -98,6 +98,7 @@ export default {
         no_image_selected: "Aucune image sélectionnée",
         admin: "Admin",
         user: "Utilisateur",
+        featured_games: "Jeux en vedette",
     },
     en: {
         lang,
@@ -196,5 +197,6 @@ export default {
         no_image_selected: "No image selected",
         admin: "Admin",
         user: "User",
+        featured_games: "Featured games",
     },
 };

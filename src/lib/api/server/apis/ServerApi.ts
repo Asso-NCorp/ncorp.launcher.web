@@ -21,6 +21,7 @@ import type {
   LiveUser,
   StringTR,
   TR,
+  UpdateFeaturedGamesDto,
   UserConnectionEntry,
   UsernameFileConfig,
 } from '../models/index';
@@ -37,6 +38,8 @@ import {
     StringTRToJSON,
     TRFromJSON,
     TRToJSON,
+    UpdateFeaturedGamesDtoFromJSON,
+    UpdateFeaturedGamesDtoToJSON,
     UserConnectionEntryFromJSON,
     UserConnectionEntryToJSON,
     UsernameFileConfigFromJSON,
@@ -90,6 +93,10 @@ export interface SearchLogosRequest {
 
 export interface SetLocalGamesDirRequest {
     path?: string;
+}
+
+export interface UpdateFeaturedGamesRequest {
+    updateFeaturedGamesDto?: UpdateFeaturedGamesDto;
 }
 
 /**
@@ -737,6 +744,42 @@ export class ServerApi extends runtime.BaseAPI {
     async setLocalGamesDir(requestParameters: SetLocalGamesDirRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringTR> {
         const response = await this.setLocalGamesDirRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Update the list of featured games
+     */
+    async updateFeaturedGamesRaw(requestParameters: UpdateFeaturedGamesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Server/UpdateFeaturedGames`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateFeaturedGamesDtoToJSON(requestParameters['updateFeaturedGamesDto']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Update the list of featured games
+     */
+    async updateFeaturedGames(requestParameters: UpdateFeaturedGamesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updateFeaturedGamesRaw(requestParameters, initOverrides);
     }
 
 }
