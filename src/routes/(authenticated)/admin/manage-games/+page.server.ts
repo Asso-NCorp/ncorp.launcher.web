@@ -19,7 +19,7 @@ export const load: PageServerLoad = (async ({ cookies }: { cookies: Cookies }) =
     let folders = new Array<string>();
 
     try {
-        folders = await getServerApi(token).getFolders();
+        folders = [];
     } catch (error) {
         logger.error(error);
     }

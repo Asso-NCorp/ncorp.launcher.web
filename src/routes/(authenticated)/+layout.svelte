@@ -85,7 +85,7 @@
     let showConfigGamesDirDialog = $state(false);
     global.currentUser = user;
     liveUsers.users = data.liveUsers; // Filter and sort upcoming events
-    GamesStore.setGames(data.availableGames);
+    GamesStore.setGames(data.availableGames ?? []);
 
     const upcomingEvents = $derived(() => {
         const now = new Date();

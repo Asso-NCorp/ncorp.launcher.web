@@ -2,7 +2,6 @@
 /// <reference lib="webworker" />
 
 import { build, files, prerendered, version } from "$service-worker";
-
 declare let self: ServiceWorkerGlobalScope;
 
 // ---- Config ----
@@ -14,18 +13,25 @@ const RESOURCE_HOSTS = new Set(["server.n-lan.com"]);
 const RESOURCES_PREFIX = "/resources/";
 const LEGACY_API_PREFIX = "/api/Server/Resource";
 
-// helpers
+// ---- Helpers ----
 const toURL = (path: string) => new URL(path, self.location.origin).toString();
 const isSameOrigin = (u: URL) => u.origin === self.location.origin;
-const isCacheable = (res: Response) => {
-    if (!res) return false;
-    if (res.type === "opaque") return true; // ex. cross-origin sans CORS
-    if (!res.ok) return false;
+const isAssetPath = (u: URL) => ASSETS.has(u.pathname) || ASSETS.has(toURL(u.pathname));
+
+const isHTMLRequest = (req: Request) =>
+    req.mode === "navigate" || (req.headers.get("accept") ?? "").includes("text/html");
+
+const isHTMLResponse = (res: Response) => (res.headers.get("content-type") ?? "").includes("text/html");
+
+const isCacheableResponse = (res: Response) => {
+    if (!res || !res.ok) return false;
+    // ne JAMAIS mettre en cache du HTML
+    if (isHTMLResponse(res)) return false;
     const cc = res.headers.get("Cache-Control") ?? "";
     return !/\bno-store\b/i.test(cc) && !/\bprivate\b/i.test(cc);
 };
 
-// ---- Install: precache assets ----
+// ---- Install: precache assets (dont prerendered) ----
 self.addEventListener("install", (event) => {
     event.waitUntil(
         (async () => {
@@ -53,44 +59,50 @@ self.addEventListener("fetch", (event: FetchEvent) => {
     if (request.method !== "GET") return;
 
     const url = new URL(request.url);
-    const absolutePath = toURL(url.pathname);
-    const isAsset = ASSETS.has(url.pathname) || ASSETS.has(absolutePath);
-    const isResourceHost = RESOURCE_HOSTS.has(url.hostname);
-    const isResourcePath =
-        (isResourceHost && url.pathname.startsWith(RESOURCES_PREFIX)) ||
-        (isResourceHost && url.pathname.startsWith(LEGACY_API_PREFIX));
+    const sameOrigin = isSameOrigin(url);
+    const resourceHost =
+        RESOURCE_HOSTS.has(url.hostname) &&
+        (url.pathname.startsWith(RESOURCES_PREFIX) || url.pathname.startsWith(LEGACY_API_PREFIX));
 
     event.respondWith(
         (async () => {
             const cache = await caches.open(CACHE);
 
-            // 1) SvelteKit assets: cache-first
-            if (isAsset) {
-                const hit = (await cache.match(request)) || (await cache.match(absolutePath));
+            // 1) Assets (build/files/prerendered): cache-first
+            if (isAssetPath(url)) {
+                const hit = (await cache.match(request)) || (await cache.match(toURL(url.pathname)));
                 if (hit) return hit;
-
                 const res = await fetch(request);
-                if (isSameOrigin(url) && isCacheable(res)) {
-                    cache.put(absolutePath, res.clone());
+                if (sameOrigin && isCacheableResponse(res)) {
+                    await cache.put(toURL(url.pathname), res.clone());
                 }
                 return res;
             }
 
-            // 2) Back resources (images/doc) depuis server.n-lan.com:
-            //    cache-first + revalidate (offline-friendly)
-            if (isResourcePath) {
+            // 2) Requêtes HTML (navigations/pages SSR) : **jamais** en cache
+            if (isHTMLRequest(request)) {
+                try {
+                    // network-only
+                    return await fetch(request);
+                } catch {
+                    // offline: si une page prerendered existe en cache, on la renvoie, sinon 503
+                    const fallback = await cache.match(toURL(url.pathname));
+                    return fallback ?? new Response("Offline", { status: 503 });
+                }
+            }
+
+            // 3) Ressources backend (images/docs) depuis server.n-lan.com : cache-first + revalidate
+            if (resourceHost) {
                 const cached = await cache.match(request);
 
-                // revalidation en arrière-plan
+                // Revalidation arrière-plan
                 event.waitUntil(
                     (async () => {
                         try {
                             const fresh = await fetch(request);
-                            if (isCacheable(fresh)) {
-                                await cache.put(request, fresh.clone());
-                            }
+                            if (isCacheableResponse(fresh)) await cache.put(request, fresh.clone());
                         } catch {
-                            /* offline => on garde le cache existant */
+                            /* offline */
                         }
                     })(),
                 );
@@ -99,25 +111,23 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 
                 try {
                     const res = await fetch(request);
-                    if (isCacheable(res)) await cache.put(request, res.clone());
+                    if (isCacheableResponse(res)) await cache.put(request, res.clone());
                     return res;
                 } catch {
                     return new Response("Offline", { status: 503 });
                 }
             }
 
-            // 3) Tout le reste: network-first, fallback cache
+            // 4) Tout le reste (JSON, APIs, images same-origin, etc.) : network-first, cache si cacheable (non-HTML)
             try {
                 const res = await fetch(request);
-                // on ne met en cache que le même-origin "sûr"
-                if (isSameOrigin(url) && isCacheable(res)) {
-                    cache.put(request, res.clone());
-                }
+                if (sameOrigin && isCacheableResponse(res)) await cache.put(request, res.clone());
                 return res;
             } catch {
+                // fallback cache (mais comme on n'y met pas de HTML, pas de pollution)
                 return (
                     (await cache.match(request)) ||
-                    (await cache.match(absolutePath)) ||
+                    (await cache.match(toURL(url.pathname))) ||
                     new Response("Not found", { status: 404 })
                 );
             }

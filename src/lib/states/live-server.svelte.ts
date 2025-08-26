@@ -1,11 +1,11 @@
-import * as signalR from '@microsoft/signalr';
-import { PUBLIC_BACKEND_API_URL } from '$env/static/public';
-import { browser } from '$app/environment';
-import SignalRInfiniteRetryPolicy from '../misc/signalrInfiniteRetryPolicy';
-import { logger } from '../stores/loggerStore';
-import { authClient } from '../auth/client';
-import { liveUsers } from './live-users.svelte';
-import { GamesStore } from './games.svelte';
+import * as signalR from "@microsoft/signalr";
+import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
+import { browser } from "$app/environment";
+import SignalRInfiniteRetryPolicy from "../misc/signalrInfiniteRetryPolicy";
+import { logger } from "../stores/loggerStore";
+import { authClient } from "../auth/client";
+import { liveUsers } from "./live-users.svelte";
+import { GamesStore } from "./games.svelte";
 
 class SignalRAgent {
     connection: signalR.HubConnection;
@@ -19,16 +19,16 @@ class SignalRAgent {
 
     private createConnection() {
         let token = "";
-        if (browser && localStorage?.getItem('token')) {
-            token = localStorage.getItem('token') || "";
+        if (browser && localStorage?.getItem("token")) {
+            token = localStorage.getItem("token") || "";
         }
 
         return new signalR.HubConnectionBuilder()
             .withUrl(`${PUBLIC_BACKEND_API_URL}/server-live`, {
                 withCredentials: true,
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             })
             .configureLogging(signalR.LogLevel.None)
             .withAutomaticReconnect(new SignalRInfiniteRetryPolicy())
@@ -37,7 +37,7 @@ class SignalRAgent {
 
     private registerEvents() {
         this.connection.onreconnected(async () => {
-            console.log('SignalR Server reconnected');
+            console.log("SignalR Server reconnected");
             this.isConnected = true;
             this.connectionState = this.connection.state;
             const currentUser = await authClient.getSession();
@@ -50,36 +50,38 @@ class SignalRAgent {
         });
 
         this.connection.onreconnecting(() => {
-            console.log('SignalR Server reconnecting');
+            console.log("SignalR Server reconnecting");
             this.isConnected = false;
             this.connectionState = this.connection.state;
         });
 
         this.connection.onclose(() => {
-            console.log('SignalR Server connection closed');
+            console.log("SignalR Server connection closed");
             this.isConnected = false;
             this.connectionState = this.connection.state;
         });
     }
 
     async startConnection() {
-        logger.info('Starting SignalR Server connection');
+        logger.info("Starting SignalR Server connection");
         while (this.connection.state === signalR.HubConnectionState.Disconnected) {
             try {
                 await this.connection.start();
-                console.log('SignalR Server connected');
+                console.log("SignalR Server connected");
                 this.isConnected = true;
                 this.connectionState = this.connection.state;
+                await liveUsers.refreshLiveUsers();
+                await GamesStore.getAvailableGames();
                 break;
             } catch {
-                console.log('SignalR Server connection failed. Retrying in 5 seconds');
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                console.log("SignalR Server connection failed. Retrying in 5 seconds");
+                await new Promise((resolve) => setTimeout(resolve, 5000));
             }
         }
     }
 
     async stopConnection() {
-        logger.info('Stopping SignalR Server connection');
+        logger.info("Stopping SignalR Server connection");
         await this.connection.stop();
         this.isConnected = false;
         this.connectionState = this.connection.state;
@@ -87,10 +89,8 @@ class SignalRAgent {
 
     async broadcastMessage(func: string, ...args: unknown[]): Promise<void> {
         if (!this.isConnected) return;
-        if (args.length === 0)
-            await this.connection.invoke(func);
-        else
-            await this.connection.invoke(func, ...args);
+        if (args.length === 0) await this.connection.invoke(func);
+        else await this.connection.invoke(func, ...args);
     }
 }
 

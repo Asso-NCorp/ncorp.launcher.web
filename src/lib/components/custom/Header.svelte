@@ -20,7 +20,7 @@
 <header>
     <div class={cn("flex h-auto items-center gap-2", klazz)}>
         <div class="mx-auto flex h-11 w-full gap-1 overflow-x-auto overflow-y-hidden">
-            {#each GamesStore.games.filter((g) => g.isInstalling) as game}
+            {#each GamesStore.games?.filter((g) => g.isInstalling) as game}
                 <div transition:fly={{ y: -20, duration: 200 }} class="h-full flex-1">
                     <div class="flex h-full items-center gap-2 px-1">
                         <div class="flex flex-col">
