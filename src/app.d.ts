@@ -7,17 +7,17 @@ import type { event, global_settings } from "@prisma/client";
 
 // for information about these interfaces
 declare global {
-	namespace App {
-		interface Locals {
-			session: Session | undefined;
-			user: User | undefined;
-			liveUsers: LiveUser[];
-			localGamesDir: string | undefined;
-			events: event[];
-
-			globalSettings: global_settings[];
-		}
-	}
+    namespace App {
+        interface Locals {
+            session: Session | undefined;
+            user: User | undefined;
+            liveUsers: LiveUser[];
+            localGamesDir: string | undefined;
+            events: event[];
+            availableGames: import("./lib/shared-models").InstallableGame[];
+            globalSettings: global_settings[];
+        }
+    }
 }
 
-export { };
+export {};
