@@ -11,7 +11,11 @@
     import { Badge } from "$src/lib/components/ui/badge";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
 
-    let filteredGames = $derived(GamesStore.games.filter((game) => game.isSelected && game.isInstalled));
+    let filteredGames = $derived(
+        GamesStore.games
+            .sort((a, b) => a.title.localeCompare(b.title))
+            .filter((game) => game.isSelected && game.isInstalled),
+    );
 
     // Defer registration until snippets exist; ensure cleanup fires.
     $effect(() => {

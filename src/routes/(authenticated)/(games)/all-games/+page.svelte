@@ -12,10 +12,8 @@
     import { t } from "$src/lib/translations";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import FeaturedGame from "$src/lib/components/custom/FeaturedGame.svelte";
-    // Sort all games by most recent update first (non-mutating)
-    const sortedGames = $derived(
-        [...GamesStore.games].sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0)),
-    );
+    // Sort all games by title asc
+    const sortedGames = $derived(GamesStore.games.sort((a, b) => a.title.localeCompare(b.title)));
     const filteredGames = $derived(sortedGames.filter((game) => game.isSelected && !game.isInstalled));
     const featuredGames = $derived(
         sortedGames
