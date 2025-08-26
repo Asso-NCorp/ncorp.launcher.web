@@ -71,7 +71,6 @@ export interface GetGameSizeRequest {
 }
 
 export interface GetResourceRequest {
-    gameSlug?: string;
     resourceName?: string;
 }
 
@@ -85,6 +84,10 @@ export interface GetUsernameFileConfigRequest {
 
 export interface ListGameStartExecutablesRequest {
     gameSlug?: string;
+}
+
+export interface LogoRequest {
+    gameSlug: string;
 }
 
 export interface SearchGameRequest {
@@ -500,10 +503,6 @@ export class ServerApi extends runtime.BaseAPI {
     async getResourceRaw(requestParameters: GetResourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
-        if (requestParameters['gameSlug'] != null) {
-            queryParameters['gameSlug'] = requestParameters['gameSlug'];
-        }
-
         if (requestParameters['resourceName'] != null) {
             queryParameters['resourceName'] = requestParameters['resourceName'];
         }
@@ -643,6 +642,44 @@ export class ServerApi extends runtime.BaseAPI {
     async listGameStartExecutables(requestParameters: ListGameStartExecutablesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
         const response = await this.listGameStartExecutablesRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     */
+    async logoRaw(requestParameters: LogoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['gameSlug'] == null) {
+            throw new runtime.RequiredError(
+                'gameSlug',
+                'Required parameter "gameSlug" was null or undefined when calling logo().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Server/{gameSlug}/Logo`.replace(`{${"gameSlug"}}`, encodeURIComponent(String(requestParameters['gameSlug']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async logo(requestParameters: LogoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.logoRaw(requestParameters, initOverrides);
     }
 
     /**

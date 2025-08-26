@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
     import { fly } from "svelte/transition";
     import LazyImage from "./LazyImage.svelte";
     import Loader from "./Loader.svelte";
@@ -7,10 +8,8 @@
     import { goto } from "$app/navigation";
     import GameActionButton from "./GameActionButton.svelte";
     import { t } from "$src/lib/translations";
-    import { FolderOpen, LucideZap, Users, Verified, VerifiedIcon } from "@lucide/svelte";
+    import { FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
-    import { GamesStore } from "$src/lib/states/games.svelte";
-    import type { InstallableGame } from "$src/lib/shared-models";
     import Button from "../ui/button/button.svelte";
     import { getLocalApi, isRecentlyAdded } from "$src/lib/utils";
     import type { InstallableGameExtended } from "$src/lib/types";
@@ -60,7 +59,7 @@
                 <LazyImage
                     placeholderHeight="220px"
                     placeholderWidth="320px"
-                    src={`/api/resources/${game.cover}`}
+                    src={`${PUBLIC_BACKEND_API_URL}/api/Server/${game.folderSlug}/Cover`}
                     class=" h-full w-full overflow-hidden object-cover object-center">
                     <Loader size={20} />
                 </LazyImage>
@@ -98,7 +97,7 @@
                 placeholderHeight="220px"
                 placeholderWidth="320px"
                 class="h-[7.5rem] max-h-[7.5rem] w-full overflow-hidden object-cover object-center"
-                src={`/api/resources/${currentScreenshot}`}>
+                src={`${PUBLIC_BACKEND_API_URL}/api/Server/Resource?resourceName=${currentScreenshot}`}>
                 <Loader size={20} />
             </LazyImage>
         </div>
