@@ -96,8 +96,8 @@ export default {
         select_game_modes: "Sélectionner des modes de jeu",
         no_game_modes_selected: "Aucun mode de jeu sélectionné",
         no_image_selected: "Aucune image sélectionnée",
-        admin: "Admin",
-        user: "Utilisateur",
+        admins: "Admins",
+        users: "Utilisateurs",
         featured_games: "Jeux en vedette",
     },
     en: {
@@ -195,8 +195,8 @@ export default {
         select_game_modes: "Select game modes",
         no_game_modes_selected: "No game modes selected",
         no_image_selected: "No image selected",
-        admin: "Admin",
-        user: "User",
+        admins: "Admins",
+        users: "Users",
         featured_games: "Featured games",
     },
 };

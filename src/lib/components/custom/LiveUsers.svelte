@@ -36,7 +36,9 @@
         {:else}
             <div class="mt-2 flex w-full flex-col gap-2">
                 {#if adminUsers.length > 0}
-                    <h2 class="mb-1 mt-2 text-sm font-semibold text-muted-foreground">{$t("admins")}</h2>
+                    <h2 class="mb-1 mt-2 text-sm font-semibold text-muted-foreground">
+                        {$t("admins")} — ({adminUsers.length})
+                    </h2>
                     {#each adminUsers as user}
                         <LiveUserRow {user} />
                     {/each}
@@ -47,7 +49,9 @@
                 {/if}
 
                 {#if otherUsers.length > 0}
-                    <h2 class="mb-1 mt-2 text-sm font-semibold text-muted-foreground">{$t("users")}</h2>
+                    <h2 class="mb-1 mt-2 text-sm font-semibold text-muted-foreground">
+                        {$t("users")} — ({otherUsers.length})
+                    </h2>
                     {#each otherUsers as user}
                         <LiveUserRow {user} />
                     {/each}
