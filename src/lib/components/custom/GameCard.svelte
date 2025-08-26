@@ -59,7 +59,7 @@
                 <LazyImage
                     placeholderHeight="220px"
                     placeholderWidth="320px"
-                    src={`${PUBLIC_BACKEND_API_URL}/api/Server/${game.folderSlug}/Cover`}
+                    src={`${PUBLIC_BACKEND_API_URL}/resources/${game.cover}`}
                     class=" h-full w-full overflow-hidden object-cover object-center">
                     <Loader size={20} />
                 </LazyImage>
@@ -97,7 +97,7 @@
                 placeholderHeight="220px"
                 placeholderWidth="320px"
                 class="h-[7.5rem] max-h-[7.5rem] w-full overflow-hidden object-cover object-center"
-                src={`${PUBLIC_BACKEND_API_URL}/api/Server/Resource?resourceName=${currentScreenshot}`}>
+                src={`${PUBLIC_BACKEND_API_URL}/resources/${currentScreenshot}`}>
                 <Loader size={20} />
             </LazyImage>
         </div>

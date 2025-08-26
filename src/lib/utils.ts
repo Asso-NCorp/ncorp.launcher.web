@@ -97,7 +97,7 @@ export async function urlToBase64(url: string): Promise<string> {
 }
 
 export const getGameResourceUrl = (game: InstallableGame, resource: string) => {
-    const url = `${PUBLIC_BACKEND_API_URL}/api/Server/Resource?resourceName=${resource}`;
+    const url = `${PUBLIC_BACKEND_API_URL}/resources/${resource}`;
     return url;
 };
 
