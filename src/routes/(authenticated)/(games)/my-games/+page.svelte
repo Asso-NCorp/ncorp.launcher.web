@@ -12,7 +12,7 @@
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
 
     let filteredGames = $derived(
-        GamesStore.games
+        [...GamesStore.games]
             .sort((a, b) => a.title.localeCompare(b.title))
             .filter((game) => game.isSelected && game.isInstalled),
     );
