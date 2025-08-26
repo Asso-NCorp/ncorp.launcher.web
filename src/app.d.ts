@@ -4,6 +4,7 @@ import type { Session } from "better-auth";
 import type { User } from "./lib/auth/client";
 import type { LiveUser } from "./lib/shared-models";
 import type { event, global_settings } from "@prisma/client";
+import type { InstallableGameExtended } from "./lib/types";
 
 // for information about these interfaces
 declare global {
@@ -14,7 +15,7 @@ declare global {
             liveUsers: LiveUser[];
             localGamesDir: string | undefined;
             events: event[];
-            availableGames: import("./lib/shared-models").InstallableGame[];
+            availableGames: InstallableGameExtended[];
             globalSettings: global_settings[];
         }
     }

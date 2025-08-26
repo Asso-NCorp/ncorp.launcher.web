@@ -6,6 +6,7 @@ import { type LiveUser } from "$src/lib/shared-models";
 import { db } from "$srv/db";
 import type { event, global_settings } from "@prisma/client";
 import { getWinnerGifFiles } from "$src/lib/server/fileUtils";
+import { extendGames } from "$src/lib/utils/games";
 export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
     const session = locals.session;
     const user = locals.user;
@@ -61,7 +62,7 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 
     try {
         // Get available games
-        const availableGames = await getServerApi(jwtToken).getAvailableGames();
+        const availableGames = extendGames(await getServerApi(jwtToken).getAvailableGames());
         locals.availableGames = availableGames;
     } catch (error) {
         logger.error("Error fetching available games", error);

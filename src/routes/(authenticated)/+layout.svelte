@@ -42,7 +42,6 @@
     import { toast } from "svelte-sonner";
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
-    import type { InstallableGameExtended } from "$src/lib/types";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
@@ -86,7 +85,7 @@
     let showConfigGamesDirDialog = $state(false);
     global.currentUser = user;
     liveUsers.users = data.liveUsers; // Filter and sort upcoming events
-    GamesStore.allGames = data.availableGames as InstallableGameExtended[];
+    GamesStore.setGames(data.availableGames);
 
     const upcomingEvents = $derived(() => {
         const now = new Date();
@@ -196,10 +195,11 @@
             if (!global.localGamesFolder) {
                 showConfigGamesDirDialog = true;
             } else {
-                if (GamesStore.allGames.length === 0) await GamesStore.getAvailableGames();
+                if (GamesStore.allGames.length === 0 || GamesStore.installedGames.length === 0)
+                    await GamesStore.getAvailableGames();
             }
 
-            await detectSWUpdate();
+            //await detectSWUpdate();
         }
     });
 

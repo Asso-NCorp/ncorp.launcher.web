@@ -11,7 +11,6 @@
         placeholderWidth?: string;
         placeholderHeight?: string;
         children?: Snippet;
-        fallbackSrc?: string; // new
     };
 
     let {
@@ -23,7 +22,6 @@
         placeholderHeight = "400px",
         style = "",
         children,
-        fallbackSrc = "/img/not_found.webp", // new
         class: className,
         ...rest
     }: $$Props = $props();
@@ -34,18 +32,6 @@
         loaded = true;
         if (image) image.style.cssText = style!;
         else console.error("Image not found");
-    };
-    // new: handle error (e.g., 404) and swap to fallback
-    const handleError = () => {
-        if (!image) return;
-        // If not already using fallback, try it
-        if (!image.src.endsWith(fallbackSrc)) {
-            loaded = false;
-            image.src = fallbackSrc;
-            return;
-        }
-        // Fallback also failed; stop spinner
-        loaded = true;
     };
 </script>
 
@@ -59,7 +45,6 @@
         {alt}
         onloadstart={() => (loaded = false)}
         onload={handleOnLoad}
-        onerror={handleError}
         bind:this={image}
         style="display: none" />
     <div class="pointer-events-none absolute flex h-full w-full items-center justify-center">

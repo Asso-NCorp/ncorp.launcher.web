@@ -71,7 +71,7 @@
 </script>
 
 {#if game}
-    <div class="relative flex h-full w-full flex-col gap-4">
+    <div class="relative flex w-full flex-col gap-4">
         <Button variant="ghost" class="w-auto self-start" onclick={() => window.history.back()}>
             <ArrowLeft />
             {$t("back")}
