@@ -6,6 +6,12 @@
     "background_color": "#140e20",
     "theme_color": "#140e20",
     "description": "Launcher officiel de NCorp",
+    "protocol_handlers": [
+        {
+            "protocol": "web+launcher",
+            "url": "/open?u=%s"
+        }
+    ],
     "icons": [
         {
             "src": "pwa-64x64.png",
