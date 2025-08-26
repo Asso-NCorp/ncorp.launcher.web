@@ -1,0 +1,15 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Ne bump QUE sur main
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$BRANCH" != "main" ]; then
+  echo "ℹ️  pre-commit: skip bump (branche '$BRANCH' ≠ 'main')"
+  exit 0
+fi
+
+echo "🔧 pre-commit: bump version (branche main)"
+bun run bump-version
+
+# Re-stager package.json si modifié
+git add package.json
