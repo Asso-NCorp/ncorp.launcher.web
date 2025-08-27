@@ -455,8 +455,7 @@
                 <!-- Right Header Section - aligned with right sidebar -->
                 <div
                     class="flex items-center justify-center border-b bg-card px-4 transition-all duration-300 ease-in-out"
-                    class:hidden={rightSidebarHidden}
-                    style="width: 210px;">
+                    class:hidden={rightSidebarHidden}>
                     <ThemSelectorAdvanced />
                 </div>
             </div>
@@ -479,9 +478,9 @@
                 </main>
                 <!-- Right Sidebar - LiveUsers -->
                 <aside
-                    class="right-sidebar h-full w-[209px] flex-shrink-0 border-l border-border bg-card transition-all duration-300 ease-in-out"
+                    class="right-sidebar h-full w-68 flex-shrink-0 border-l border-border bg-card transition-all duration-300 ease-in-out"
                     class:hidden={rightSidebarHidden}>
-                    <div class="flex h-full flex-col p-2">
+                    <div class="flex h-full flex-col">
                         <LiveUsers class="h-full" />
                         <div class="mt-auto flex items-center justify-center gap-2 border-t py-2">
                             <!-- KoFi Link -->

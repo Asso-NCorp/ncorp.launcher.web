@@ -45,6 +45,7 @@ iconify-icon {
         --danger: 0 85% 52%;
         --background-subtle: 30 30% 7%;
         --radius: 0rem;
+        --userlist-width: 16.5rem;
     }
 }
 
@@ -66,25 +67,22 @@ iconify-icon {
 
     /* Piste (arrière-plan) de la barre de défilement */
     ::-webkit-scrollbar-track {
-        background-color: hsl(var(--muted));
+        background: hsl(var(--border) / 0.12);
+            /* subtle visible track */
         border-radius: var(--radius);
     }
 
     /* Poignée (thumb) de la barre de défilement */
     ::-webkit-scrollbar-thumb {
-        background-color: hsl(var(--muted-foreground) / 0.5);
+        background-color: hsl(var(--border) / var(--tw-border-opacity, 1));
         border-radius: var(--radius);
-        border: 2px solid hsl(var(--muted));
+        border: none;
     }
 
     /* Poignée au survol */
-    ::-webkit-scrollbar-thumb:hover {
-        background-color: hsl(var(--muted-foreground) / 0.7);
-    }
-
-    /* Poignée active (en train d'être cliquée) */
+        ::-webkit-scrollbar-thumb:hover,
     ::-webkit-scrollbar-thumb:active {
-        background-color: hsl(var(--muted-foreground) / 0.9);
+        background-color: hsl(var(--border) / var(--tw-border-opacity, 1));
     }
 
     /* Boutons de la barre de défilement (flèches aux extrémités) */
@@ -94,12 +92,18 @@ iconify-icon {
 
     /* Coin où se croisent les barres de défilement */
     ::-webkit-scrollbar-corner {
-        background-color: hsl(var(--muted));
+        background: transparent;
     }
 
     /* Pour Firefox */
     * {
         scrollbar-width: thin;
-        scrollbar-color: hsl(var(--muted-foreground) / 0.5) hsl(var(--muted));
+        scrollbar-color: hsl(var(--border) / var(--tw-border-opacity, 1)) hsl(var(--border) / 0.12);
+    }
+}
+
+@layer components {
+    .user-list-header {
+        @apply pb-1 pl-4 pr-1 pt-5 text-sm font-semibold text-muted-foreground;
     }
 }
