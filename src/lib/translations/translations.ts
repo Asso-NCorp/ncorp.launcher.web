@@ -99,6 +99,8 @@ export default {
         admins: "Admins",
         users: "Utilisateurs",
         featured_games: "Jeux en vedette",
+        online: "En ligne",
+        offline: "Hors ligne",
     },
     en: {
         lang,
@@ -198,5 +200,7 @@ export default {
         admins: "Admins",
         users: "Users",
         featured_games: "Featured games",
+        online: "Online",
+        offline: "Offline",
     },
 };

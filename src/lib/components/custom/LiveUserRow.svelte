@@ -81,6 +81,7 @@
 <div
 	onmouseenter={handleMouseEnter}
 	onmouseleave={handleMouseLeave}
+    class:opacity-50={user.status === "Disconnected"}
 	class="group ml-2 h-10 w-full max-w-[calc(var(--userlist-width)_-_1rem)] cursor-pointer py-[1px]">
 	<div class="relative flex h-full items-center justify-start gap-2 rounded-[0.5rem] px-2 group-hover:bg-secondary/50">
 		<div class="relative">

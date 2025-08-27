@@ -5,8 +5,6 @@
     import ScrollArea from "$src/lib/components/custom/ScrollArea.svelte";
     import { t } from "$src/lib/translations";
     import LiveUserRow from "./LiveUserRow.svelte";
-    import * as Popover from "../ui/popover";
-    import * as Avatar from "$lib/components/ui/avatar/index.js";
     import type { LiveUser } from "$src/lib/shared-models";
 
     let { class: klazz }: { class?: string } = $props();
@@ -23,8 +21,9 @@
     );
 
     let connectedAdmins = $derived(adminUsers.filter((user) => user.status === "Connected"));
-
     let connectedUsers = $derived(otherUsers.filter((user) => user.status === "Connected"));
+    let disconnectedUsers = $derived(otherUsers.filter((user) => user.status === "Disconnected"));
+
 </script>
 
 <div class="flex h-screen min-h-0 flex-col">
@@ -46,12 +45,17 @@
 				{/if}
 
 				{#if adminUsers.length > 0 && otherUsers.length > 0}
-					<hr class="my-2 border-border" />
+					<hr class="border-border" />
 				{/if}
 
-				{#if otherUsers.length > 0}
-					<h2 class="pb-1 pl-4 pr-1 pt-5 text-sm font-semibold text-muted-foreground">{$t("users")} — ({connectedUsers.length}/{otherUsers.length})</h2>
-					{#each otherUsers as user}<LiveUserRow {user} />{/each}
+				{#if connectedUsers.length > 0}
+					<h2 class="pb-1 pl-4 pr-1 pt-1 text-sm font-semibold text-muted-foreground">{$t("online")} — ({connectedUsers.length})</h2>
+					{#each connectedUsers as user}<LiveUserRow {user} />{/each}
+				{/if}
+
+				{#if disconnectedUsers.length > 0}
+					<h2 class="pb-1 pl-4 pr-1 pt-1 text-sm font-semibold text-muted-foreground">{$t("offline")} — ({disconnectedUsers.length})</h2>
+					{#each disconnectedUsers as user}<LiveUserRow {user} />{/each}
 				{/if}
 			</div>
 		{/if}
