@@ -101,9 +101,3 @@ iconify-icon {
         scrollbar-color: hsl(var(--border) / var(--tw-border-opacity, 1)) hsl(var(--border) / 0.12);
     }
 }
-
-@layer components {
-    .user-list-header {
-        @apply pb-1 pl-4 pr-1 pt-5 text-sm font-semibold text-muted-foreground;
-    }
-}

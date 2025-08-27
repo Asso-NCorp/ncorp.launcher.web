@@ -41,7 +41,7 @@
 		{:else}
 			<div class="my-2 flex w-full flex-col gap-2 pr-2.5" id="users-container">
 				{#if adminUsers.length > 0}
-					<h2>{$t("admins")} — ({connectedAdmins.length}/{adminUsers.length})</h2>
+					<h2 class="pb-1 pl-4 pr-1 pt-5 text-sm font-semibold text-muted-foreground">{$t("admins")} — ({connectedAdmins.length}/{adminUsers.length})</h2>
 					{#each adminUsers as user}<LiveUserRow {user} />{/each}
 				{/if}
 
@@ -50,17 +50,10 @@
 				{/if}
 
 				{#if otherUsers.length > 0}
-					<h2>{$t("users")} — ({connectedUsers.length}/{otherUsers.length})</h2>
+					<h2 class="pb-1 pl-4 pr-1 pt-5 text-sm font-semibold text-muted-foreground">{$t("users")} — ({connectedUsers.length}/{otherUsers.length})</h2>
 					{#each otherUsers as user}<LiveUserRow {user} />{/each}
 				{/if}
 			</div>
 		{/if}
 	</ScrollArea>
 </div>
-
-
-<style>
-    h2 {
-        @apply user-list-header;
-    }
-</style>
