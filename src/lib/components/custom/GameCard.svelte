@@ -53,22 +53,11 @@
         ? 'ring-green-500'
         : null}">
     <div class="h-full w-full" onmouseenter={() => handleMouseEnter()}>
-        <!-- Cover -->
-        {#if !showDetails}
-            <div class="absolute inset-0 z-10 h-full w-full" transition:fly={{ y: -100, duration: 300 }}>
-                <LazyImage
-                    placeholderHeight="220px"
-                    placeholderWidth="320px"
-                    src={`${PUBLIC_BACKEND_API_URL}/resources/${game.cover}`}
-                    class=" h-full w-full overflow-hidden object-cover object-center">
-                    <Loader size={20} />
-                </LazyImage>
-            </div>
-        {/if}
+        
 
         <!-- Live indicator -->
         {#if game.isPlaying && !showDetails}
-            <div class="absolute left-2 top-2 z-50">
+            <div class="absolute left-2 top-2">
                 <span class="relative flex size-3">
                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75">
                     </span>
@@ -76,6 +65,8 @@
                 </span>
             </div>
         {/if}
+
+        
 
         <div class="relative">
             {#if showDetails}
@@ -162,6 +153,19 @@
                 </div>
             {/if}
         </div>
+
+        <!-- Cover -->
+        {#if !showDetails}
+            <div class="absolute inset-0 h-full w-full" transition:fly={{ y: -100, duration: 300 }}>
+                <LazyImage
+                    placeholderHeight="220px"
+                    placeholderWidth="320px"
+                    src={`${PUBLIC_BACKEND_API_URL}/resources/${game.cover}`}
+                    class=" h-full w-full overflow-hidden object-cover object-center">
+                    <Loader size={20} />
+                </LazyImage>
+            </div>
+        {/if}
     </div>
 
     <div class="flex h-full flex-col space-y-1.5 overflow-hidden p-2">

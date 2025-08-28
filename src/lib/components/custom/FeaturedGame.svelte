@@ -136,7 +136,7 @@
 
                 <!-- REPLACED top shadow: was subtle inline style, now stronger & tailwind-based -->
                 <div
-                    class="pointer-events-none absolute inset-x-0 top-0 z-10 h-[60%] bg-gradient-to-b from-black/70 via-black/40 to-transparent">
+                    class="pointer-events-none absolute inset-x-0 top-0 h-[60%] bg-gradient-to-b from-black/70 via-black/40 to-transparent">
                 </div>
 
                 <!-- THEME GRADIENTS (vertical & horizontal) -->
@@ -183,7 +183,7 @@
         <Button
             type="button"
             variant="ghost"
-            class="pointer-events-none absolute left-2 top-1/2 z-50 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md bg-background/50 text-foreground opacity-0 transition-opacity duration-200 hover:bg-background/70 focus:pointer-events-auto focus:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+            class="pointer-events-none absolute left-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md bg-background/50 text-foreground opacity-0 transition-opacity duration-200 hover:bg-background/70 focus:pointer-events-auto focus:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
             onclick={prev}
             aria-label="Previous">
             ‹
@@ -191,7 +191,7 @@
         <Button
             type="button"
             variant="ghost"
-            class="pointer-events-none absolute right-2 top-1/2 z-50 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md bg-background/50 text-foreground opacity-0 transition-opacity duration-200 hover:bg-background/70 focus:pointer-events-auto focus:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+            class="pointer-events-none absolute right-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md bg-background/50 text-foreground opacity-0 transition-opacity duration-200 hover:bg-background/70 focus:pointer-events-auto focus:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
             onclick={next}
             aria-label="Next">
             ›

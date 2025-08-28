@@ -1,16 +1,16 @@
 <script lang="ts">
-    import type { UserConnectionStatus } from "$src/lib/shared-models";
+    import type { UserConnectionType } from "$src/lib/shared-models";
     import { cn } from "$src/lib/utils";
     import type { HubConnectionState } from "@microsoft/signalr";
     import { fly } from "svelte/transition";
 
-    let { status, class: klazz }: { status: UserConnectionStatus | undefined; class?: string } = $props();
+    let { status, class: klazz }: { status: UserConnectionType | undefined; class?: string } = $props();
 </script>
 
 <div
     transition:fly={{ y: -10, duration: 300 }}
-    class:bg-green-500={status === "Connected"}
-   class:hidden={status == "Disconnected"}
+    class:bg-green-500={status === "LauncherOnly" || status === "Full"}
+    class:hidden={status == "Disconnected"}
     class={cn(
         "absolute bottom-0 right-[1px] h-3 w-3 scale-90 rounded-full ring-[2.5px] ring-[hsl(var(--background)_/_var(--tw-bg-opacity,1))]",
         klazz,

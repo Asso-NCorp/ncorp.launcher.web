@@ -58,6 +58,12 @@ export interface UserConnectionEntry {
      * @memberof UserConnectionEntry
      */
     readonly hasWebConnection?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserConnectionEntry
+     */
+    readonly hasBothConnections?: boolean;
 }
 
 /**
@@ -81,6 +87,7 @@ export function UserConnectionEntryFromJSONTyped(json: any, ignoreDiscriminator:
         'connections': json['connections'] == null ? undefined : (new Set((json['connections'] as Array<any>).map(ConnectionInfoFromJSON))),
         'hasAgentConnection': json['hasAgentConnection'] == null ? undefined : json['hasAgentConnection'],
         'hasWebConnection': json['hasWebConnection'] == null ? undefined : json['hasWebConnection'],
+        'hasBothConnections': json['hasBothConnections'] == null ? undefined : json['hasBothConnections'],
     };
 }
 
@@ -88,7 +95,7 @@ export function UserConnectionEntryToJSON(json: any): UserConnectionEntry {
     return UserConnectionEntryToJSONTyped(json, false);
 }
 
-export function UserConnectionEntryToJSONTyped(value?: Omit<UserConnectionEntry, 'hasAgentConnection'|'hasWebConnection'> | null, ignoreDiscriminator: boolean = false): any {
+export function UserConnectionEntryToJSONTyped(value?: Omit<UserConnectionEntry, 'hasAgentConnection'|'hasWebConnection'|'hasBothConnections'> | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

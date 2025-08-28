@@ -83,7 +83,6 @@ export class SignalREventBinder {
         });
 
 
-
         this.offAndOn(liveServerConnection, "UserActivityChanged", (userId: string, activity: UserActivity) => {
             liveUsers.updateUserActivity(userId, activity);
         });
@@ -105,6 +104,7 @@ export class SignalREventBinder {
         });
 
         this.offAndOn(liveServerConnection, "UserStatusChanged", async (userId: string, status: UserConnectionStatus) => {
+            logger.info(`UserStatusChanged: ${userId} is now ${status}`);
             await liveUsers.updateUserStatus(userId, status);
         });
 

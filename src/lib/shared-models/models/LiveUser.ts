@@ -20,13 +20,13 @@ import {
     UserActivityToJSON,
     UserActivityToJSONTyped,
 } from './UserActivity';
-import type { UserConnectionStatus } from './UserConnectionStatus';
+import type { UserConnectionType } from './UserConnectionType';
 import {
-    UserConnectionStatusFromJSON,
-    UserConnectionStatusFromJSONTyped,
-    UserConnectionStatusToJSON,
-    UserConnectionStatusToJSONTyped,
-} from './UserConnectionStatus';
+    UserConnectionTypeFromJSON,
+    UserConnectionTypeFromJSONTyped,
+    UserConnectionTypeToJSON,
+    UserConnectionTypeToJSONTyped,
+} from './UserConnectionType';
 
 /**
  * 
@@ -78,10 +78,10 @@ export interface LiveUser {
     isSpeaking?: boolean;
     /**
      * 
-     * @type {UserConnectionStatus}
+     * @type {UserConnectionType}
      * @memberof LiveUser
      */
-    status?: UserConnectionStatus;
+    status?: UserConnectionType;
     /**
      * 
      * @type {number}
@@ -116,7 +116,7 @@ export function LiveUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'role': json['role'] == null ? undefined : json['role'],
         'activity': json['activity'] == null ? undefined : UserActivityFromJSON(json['activity']),
         'isSpeaking': json['isSpeaking'] == null ? undefined : json['isSpeaking'],
-        'status': json['status'] == null ? undefined : UserConnectionStatusFromJSON(json['status']),
+        'status': json['status'] == null ? undefined : UserConnectionTypeFromJSON(json['status']),
         'gameInstallProgress': json['gameInstallProgress'] == null ? undefined : json['gameInstallProgress'],
     };
 }
@@ -139,7 +139,7 @@ export function LiveUserToJSONTyped(value?: LiveUser | null, ignoreDiscriminator
         'role': value['role'],
         'activity': UserActivityToJSON(value['activity']),
         'isSpeaking': value['isSpeaking'],
-        'status': UserConnectionStatusToJSON(value['status']),
+        'status': UserConnectionTypeToJSON(value['status']),
         'gameInstallProgress': value['gameInstallProgress'],
     };
 }

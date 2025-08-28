@@ -4,11 +4,13 @@
 	import { fly } from "svelte/transition";
 	import UserStatusDot from "./UserStatusDot.svelte";
 	import { goto } from "$app/navigation";
+	import { page } from "$app/stores"; // gives access to connected user via $page.data
 	import Progress from "../ui/progress/progress.svelte";
 	import AvatarDiscord from "./AvatarDiscord.svelte";
 	import { tick } from "svelte";
+    import AdminStatusDot from "./AdminStatusDot.svelte";
 
-	let { user }: { user: LiveUser } = $props();
+	let { user } : { user: LiveUser } = $props();
 
 	let videoEl: HTMLVideoElement | null = null;
 	let hovering = $state(false);
@@ -94,7 +96,11 @@
 					? `/api/medias/decorations?filename=admin&animated=${hovering}`
 					: undefined}
 				ring={user.isSpeaking} />
-			<UserStatusDot status={user.status} class="absolute -bottom-0 -right-0" />
+				{#if $page.data?.user?.role === "admin"}
+					<AdminStatusDot status={user.status} />
+				{:else}
+					<UserStatusDot status={user.status} />
+				{/if}
 		</div>
 
 		<div class="flex min-h-8 flex-col justify-center overflow-hidden text-start">

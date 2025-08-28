@@ -117,7 +117,7 @@ models/UpdateFeaturedGamesDto.ts
 models/UserActivity.ts
 models/UserActivityType.ts
 models/UserConnectionEntry.ts
-models/UserConnectionStatus.ts
+models/UserConnectionType.ts
 models/UsernameFileConfig.ts
 models/Website.ts
 models/WebsiteCategory.ts

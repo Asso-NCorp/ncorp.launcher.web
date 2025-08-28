@@ -115,7 +115,7 @@ export * from './UpdateFeaturedGamesDto';
 export * from './UserActivity';
 export * from './UserActivityType';
 export * from './UserConnectionEntry';
-export * from './UserConnectionStatus';
+export * from './UserConnectionType';
 export * from './UsernameFileConfig';
 export * from './Website';
 export * from './WebsiteCategory';
