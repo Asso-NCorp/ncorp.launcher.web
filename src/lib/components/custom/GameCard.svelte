@@ -1,6 +1,6 @@
 <script lang="ts">
     import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
-    import { fly } from "svelte/transition";
+    import { fade, fly } from "svelte/transition";
     import LazyImage from "./LazyImage.svelte";
     import Loader from "./Loader.svelte";
     import Checkbox from "../ui/checkbox/checkbox.svelte";
@@ -46,15 +46,14 @@
 
 <div
     id="game-card-{game.folderSlug}"
+    onmouseenter={handleMouseEnter}
     onmouseleave={handleMouseLeave}
     class:ring-2={game.isSelected}
     class:ring-primary={game.isSelected}
     class="group/card relative flex h-80 max-w-[15rem] flex-col overflow-hidden rounded-lg border bg-subtle/10 text-card-foreground backdrop-blur-sm transition-all duration-300 dark:backdrop-blur-none {game.isInstalled
         ? 'ring-green-500'
         : null}">
-    <div class="h-full w-full" onmouseenter={() => handleMouseEnter()}>
-        
-
+    <div class="h-full w-full">
         <!-- Live indicator -->
         {#if game.isPlaying && !showDetails}
             <div class="absolute left-2 top-2">
@@ -66,9 +65,15 @@
             </div>
         {/if}
 
-        
-
         <div class="relative">
+            <!-- Reordered: image first, overlay second so no z-index needed -->
+            <LazyImage
+                placeholderHeight="220px"
+                placeholderWidth="320px"
+                class="h-[7.5rem] max-h-[7.5rem] w-full overflow-hidden object-cover object-center"
+                src={`${PUBLIC_BACKEND_API_URL}/resources/${currentScreenshot}`}>
+                <Loader size={20} />
+            </LazyImage>
             {#if showDetails}
                 <div
                     onclick={() => goto(`/games/${game.folderSlug}`)}
@@ -84,13 +89,6 @@
                     {/each}
                 </div>
             {/if}
-            <LazyImage
-                placeholderHeight="220px"
-                placeholderWidth="320px"
-                class="h-[7.5rem] max-h-[7.5rem] w-full overflow-hidden object-cover object-center"
-                src={`${PUBLIC_BACKEND_API_URL}/resources/${currentScreenshot}`}>
-                <Loader size={20} />
-            </LazyImage>
         </div>
 
         {#if game.isPlaying && !showDetails}
@@ -98,7 +96,7 @@
                 transition:fly={{ y: 20, duration: 300 }}
                 class:bg-primary={!game.isPlaying}
                 class:bg-success={game.isPlaying}
-                class="absolute inset-x-0 bottom-0 left-1/2 z-50 -translate-x-1/2 rounded-t-[0.30rem] p-1 text-center text-xs font-bold uppercase text-white">
+                class="absolute inset-x-0 bottom-0 left-1/2 -translate-x-1/2 rounded-t-[0.30rem] p-1 text-center text-xs font-bold uppercase text-white">
                 {#if game.isPlaying}
                     <div>{$t("playing")}</div>
                 {/if}
@@ -119,7 +117,21 @@
             </div>
         {/if}
 
-        <div class="absolute right-2 top-2 z-10 flex items-center">
+        {#if !showDetails}
+            <!-- Cover moved BEFORE badges so badges paint above; pointer-events disabled -->
+            <div class="pointer-events-none absolute inset-0" aria-hidden="true" transition:fade={{ duration: 100}}>
+                <LazyImage
+                    placeholderHeight="220px"
+                    placeholderWidth="320px"
+                    src={`${PUBLIC_BACKEND_API_URL}/resources/${game.cover}`}
+                    class="h-full w-full overflow-hidden object-cover object-center">
+                    <Loader size={20} />
+                </LazyImage>
+            </div>
+        {/if}
+
+        <!-- Badges/top-right -->
+        <div class="absolute right-2 top-2 flex items-center">
             {#if isRecentlyAdded(game) && !game.isPlaying && !showDetails}
                 <Badge
                     variant="secondary"
@@ -153,19 +165,6 @@
                 </div>
             {/if}
         </div>
-
-        <!-- Cover -->
-        {#if !showDetails}
-            <div class="absolute inset-0 h-full w-full" transition:fly={{ y: -100, duration: 300 }}>
-                <LazyImage
-                    placeholderHeight="220px"
-                    placeholderWidth="320px"
-                    src={`${PUBLIC_BACKEND_API_URL}/resources/${game.cover}`}
-                    class=" h-full w-full overflow-hidden object-cover object-center">
-                    <Loader size={20} />
-                </LazyImage>
-            </div>
-        {/if}
     </div>
 
     <div class="flex h-full flex-col space-y-1.5 overflow-hidden p-2">
@@ -208,13 +207,17 @@
             </div>
         </div>
     </div>
-    <div class="flex h-auto w-full flex-col p-2">
-        <GameActionButton {game} class="w-full" />
-    </div>
+
+    {#if showDetails}
+        <div class="flex h-auto w-full flex-col p-2">
+            <GameActionButton {game} class="w-full" />
+        </div>
+    {/if}
 
     {#if game.isInstalling && !showDetails}
+        <!-- Install overlay last so it naturally sits on top (removed z-index) -->
         <div
-            class="pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-2 bg-black bg-opacity-50">
+            class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black bg-opacity-50">
             {#if game.installProgress > 0}
                 <Loader size={40} class="!text-white" />
             {/if}
