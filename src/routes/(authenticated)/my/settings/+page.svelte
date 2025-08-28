@@ -60,9 +60,16 @@
     };
 
     const handleUninstallAllGames = async () => {
-        GamesStore.isLoading = true;
-        await GamesStore.uninstallAllInstalledGames();
-        GamesStore.isLoading = false;
+        showUninstallDialog = false; // close the dialog immediately
+        try {
+            GamesStore.isLoading = true;
+            await GamesStore.uninstallAllInstalledGames();
+        } catch (error) {
+            console.error(error);
+            toast.error("Échec de la suppression");
+        } finally {
+            GamesStore.isLoading = false;
+        }
     };
 
     onMount(() => {
@@ -128,7 +135,8 @@
                             <AlertDialog.Cancel>Annuler</AlertDialog.Cancel>
                             <AlertDialog.Action
                                 class="border-primary bg-background text-danger"
-                                onclick={handleUninstallAllGames}>
+                                onclick={handleUninstallAllGames}
+                                disabled={GamesStore.isLoading}>
                                 Tout supprimer
                             </AlertDialog.Action>
                         </AlertDialog.Footer>
