@@ -42,6 +42,7 @@
     import { toast } from "svelte-sonner";
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
+    import StatusDot from "$src/lib/components/custom/StatusDot.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
@@ -437,14 +438,14 @@
                             class="flex h-full w-auto flex-col items-start justify-center border-l pl-2 text-xs text-muted-foreground">
                             <div class="flex w-full items-center justify-between gap-2">
                                 <span>Agent</span>
-                                <UserStatusDot
+                                <StatusDot
                                     class="static left-0 top-0 m-0 p-0"
                                     status={liveAgentConnection.connectionState} />
                             </div>
 
                             <div class="flex w-full items-center justify-between gap-2">
                                 <span>Serveur</span>
-                                <UserStatusDot
+                                <StatusDot
                                     class="static left-0 top-0 m-0 p-0"
                                     status={liveServerConnection.connectionState} />
                             </div>
