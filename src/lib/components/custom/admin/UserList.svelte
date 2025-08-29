@@ -23,12 +23,6 @@
         window.location.reload();
     };
 
-    const formatDateTimeToLocal = (dateTime: string) => {
-        // Needs to be local +2
-        const date = new Date(dateTime);
-        date.setHours(date.getHours() + 2); 
-        return date.toLocaleString();
-    };
 
     onMount(() => {
         if (!table) return;
@@ -94,7 +88,7 @@
                     data: "lastLogin",
                     className: "text-center",
                     width: COL_WIDTH,
-                    render: (data, type) => (type === "display" && data ? formatDateTimeToLocal(data) : data ? data : "Jamais"),
+                    render: (data, type) => (type === "display" && data ? new Date(data).toLocaleString() : data ? data : "Jamais"),
                 },
                 { title: "", data: null, orderable: false, defaultContent: "", width: COL_WIDTH },
             ],
