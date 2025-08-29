@@ -13,6 +13,7 @@
     import Button from "../ui/button/button.svelte";
     import { getLocalApi, isRecentlyAdded } from "$src/lib/utils";
     import type { InstallableGameExtended } from "$src/lib/types";
+    import WordRotate from "./WordRotate.svelte";
     let { game }: { game: InstallableGameExtended } = $props();
     let currentScreenshot = $state(game.screenshots ? game.screenshots[0] : "");
     let showDetails = $state(false);
@@ -56,10 +57,9 @@
     <div class="h-full w-full">
         <!-- Live indicator -->
         {#if game.isPlaying && !showDetails}
-            <div class="absolute left-2 top-2">
+            <div class="absolute left-2 top-2 z-20">
                 <span class="relative flex size-3">
-                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75">
-                    </span>
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
                     <span class="relative inline-flex size-3 rounded-full bg-green-500"></span>
                 </span>
             </div>
@@ -96,7 +96,7 @@
                 transition:fly={{ y: 20, duration: 300 }}
                 class:bg-primary={!game.isPlaying}
                 class:bg-success={game.isPlaying}
-                class="absolute inset-x-0 bottom-0 left-1/2 -translate-x-1/2 rounded-t-[0.30rem] p-1 text-center text-xs font-bold uppercase text-white">
+                class="absolute inset-x-0 bottom-0 z-20 left-1/2 -translate-x-1/2 rounded-t-[0.30rem] p-1 text-center text-xs font-bold uppercase text-white">
                 {#if game.isPlaying}
                     <div>{$t("playing")}</div>
                 {/if}
@@ -119,7 +119,7 @@
 
         {#if !showDetails}
             <!-- Cover moved BEFORE badges so badges paint above; pointer-events disabled -->
-            <div class="pointer-events-none absolute inset-0" aria-hidden="true" transition:fade={{ duration: 100}}>
+            <div class="pointer-events-none absolute inset-0" aria-hidden="true" transition:fade={{ duration: 100 }}>
                 <LazyImage
                     placeholderHeight="220px"
                     placeholderWidth="320px"
@@ -222,7 +222,12 @@
                 <Loader size={40} class="!text-white" />
             {/if}
             <div class="flex flex-col">
-                <div class="text-center text-white">{$t("install_in_progress")} ({game.installProgress}%)</div>
+                <div class="text-center text-white">
+                    (<span>{game.installProgress}%</span>)
+                    <WordRotate
+                        word={game.installProgress < 50 ? $t("download_in_progress") : $t("install_in_progress")} />
+                        
+                </div>
             </div>
             <br />
             <!-- <Progress class="absolute bottom-2 mx-auto h-4 w-2/3 px-2" value={game.installProgress} /> -->
