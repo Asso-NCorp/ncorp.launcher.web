@@ -20,8 +20,8 @@
             .sort((a, b) => (a.name || "").localeCompare(b.name || "")),
     );
 
-    let connectedAdmins = $derived(adminUsers.filter((user) => user.status === "Connected"));
-    let connectedUsers = $derived(otherUsers.filter((user) => user.status === "Connected"));
+    let connectedAdmins = $derived(adminUsers.filter((user) => user.status !== "Disconnected"));
+    let connectedUsers = $derived(otherUsers.filter((user) => user.status !== "Disconnected"));
     let disconnectedUsers = $derived(otherUsers.filter((user) => user.status === "Disconnected"));
 
 </script>
