@@ -10,6 +10,7 @@
     import AdminStatusDot from "./AdminStatusDot.svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { page } from "$app/state";
+    import { gameStatuses } from "$src/lib/stores/gameStatusesStore";
 
     let { user }: { user: LiveUser } = $props();
 
@@ -30,6 +31,14 @@
 
     let showActivity = $derived(
         !!user.activity && user.activity.activityType !== "Idle" && user.status !== "Disconnected",
+    );
+
+    // 👇 Normalisation de la progression
+    const installProgress = $derived(
+        user.activity?.installProgress ??
+        user.activity?.progress ??
+        user.gameInstallProgress ??
+        0
     );
 
     function waitCanPlay(el: HTMLVideoElement) {
@@ -116,7 +125,7 @@
                     out:fade={{ duration: 200 }}
                     src={GamesStore.getGameScreenshot(user.activity!.gameSlug!)}
                     alt={user.activity?.gameTitle || user.name}
-					style="mask-image:linear-gradient(90deg, transparent 0%, rgba(0, 128, 183, .08) 20%, rgba(0, 128, 183, .08) 50%, rgba(0, 128, 183, .6) {hovering ? "70" : "100"}%);"
+                    style="mask-image:linear-gradient(90deg, transparent 0%, rgba(0, 128, 183, .08) 20%, rgba(0, 128, 183, .08) 50%, rgba(0, 128, 183, .6) {hovering ? '70' : '100'}%);"
                     class="pointer-events-none absolute right-0 w-full object-contain object-center opacity-70 group-hover:opacity-100 transition-all duration-300"/>
             {/if}
 
@@ -141,20 +150,26 @@
                         <div
                             role="button"
                             onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
-                            class="flex flex-1 h-3 items-center gap-1 p-0 text-xs">
+                            class="flex flex-1 h-3 items-center justify-items-start gap-1 p-0 text-xs">
                             <span class="truncate p-1 text-primary/70 max-w-[75%] w-full">{user.activity?.gameTitle}</span>
+							{#if installProgress > 0 && installProgress < 100}
+								<span class="text-white/70 text-xs">({installProgress}%)</span>
+							{/if}
                         </div>
-                        {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
-                            <Progress
-                                value={user.gameInstallProgress}
-                                class="absolute -bottom-[2px] right-0 h-0.5 w-[80%]"
-                                color="primary"
-                                aria-label="Game install progress" />
-                        {/if}
                     </div>
                 {/if}
             </div>
+
+			{#if installProgress > 0 && installProgress < 100}
+            <Progress
+                value={installProgress}
+                class="pointer-events-none absolute -bottom-px right-2 h-[3px] w-[80%] self-center"
+                color="primary"
+                aria-label="Game install progress" />
+        {/if}
         </div>
+
+        
 
         {#if shouldShowNameplate && !shouldShowActivityImage}
             {#if hovering === false || user.status === "Disconnected"}
@@ -186,15 +201,10 @@
 </div>
 
 <style>
-    .game-cover {
-        mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 10%, rgba(0, 0, 0, 0) 100%);
-    }
-
-    /* 2 lignes: 1fr (nom centré) + auto (activité). Quand pas d’activité, la 2e ligne est à 0 via max-height. */
     .name-activity-grid {
         display: grid;
         grid-template-rows: 1fr auto;
-        align-items: center; /* centre verticalement le nom dans la 1ère ligne */
+        align-items: center;
     }
 
     .activity-reveal {
@@ -206,7 +216,7 @@
             opacity 200ms linear 40ms;
     }
     .activity-reveal.show {
-        max-height: 22px; /* ≈ hauteur d’une ligne text-xs */
+        max-height: 22px;
         opacity: 1;
     }
 </style>
