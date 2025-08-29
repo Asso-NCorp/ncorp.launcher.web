@@ -11,6 +11,7 @@ import { parse as parseTopLevelDomain } from "tldts";
 
 import { logger } from "$src/lib/stores/loggerStore";
 import { generateRandomAvatar } from "$src/lib/utils.server";
+import { db } from "$srv/db";
 
 export const load: PageServerLoad = (async () => {
     return {
@@ -110,6 +111,12 @@ export const actions: Actions = {
                 } catch (error) {
                     logger.debug({ error }, "Error occurred while generating random avatar");
                 }
+
+                // Update the lastLogin
+                await db.user.update({
+                    where: { id: session.user.id },
+                    data: { lastLogin: new Date() },
+                });
             }
         } catch (error) {
             console.log(error);

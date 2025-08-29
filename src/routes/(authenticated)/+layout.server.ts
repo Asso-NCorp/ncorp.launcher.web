@@ -46,7 +46,6 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
             orderBy: { start_time: "asc" },
         });
         locals.events = events;
-        logger.info("Events fetched successfully", { count: events.length });
     } catch (error) {
         logger.error("Error fetching events", error);
     }
@@ -55,7 +54,6 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         // Get global settings
         const globalSettings = await db.global_settings.findMany();
         locals.globalSettings = globalSettings;
-        logger.info("Global settings fetched successfully", { count: globalSettings.length });
     } catch (error) {
         logger.error("Error fetching global settings", error);
     }

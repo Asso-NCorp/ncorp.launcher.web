@@ -10,7 +10,7 @@ import { db } from "$srv/db";
 import type { User } from "$src/lib/auth/client";
 
 export const load = (async ({ request }) => {
-    const usersResult: { users: User[] } = await auth.api.listUsers({
+    const usersResult = await auth.api.listUsers({
         query: {
             limit: 100,
         },

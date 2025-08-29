@@ -18,7 +18,7 @@ export const auth = betterAuth({
     advanced: {
         crossSubDomainCookies: {
             enabled: true,
-            domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`
+            domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
         },
         defaultCookieAttributes: {
             secure: PUBLIC_BETTER_AUTH_URL.startsWith("https://"),
@@ -26,19 +26,21 @@ export const auth = betterAuth({
             httpOnly: true,
             partitioned: true,
         },
-
     },
     secret: BETTER_AUTH_SECRET,
     user: {
         additionalFields: {
             role: {
-                type: "string"
-            }
-        }
+                type: "string",
+            },
+            lastLogin: {
+                type: "date",
+            },
+        },
     },
     emailAndPassword: {
         enabled: true,
-        autoSignIn: true
+        autoSignIn: true,
     },
     session: {
         expiresIn: 60 * 60 * 24 * 30, // 30 days,
@@ -50,7 +52,7 @@ export const auth = betterAuth({
         jwt({
             jwks: {
                 disablePrivateKeyEncryption: true,
-                keyPairConfig: { alg: "ES512" }
+                keyPairConfig: { alg: "ES512" },
             },
             jwt: {
                 expirationTime: "30d",
@@ -60,11 +62,10 @@ export const auth = betterAuth({
         openAPI(),
         organization({
             allowUserToCreateOrganization: false,
-        })
+        }),
     ],
     hooks: {
         after: createAuthMiddleware(async (ctx) => {
-
             if (ctx.path === "/sign-out") {
                 console.log("Signout!", ctx.path);
                 ctx.setCookie("token", "", {
@@ -73,10 +74,10 @@ export const auth = betterAuth({
                     domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
                 });
             }
-        })
+        }),
     },
     appName: "NCorp Launcher",
-    trustedOrigins: [PUBLIC_BETTER_AUTH_URL]
-})
+    trustedOrigins: [PUBLIC_BETTER_AUTH_URL],
+});
 
 export type ServerSession = typeof auth.$Infer.Session

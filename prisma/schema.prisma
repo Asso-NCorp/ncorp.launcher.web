@@ -1,232 +1,280 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model account {
-    id                    String    @id @db.VarChar(36)
-    accountId             String    @db.Text
-    providerId            String    @db.Text
-    userId                String    @db.VarChar(36)
-    accessToken           String?   @db.Text
-    refreshToken          String?   @db.Text
-    idToken               String?   @db.Text
-    accessTokenExpiresAt  DateTime? @db.DateTime(0)
-    refreshTokenExpiresAt DateTime? @db.DateTime(0)
-    scope                 String?   @db.Text
-    password              String?   @db.Text
-    createdAt             DateTime  @db.DateTime(0)
-    updatedAt             DateTime  @db.DateTime(0)
+  id                    String    @id @db.VarChar(36)
+  accountId             String    @db.Text
+  providerId            String    @db.Text
+  userId                String    @db.VarChar(36)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime? @db.DateTime(0)
+  refreshTokenExpiresAt DateTime? @db.DateTime(0)
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @db.DateTime(0)
+  updatedAt             DateTime  @db.DateTime(0)
 }
 
 model invitation {
-    id             String   @id @db.VarChar(36)
-    organizationId String   @db.VarChar(36)
-    email          String   @db.Text
-    role           String?  @db.Text
-    status         String   @db.Text
-    expiresAt      DateTime @db.DateTime(0)
-    inviterId      String   @db.VarChar(36)
+  id             String   @id @db.VarChar(36)
+  organizationId String   @db.VarChar(36)
+  email          String   @db.Text
+  role           String?  @db.Text
+  status         String   @db.Text
+  expiresAt      DateTime @db.DateTime(0)
+  inviterId      String   @db.VarChar(36)
 }
 
 model jwks {
-    id         String   @id @db.VarChar(36)
-    publicKey  String   @db.Text
-    privateKey String   @db.Text
-    createdAt  DateTime @db.DateTime(0)
+  id         String   @id @db.VarChar(36)
+  publicKey  String   @db.Text
+  privateKey String   @db.Text
+  createdAt  DateTime @db.DateTime(0)
 }
 
 model member {
-    id             String   @id @db.VarChar(36)
-    organizationId String   @db.VarChar(36)
-    userId         String   @db.VarChar(36)
-    role           String   @db.Text
-    createdAt      DateTime @db.DateTime(0)
+  id             String   @id @db.VarChar(36)
+  organizationId String   @db.VarChar(36)
+  userId         String   @db.VarChar(36)
+  role           String   @db.Text
+  createdAt      DateTime @db.DateTime(0)
 }
 
 model organization {
-    id        String   @id @db.VarChar(36)
-    name      String   @db.Text
-    slug      String   @unique(map: "slug") @db.VarChar(255)
-    logo      String?  @db.Text
-    createdAt DateTime @db.DateTime(0)
-    metadata  String?  @db.Text
+  id        String   @id @db.VarChar(36)
+  name      String   @db.Text
+  slug      String   @unique(map: "slug") @db.VarChar(255)
+  logo      String?  @db.Text
+  createdAt DateTime @db.DateTime(0)
+  metadata  String?  @db.Text
 }
 
 model session {
-    id                   String   @id @db.VarChar(36)
-    expiresAt            DateTime @db.DateTime(0)
-    token                String   @unique(map: "token") @db.VarChar(255)
-    createdAt            DateTime @db.DateTime(0)
-    updatedAt            DateTime @db.DateTime(0)
-    ipAddress            String?  @db.Text
-    userAgent            String?  @db.Text
-    userId               String   @db.VarChar(36)
-    impersonatedBy       String?  @db.Text
-    activeOrganizationId String?  @db.Text
+  id                   String   @id @db.VarChar(36)
+  expiresAt            DateTime @db.DateTime(0)
+  token                String   @unique(map: "token") @db.VarChar(255)
+  createdAt            DateTime @db.DateTime(0)
+  updatedAt            DateTime @db.DateTime(0)
+  ipAddress            String?  @db.Text
+  userAgent            String?  @db.Text
+  userId               String   @db.VarChar(36)
+  impersonatedBy       String?  @db.Text
+  activeOrganizationId String?  @db.Text
 }
 
 model user {
-    id                                                          String                 @id @db.VarChar(36)
-    name                                                        String                 @db.Text
-    email                                                       String                 @unique(map: "email") @db.VarChar(255)
-    emailVerified                                               Boolean
-    image                                                       String?                @db.Text
-    createdAt                                                   DateTime               @db.DateTime(0)
-    updatedAt                                                   DateTime               @db.DateTime(0)
-    username                                                    String?                @unique(map: "username") @db.VarChar(255)
-    role                                                        String                 @db.Text
-    banned                                                      Boolean?
-    banReason                                                   String?                @db.Text
-    banExpires                                                  DateTime?              @db.DateTime(0)
-    displayUsername                                             String?                @db.Text
-    chat_message                                                chat_message[]
-    chat_private_message_chat_private_message_senderIdTouser    chat_private_message[] @relation("chat_private_message_senderIdTouser")
-    chat_private_message_chat_private_message_recipientIdTouser chat_private_message[] @relation("chat_private_message_recipientIdTouser")
-    user_settings                                               user_settings?
-    game_session                                                game_session[]
-    event_created                                               event[]                @relation("event_created_by")
-    event_updated                                               event[]                @relation("event_updated_by")
+  id                                                          String                 @id @db.VarChar(36)
+  name                                                        String                 @db.Text
+  email                                                       String                 @unique(map: "email") @db.VarChar(255)
+  emailVerified                                               Boolean
+  image                                                       String?                @db.Text
+  createdAt                                                   DateTime               @db.DateTime(0)
+  updatedAt                                                   DateTime               @db.DateTime(0)
+  username                                                    String?                @unique(map: "username") @db.VarChar(255)
+  role                                                        String                 @db.Text
+  banned                                                      Boolean?
+  banReason                                                   String?                @db.Text
+  banExpires                                                  DateTime?              @db.DateTime(0)
+  displayUsername                                             String?                @db.Text
+  lastLogin                                                   DateTime?              @db.DateTime(0)
+  chat_message                                                chat_message[]
+  chat_private_message_chat_private_message_senderIdTouser    chat_private_message[] @relation("chat_private_message_senderIdTouser")
+  chat_private_message_chat_private_message_recipientIdTouser chat_private_message[] @relation("chat_private_message_recipientIdTouser")
+  user_settings                                               user_settings?
+  game_session                                                game_session[]
+  event_created                                               event[]                @relation("event_created_by")
+  event_updated                                               event[]                @relation("event_updated_by")
+  gamesCreated                                                game[]                 @relation("GameCreatedBy")
+  gamesUpdated                                                game[]                 @relation("GameUpdatedBy")
 }
 
 model verification {
-    id         String    @id @db.VarChar(36)
-    identifier String    @db.Text
-    value      String    @db.Text
-    expiresAt  DateTime  @db.DateTime(0)
-    createdAt  DateTime? @db.DateTime(0)
-    updatedAt  DateTime? @db.DateTime(0)
+  id         String    @id @db.VarChar(36)
+  identifier String    @db.Text
+  value      String    @db.Text
+  expiresAt  DateTime  @db.DateTime(0)
+  createdAt  DateTime? @db.DateTime(0)
+  updatedAt  DateTime? @db.DateTime(0)
 }
 
 model chat_channel {
-    id           Int            @id @default(autoincrement())
-    name         String         @db.VarChar(100)
-    createdAt    DateTime       @default(now()) @db.Timestamp(0)
-    serverId     Int
-    chat_server  chat_server    @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_channel_chat_server_FK")
-    chat_message chat_message[]
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(100)
+  createdAt    DateTime       @default(now()) @db.Timestamp(0)
+  serverId     Int
+  chat_server  chat_server    @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_channel_chat_server_FK")
+  chat_message chat_message[]
 
-    @@index([serverId], map: "chat_channel_chat_server_FK")
+  @@index([serverId], map: "chat_channel_chat_server_FK")
 }
 
 model chat_message {
-    id           Int          @id @default(autoincrement())
-    senderId     String       @db.VarChar(36)
-    channelId    Int
-    timestamp    DateTime     @default(now()) @db.DateTime(0)
-    text         String       @db.VarChar(1000)
-    chat_channel chat_channel @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_messages_chat_channel_FK")
-    user         user         @relation(fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_messages_user_FK")
+  id           Int          @id @default(autoincrement())
+  senderId     String       @db.VarChar(36)
+  channelId    Int
+  timestamp    DateTime     @default(now()) @db.DateTime(0)
+  text         String       @db.VarChar(1000)
+  chat_channel chat_channel @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_messages_chat_channel_FK")
+  user         user         @relation(fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_messages_user_FK")
 
-    @@index([channelId], map: "chat_messages_chat_channel_FK")
-    @@index([senderId], map: "chat_messages_user_FK")
+  @@index([channelId], map: "chat_messages_chat_channel_FK")
+  @@index([senderId], map: "chat_messages_user_FK")
 }
 
 model chat_private_message {
-    id                                          Int                         @id @default(autoincrement())
-    senderId                                    String                      @db.VarChar(36)
-    recipientId                                 String                      @db.VarChar(36)
-    timestamp                                   DateTime                    @default(now()) @db.Timestamp(0)
-    text                                        String                      @db.VarChar(1000)
-    status                                      chat_private_message_status @default(sent)
-    user_chat_private_message_senderIdTouser    user                        @relation("chat_private_message_senderIdTouser", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK")
-    user_chat_private_message_recipientIdTouser user                        @relation("chat_private_message_recipientIdTouser", fields: [recipientId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK_1")
+  id                                          Int                         @id @default(autoincrement())
+  senderId                                    String                      @db.VarChar(36)
+  recipientId                                 String                      @db.VarChar(36)
+  timestamp                                   DateTime                    @default(now()) @db.Timestamp(0)
+  text                                        String                      @db.VarChar(1000)
+  status                                      chat_private_message_status @default(sent)
+  user_chat_private_message_senderIdTouser    user                        @relation("chat_private_message_senderIdTouser", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK")
+  user_chat_private_message_recipientIdTouser user                        @relation("chat_private_message_recipientIdTouser", fields: [recipientId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK_1")
 
-    @@index([senderId], map: "chat_private_message_user_FK")
-    @@index([recipientId], map: "chat_private_message_user_FK_1")
+  @@index([senderId], map: "chat_private_message_user_FK")
+  @@index([recipientId], map: "chat_private_message_user_FK_1")
 }
 
 model chat_server {
-    id           Int            @id @default(autoincrement())
-    name         String         @db.VarChar(100)
-    createdAt    DateTime       @default(now()) @db.DateTime(0)
-    creatorId    String         @db.VarChar(36)
-    chat_channel chat_channel[]
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(100)
+  createdAt    DateTime       @default(now()) @db.DateTime(0)
+  creatorId    String         @db.VarChar(36)
+  chat_channel chat_channel[]
 }
 
 model sidelink {
-    id        Int      @id @default(autoincrement())
-    name      String   @db.VarChar(100)
-    url       String   @db.VarChar(100)
-    hidden    Boolean  @default(false)
-    createdAt DateTime @default(now()) @db.DateTime(0)
-    updatedAt DateTime @default(now()) @db.DateTime(0)
-    createdBy String   @db.VarChar(36)
-    updatedBy String   @db.VarChar(36)
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  url       String   @db.VarChar(100)
+  hidden    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @default(now()) @db.DateTime(0)
+  createdBy String   @db.VarChar(36)
+  updatedBy String   @db.VarChar(36)
 
-    @@index([createdBy], map: "sidelink_user_FK")
-    @@index([updatedBy], map: "sidelink_user_FK_1")
+  @@index([createdBy], map: "sidelink_user_FK")
+  @@index([updatedBy], map: "sidelink_user_FK_1")
 }
 
 model username_file_config {
-    id          Int     @id @default(autoincrement()) @db.UnsignedInt
-    folder_slug String? @db.VarChar(100)
-    config_type String? @db.VarChar(100)
-    path        String? @db.VarChar(200)
-    variable    String? @db.VarChar(200)
+  id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  folder_slug String? @db.VarChar(100)
+  config_type String? @db.VarChar(100)
+  path        String? @db.VarChar(200)
+  variable    String? @db.VarChar(200)
 }
 
 enum chat_private_message_status {
-    sent
-    delivered
-    read
+  sent
+  delivered
+  read
 }
 
 model user_settings {
-    id              Int    @id @default(autoincrement())
-    user_id         String @unique @db.VarChar(36)
-    local_games_dir String @db.Text
+  id              Int    @id @default(autoincrement())
+  user_id         String @unique @db.VarChar(36)
+  local_games_dir String @db.Text
 
-    user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model game_session {
-    id            String    @id @default(uuid()) @db.Char(36)
-    user_id       String    @db.VarChar(36)
-    game_slug     String    @db.VarChar(36)
-    start_time    DateTime  @db.DateTime(0)
-    end_time      DateTime? @db.DateTime(0)
-    total_seconds Int?      @db.Int
+  id            String    @id @default(uuid()) @db.Char(36)
+  user_id       String    @db.VarChar(36)
+  game_slug     String    @db.VarChar(36)
+  start_time    DateTime  @db.DateTime(0)
+  end_time      DateTime? @db.DateTime(0)
+  total_seconds Int?      @db.Int
 
-    user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model event {
-    id          String   @id @default(uuid()) @db.Char(36)
-    name        String   @db.VarChar(255)
-    description String?  @db.Text
-    location    String?  @db.VarChar(255)
-    url         String?  @db.VarChar(500)
-    image_url   String?  @db.Text
-    start_time  DateTime @db.DateTime(0)
-    end_time    DateTime @db.DateTime(0)
-    created_at  DateTime @default(now()) @db.DateTime(0)
-    updated_at  DateTime @default(now()) @updatedAt @db.DateTime(0)
-    created_by  String   @db.VarChar(36)
-    updated_by  String   @db.VarChar(36)
+  id          String   @id @default(uuid()) @db.Char(36)
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  location    String?  @db.VarChar(255)
+  url         String?  @db.VarChar(500)
+  image_url   String?  @db.Text
+  start_time  DateTime @db.DateTime(0)
+  end_time    DateTime @db.DateTime(0)
+  created_at  DateTime @default(now()) @db.DateTime(0)
+  updated_at  DateTime @default(now()) @updatedAt @db.DateTime(0)
+  created_by  String   @db.VarChar(36)
+  updated_by  String   @db.VarChar(36)
 
-    creator user @relation("event_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-    updater user @relation("event_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  creator user @relation("event_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updater user @relation("event_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-    @@index([created_by], map: "event_created_by_FK")
-    @@index([updated_by], map: "event_updated_by_FK")
-    @@index([start_time], map: "event_start_time_IDX")
-    @@index([end_time], map: "event_end_time_IDX")
+  @@index([created_by], map: "event_created_by_FK")
+  @@index([updated_by], map: "event_updated_by_FK")
+  @@index([start_time], map: "event_start_time_IDX")
+  @@index([end_time], map: "event_end_time_IDX")
 }
 
 model global_settings {
-    id         Int      @id @default(autoincrement())
-    key        String   @unique @db.VarChar(100)
-    value      String?  @db.Text
-    created_at DateTime @default(now()) @db.DateTime(0)
-    updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
-    created_by String   @db.VarChar(36)
-    updated_by String   @db.VarChar(36)
+  id         Int      @id @default(autoincrement())
+  key        String   @unique @db.VarChar(100)
+  value      String?  @db.Text
+  created_at DateTime @default(now()) @db.DateTime(0)
+  updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
+  created_by String   @db.VarChar(36)
+  updated_by String   @db.VarChar(36)
 
-    @@index([created_by], map: "global_settings_user_FK")
-    @@index([updated_by], map: "global_settings_user_FK_1")
+  @@index([created_by], map: "global_settings_user_FK")
+  @@index([updated_by], map: "global_settings_user_FK_1")
 }
+
+model game {
+  id                String    @id @default(uuid()) @db.Char(36)
+  size_gb           Float     @db.Double
+  title             String    @db.VarChar(255)
+  folder_slug       String    @unique @db.VarChar(100)
+  version           String?   @db.VarChar(50)
+  genres            String    @db.Text
+  platforms         String?   @db.Text
+  game_modes        String    @db.Text
+  is_featured       Boolean   @default(false)
+  date_updated      DateTime? @db.Date
+  date_added        DateTime? @db.Date
+  editor_name       String?   @db.VarChar(255)
+  main_process_name String?   @db.VarChar(255)
+  cover             String?   @db.Text
+  logo              String?   @db.Text
+  screenshots       String    @db.Text
+  description       String?   @db.Text
+  start_command     String?   @db.Text
+  max_players       Int       @db.Int
+  use_notifications Boolean   @default(true)
+  created_at        DateTime  @default(now()) @db.DateTime(0)
+  updated_at        DateTime  @default(now()) @updatedAt @db.DateTime(0)
+
+  // FK (obligatoires ici; mets ? si nullable)
+  created_by String @db.VarChar(36)
+  updated_by String @db.VarChar(36)
+
+  // Relations
+  createdBy user @relation("GameCreatedBy", fields: [created_by], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  updatedBy user @relation("GameUpdatedBy", fields: [updated_by], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([created_by], map: "game_user_created_FK")
+  @@index([updated_by], map: "game_user_updated_FK")
+  @@index([folder_slug], map: "game_folder_slug_IDX")
+}
+
+/**
+ * Rappels psq j'ai pas de mémoire :
+ * - Tu modifies schema.prisma
+ * - Tu fais npx prisma migrate dev --name ajout_model
+ * - Prisma applique la migration + met à jour _prisma_migrations
+ * - Tu fais npx prisma generate si tu veux rafraîchir le client TypeScript (en général migrate dev le fait déjà automatiquement).
+ */
