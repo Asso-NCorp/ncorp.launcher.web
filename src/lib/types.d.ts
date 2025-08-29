@@ -18,6 +18,7 @@ type InstallableGameUI = {
     isUpdating: boolean;
     installError?: string;
     installProgress: number;
-}
+    isCancellingInstall: boolean;
+};
 
 export type InstallableGameExtended = InstallableGame & InstallableGameUI;

@@ -102,6 +102,7 @@ export default {
         online: "En ligne",
         offline: "Hors ligne",
         download_in_progress: "Téléchargement en cours",
+        cancelling: "Annulation",
     },
     en: {
         lang,
@@ -203,6 +204,7 @@ export default {
         featured_games: "Featured games",
         online: "Online",
         offline: "Offline",
-        download_in_progress: "Téléchargement en cours",
+        download_in_progress: "Downloading in progress",
+        cancelling: "Cancelling",
     },
 };

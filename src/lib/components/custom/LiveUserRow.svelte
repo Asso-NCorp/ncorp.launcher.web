@@ -109,7 +109,7 @@
         </div>
 
         <!-- GRID pour garder le nom centré quand l’activité est absente -->
-        <div class="name-activity-grid min-h-8 h-8 overflow-hidden text-start">
+        <div class="name-activity-grid min-h-8 h-8 overflow-hidden text-start w-full">
             {#if shouldShowActivityImage}
                 <img
                     in:fade={{ duration: 300 }}
@@ -123,16 +123,16 @@
             <!-- Nom -->
             <span
                 class:text-primary={user.role === "admin"}
-                class="self-center truncate font-ggsans-medium text-base font-thin leading-tight">
+                class="self-center truncate font-ggsans-medium text-base font-thin leading-tight max-w-[90%]">
                 {user.name}
             </span>
 
             <!-- Activité (dépliage doux) -->
-            <div class="activity-reveal" class:show={showActivity}>
+            <div class="activity-reveal w-full" class:show={showActivity}>
                 {#if showActivity}
                     <div
                         transition:fly={{ y: -10, duration: 250 }}
-                        class="z-20 flex items-center gap-1 overflow-hidden text-xs font-bold text-gray-500">
+                        class="z-20 flex items-center gap-1 overflow-hidden text-xs font-bold text-gray-500 w-full">
                         {#if user.activity?.activityType === "Playing"}
                             <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
                         {:else}
@@ -141,8 +141,8 @@
                         <div
                             role="button"
                             onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
-                            class="flex h-3 items-center gap-1 p-0 text-xs">
-                            <span class="truncate p-1 text-primary/70 max-w-[80%] w-full">{user.activity?.gameTitle}</span>
+                            class="flex flex-1 h-3 items-center gap-1 p-0 text-xs">
+                            <span class="truncate p-1 text-primary/70 max-w-[75%] w-full">{user.activity?.gameTitle}</span>
                         </div>
                         {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
                             <Progress

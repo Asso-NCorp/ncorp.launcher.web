@@ -189,6 +189,7 @@ class GameStore {
 
     cancelGameInstallation = async (game: InstallableGame) => {
         try {
+            game.isCancellingInstall = true;
             await getLocalApi().cancelInstallation({
                 gameSlug: game.folderSlug,
             });
@@ -203,6 +204,7 @@ class GameStore {
             toast.error("Erreur lors de l'annulation", {
                 class: "bg-red-500",
             });
+            game.isCancellingInstall = false;
         }
     };
 

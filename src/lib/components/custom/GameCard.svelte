@@ -59,7 +59,8 @@
         {#if game.isPlaying && !showDetails}
             <div class="absolute left-2 top-2 z-20">
                 <span class="relative flex size-3">
-                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75">
+                    </span>
                     <span class="relative inline-flex size-3 rounded-full bg-green-500"></span>
                 </span>
             </div>
@@ -96,7 +97,7 @@
                 transition:fly={{ y: 20, duration: 300 }}
                 class:bg-primary={!game.isPlaying}
                 class:bg-success={game.isPlaying}
-                class="absolute inset-x-0 bottom-0 z-20 left-1/2 -translate-x-1/2 rounded-t-[0.30rem] p-1 text-center text-xs font-bold uppercase text-white">
+                class="absolute inset-x-0 bottom-0 left-1/2 z-20 -translate-x-1/2 rounded-t-[0.30rem] p-1 text-center text-xs font-bold uppercase text-white">
                 {#if game.isPlaying}
                     <div>{$t("playing")}</div>
                 {/if}
@@ -223,10 +224,16 @@
             {/if}
             <div class="flex flex-col">
                 <div class="text-center text-white">
-                    (<span>{game.installProgress}%</span>)
+                    (
+                    <span>{game.installProgress}%</span>
+                    )
                     <WordRotate
-                        word={game.installProgress < 50 ? $t("download_in_progress") : $t("install_in_progress")} />
-                        
+                        class="text-white"
+                        word={game.isCancellingInstall
+                            ? $t("cancelling") // ou "annulation"
+                            : game.installProgress < 50
+                              ? $t("download_in_progress")
+                              : $t("install_in_progress")} />
                 </div>
             </div>
             <br />

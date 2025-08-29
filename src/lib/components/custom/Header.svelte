@@ -39,6 +39,7 @@
                                 size="sm"
                                 variant="ghost"
                                 class="text-scroll-m-0"
+                                disabled={game.isCancellingInstall || game.installProgress >= 50}
                                 onclick={() => {
                                     GamesStore.cancelGameInstallation(game);
                                 }}>
