@@ -133,12 +133,17 @@
 
         <Tooltip.Root>
             <Tooltip.Trigger>
-                <Button onclick={handleRefreshGamesClick} variant="outline" class="border-l-0">
+                <Button onclick={handleRefreshGamesClick} disabled={!GamesStore.canFetchGames} variant="outline" class="border-l-0">
                     <RefreshCw />
                 </Button>
             </Tooltip.Trigger>
             <Tooltip.Content>
                 <p>Rafraîchir la liste des jeux</p>
+                <p class="text-xs text-muted-foreground">
+                    {GamesStore.cooldownRemaining > 0
+                        ? `Accessible dans ${GamesStore.cooldownRemaining}s`
+                        : ""}
+                </p>
             </Tooltip.Content>
         </Tooltip.Root>
         <!-- Recent games buttons -->

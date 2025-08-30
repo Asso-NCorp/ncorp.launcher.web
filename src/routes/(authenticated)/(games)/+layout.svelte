@@ -18,11 +18,11 @@
     onNavigate(() => {
         GamesStore.resetSelected();
     });
-    onMount(async () => {
+    /* onMount(async () => {
         if (GamesStore.games.length === 0) {
             await GamesStore.getAvailableGames();
         }
-    });
+    }); */
 </script>
 
 <!-- Root fills available space; inner scroller hosts title + sticky bar + children -->

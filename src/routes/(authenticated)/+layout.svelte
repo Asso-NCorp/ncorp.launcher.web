@@ -195,9 +195,6 @@
 
             if (!global.localGamesFolder) {
                 showConfigGamesDirDialog = true;
-            } else {
-                if (GamesStore.allGames.length === 0 || GamesStore.installedGames.length === 0)
-                    await GamesStore.getAvailableGames();
             }
 
             //await detectSWUpdate();

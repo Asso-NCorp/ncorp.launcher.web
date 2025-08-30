@@ -67,10 +67,10 @@ class SignalRAgent {
         while (this.connection.state === signalR.HubConnectionState.Disconnected) {
             try {
                 await this.connection.start();
-                console.log("SignalR Server connected");
                 this.isConnected = true;
                 this.connectionState = this.connection.state;
                 await liveUsers.refreshLiveUsers();
+                logger.info("[SignalR - Server] Getting available games");
                 await GamesStore.getAvailableGames();
                 break;
             } catch {
