@@ -16,7 +16,7 @@ class GameStore {
 
     lastGameFetchAt: number = $state(0); // ms epoch (info)
     private inFlight?: Promise<boolean>;
-    private COOLDOWN_MS = 30_000;
+    private COOLDOWN_MS = 10_000;
     private cooldownTimer: ReturnType<typeof setTimeout> | null = null;
     private tickTimer: ReturnType<typeof setInterval> | null = null;
 
