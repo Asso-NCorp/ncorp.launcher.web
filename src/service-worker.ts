@@ -25,10 +25,18 @@ const isHTMLResponse = (res: Response) => (res.headers.get("content-type") ?? ""
 
 const isCacheableResponse = (res: Response) => {
     if (!res || !res.ok) return false;
-    // ne JAMAIS mettre en cache du HTML
-    if (isHTMLResponse(res)) return false;
-    const cc = res.headers.get("Cache-Control") ?? "";
-    return !/\bno-store\b/i.test(cc) && !/\bprivate\b/i.test(cc);
+    if (isHTMLResponse(res)) return false; // never cache HTML
+    const ccRaw = res.headers.get("Cache-Control") ?? "";
+    const cc = ccRaw.toLowerCase();
+
+    // Previously only filtered no-store & private.
+    // Add no-cache & max-age=0 so we do not persist responses that require revalidation.
+    if (/\b(no-store|private|no-cache)\b/.test(cc)) return false;
+    if (/\bmax-age=0\b/.test(cc)) return false;
+
+    // NOTE: Other directives (e.g. max-age>0, must-revalidate, stale-while-revalidate)
+    // are not enforced here; cached entries live until SW version changes or are manually refreshed.
+    return true;
 };
 
 // ---- Install: precache assets (dont prerendered) ----

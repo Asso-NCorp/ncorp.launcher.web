@@ -6,7 +6,8 @@
             "interpreter": "node",
             "env": {
                 "NODE_ENV": "production",
-                "PORT": 5173
+                "PORT": 5173,
+                "NODE_TLS_REJECT_UNAUTHORIZED": 0
             }
         }
     ]
