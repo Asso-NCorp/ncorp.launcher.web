@@ -5,7 +5,7 @@ if (browser && dev && "serviceWorker" in navigator) {
     caches?.keys?.().then((keys) => keys.forEach((k) => caches.delete(k)));
 }
 
-/* if (browser && !dev && "serviceWorker" in navigator) {
+if (browser && !dev && "serviceWorker" in navigator) {
     console.log("Registering service worker");
     navigator.serviceWorker.register("/service-worker.js", { type: "module" });
-} */
+}
