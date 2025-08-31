@@ -21,6 +21,41 @@ export function getLocalApi() {
     return new LocalApi(config);
 }
 
+export function syncArrayInPlace<T, K>(target: T[], source: T[], getKey: (x: T) => K) {
+    const srcOrder = new Map<K, number>();
+    const srcByKey = new Map<K, T>();
+    for (let i = 0; i < source.length; i++) {
+        const k = getKey(source[i]);
+        srcOrder.set(k, i);
+        srcByKey.set(k, source[i]);
+    }
+
+    // Suppr en place (ceux absents de source)
+    for (let i = target.length - 1; i >= 0; i--) {
+        const k = getKey(target[i]);
+        if (!srcByKey.has(k)) target.splice(i, 1);
+    }
+
+    // Maj/Ajout en place
+    const tgtByKey = new Map<K, T>(target.map((t) => [getKey(t), t]));
+    for (const s of source) {
+        const k = getKey(s);
+        const existing = tgtByKey.get(k);
+        if (existing) {
+            Object.assign(existing, s); // mise à jour des champs
+        } else {
+            target.push(s); // ajout
+        }
+    }
+
+    // Réordonner comme le serveur (in-place)
+    target.sort((a, b) => {
+        const ia = srcOrder.get(getKey(a)) ?? Number.MAX_SAFE_INTEGER;
+        const ib = srcOrder.get(getKey(b)) ?? Number.MAX_SAFE_INTEGER;
+        return ia - ib;
+    });
+}
+
 export function getMachineApi() {
     const config = new AgentConfig({
         basePath: PUBLIC_AGENT_URL,

@@ -3,7 +3,7 @@ import { FetchError } from "../shared-models";
 import type { InstallableGameExtended as InstallableGame } from "../types";
 import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
-import { getLocalApi, getServerApi } from "../utils";
+import { getLocalApi, getServerApi, syncArrayInPlace } from "../utils";
 import { liveAgentConnection } from "../states/live-agent.svelte";
 import { extendGames } from "../utils/games";
 
@@ -73,8 +73,8 @@ class GameStore {
     }
 
     setGames(games: InstallableGame[]) {
-        this.allGames = games;
-        this.games = games;
+        syncArrayInPlace(this.allGames, games, (g) => g.folderSlug);
+        syncArrayInPlace(this.games, games, (g) => g.folderSlug);
     }
 
     get(slug: string): InstallableGame | undefined {
@@ -319,7 +319,9 @@ class GameStore {
                 try {
                     if (global.localGamesFolder) {
                         const localApi = getLocalApi();
-                        installedGames = extendGames(await localApi.getInstalledGames());
+                        installedGames = extendGames(
+                            await localApi.getInstalledGames({ gamesFolder: global.localGamesFolder }),
+                        );
                     }
                 } catch (err) {
                     console.error(err);

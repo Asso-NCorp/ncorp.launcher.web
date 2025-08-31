@@ -54,10 +54,12 @@
 
     const {
         data,
+        onSubmit, // optional callback prop
     }: {
         data: {
             addForm: SuperValidated<Infer<UserFormSchema>>;
         };
+        onSubmit?: (payload: { success: boolean; outcome?: any; error?: any }) => void;
     } = $props();
 
     // Initialize the form
@@ -65,23 +67,26 @@
         dataType: "json",
         validators: zodClient(userFormSchema),
         onResult: async (result) => {
-            if (result.result.type === "success") {
+            const outcome = result.result;
+            if (outcome.type === "success") {
                 toast.success("Utilisateur ajouté avec succès", { class: "bg-green-500" });
                 await invalidateAll(); // Refresh data
-
-                // Reset the form
                 form.reset();
                 usernameAvailable = false;
                 usernameError = null;
-            } else if (result.result.type === "redirect") {
-                goto(result.result.location);
-            } else if (result.result.type === "error") {
-                toast.error("Erreur lors de l'ajout de l'utilisateur : " + result.result.error);
+            } else if (outcome.type === "redirect") {
+                onSubmit?.({ success: false, outcome });
+                goto(outcome.location);
+                return;
+            } else if (outcome.type === "error") {
+                toast.error("Erreur lors de l'ajout de l'utilisateur : " + outcome.error);
             }
+            onSubmit?.({ success: outcome.type === "success", outcome });
         },
         onError: (event) => {
             toast.error("Erreur lors de l'ajout de l'utilisateur");
             console.error("Form submission error:", event);
+            onSubmit?.({ success: false, error: event });
         },
     });
 

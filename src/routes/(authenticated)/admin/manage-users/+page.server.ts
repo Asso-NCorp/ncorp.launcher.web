@@ -105,8 +105,7 @@ export const actions: Actions = {
 
                 // Call the API with the correct parameters
                 // Use the auth.api.updateUser method with the user ID
-                const response = await ctx.internalAdapter.updateUser(updateData.id, updateData);
-                console.log(response);
+                await ctx.internalAdapter.updateUser(updateData.id, updateData);
             }
 
             return { form };

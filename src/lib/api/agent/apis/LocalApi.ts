@@ -44,6 +44,10 @@ export interface GetFoldersRequest {
     path?: string;
 }
 
+export interface GetInstalledGamesRequest {
+    gamesFolder?: string;
+}
+
 export interface InstallRequest {
     installableGame?: Omit<InstallableGame, 'genresStr'>;
 }
@@ -220,8 +224,12 @@ export class LocalApi extends runtime.BaseAPI {
 
     /**
      */
-    async getInstalledGamesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<InstallableGame>>> {
+    async getInstalledGamesRaw(requestParameters: GetInstalledGamesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<InstallableGame>>> {
         const queryParameters: any = {};
+
+        if (requestParameters['gamesFolder'] != null) {
+            queryParameters['gamesFolder'] = requestParameters['gamesFolder'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -245,8 +253,8 @@ export class LocalApi extends runtime.BaseAPI {
 
     /**
      */
-    async getInstalledGames(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<InstallableGame>> {
-        const response = await this.getInstalledGamesRaw(initOverrides);
+    async getInstalledGames(requestParameters: GetInstalledGamesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<InstallableGame>> {
+        const response = await this.getInstalledGamesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

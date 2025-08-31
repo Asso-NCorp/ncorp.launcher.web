@@ -1,18 +1,32 @@
-
-import type { Actions, PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from "./$types";
 import { fail, setError, superValidate } from "sveltekit-superforms";
 import { zod } from "sveltekit-superforms/adapters";
-import { APIError } from 'better-auth/api';
-import { error, redirect } from '@sveltejs/kit';
-import { auth } from '$src/lib/auth/server';
-import { PUBLIC_BETTER_AUTH_URL } from '$env/static/public';
-import { parseSetCookieHeader } from 'better-auth/cookies';
-import { loginFormSchema } from '../schemas';
-import { logger } from '$src/lib/stores/loggerStore';
-import { parse as parseTopLevelDomain } from 'tldts';
+import { APIError } from "better-auth/api";
+import { error, redirect } from "@sveltejs/kit";
+import { auth } from "$src/lib/auth/server";
+import { PUBLIC_BETTER_AUTH_URL } from "$env/static/public";
+import { parseSetCookieHeader } from "better-auth/cookies";
+import { loginFormSchema } from "../schemas";
+import { logger } from "$src/lib/stores/loggerStore";
+import { parse as parseTopLevelDomain } from "tldts";
 import { db } from "$srv/db";
 
-export const load: PageServerLoad = (async () => {
+export const load: PageServerLoad = (async (event) => {
+    // Redirect if already authenticated
+    const session = await auth.api.getSession({
+        headers: new Headers({ cookie: event.request.headers.get("cookie") ?? "" }),
+    });
+    if (session) {
+        throw redirect(302, "/");
+    }
+
+    // Otherwise clear all the cookies
+    event.cookies.delete("__Secure-better-auth.session_token", {
+        path: "/",
+        domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
+    });
+    event.cookies.delete("token", { path: "/", domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}` });
+
     return {
         form: await superValidate(zod(loginFormSchema)),
     };

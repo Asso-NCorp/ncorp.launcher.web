@@ -441,8 +441,10 @@
                                 <StatusDot
                                     class="static left-0 top-0 m-0 p-0"
                                     status={liveAgentConnection.connectionState} />
-                                <span>{liveAgentConnection.agentVersion}</span>
-                            </div>
+                                    {#if liveAgentConnection.isConnected}
+                                    <span>{liveAgentConnection.agentVersion}</span>
+                                    {/if}
+                                </div>
 
                             <div class="flex w-full items-center justify-between gap-2">
                                 <span>Serveur</span>
@@ -469,7 +471,7 @@
                     style:width={global.sidebarCollapsed ? "80px" : "250px"}>
                     <SideMenu class="h-full">
                         <div class="mt-auto flex w-full">
-                            <ProfileDropdown user={user!} />
+                            <ProfileDropdown user={liveUsers.getUser(user?.id!)} />
                         </div>
                     </SideMenu>
                 </aside>

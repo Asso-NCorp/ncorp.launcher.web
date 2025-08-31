@@ -1,7 +1,7 @@
 import { logger } from "../stores/loggerStore";
-import { getServerApi } from "../utils";
+import { getServerApi, syncArrayInPlace } from "../utils";
 import { global } from "./global.svelte";
-import type { LiveUser, UserActivity, UserConnectionStatus } from '$src/lib/shared-models';
+import type { LiveUser, UserActivity, UserConnectionStatus } from "$src/lib/shared-models";
 import { GamesStore } from "./games.svelte";
 
 class LiveUsers {
@@ -115,7 +115,7 @@ class LiveUsers {
         try {
             liveUsers.loading = true;
             const users = await getServerApi().getOnlineUsers();
-            liveUsers.users = users;
+            syncArrayInPlace(liveUsers.users, users, (u) => u.id);
         } catch (error) {
             logger.error(`Error fetching live users: ${error}`);
         } finally {

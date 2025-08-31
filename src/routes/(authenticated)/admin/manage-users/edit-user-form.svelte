@@ -25,9 +25,15 @@
     const {
         data,
         user,
+        onSubmit, // optional callback prop
     }: {
         data: { editForm: SuperValidated<Infer<EditUserFormSchema>> };
         user: User;
+        onSubmit?: (payload: {
+            success: boolean;
+            outcome?: any;
+            error?: any;
+        }) => void;
     } = $props();
 
     // Initialize the form with the user data
@@ -36,18 +42,25 @@
         validators: zodClient(editUserFormSchema),
         clearOnSubmit: "none",
         onResult: async (result) => {
-            if (result.result.type === "success") {
+            const outcome = result.result;
+            if (outcome.type === "success") {
                 toast.success("Utilisateur mis à jour avec succès", { class: "bg-green-500" });
-                await invalidateAll(); // Refresh data
-            } else if (result.result.type === "redirect") {
-                goto(result.result.location);
-            } else if (result.result.type === "error") {
-                toast.error("Erreur lors de la mise à jour de l'utilisateur : " + result.result.error);
+                await invalidateAll();
+            } else if (outcome.type === "redirect") {
+                // notify before navigating away
+                onSubmit?.({ success: false, outcome });
+                goto(outcome.location);
+                return;
+            } else if (outcome.type === "error") {
+                toast.error("Erreur lors de la mise à jour de l'utilisateur : " + outcome.error);
             }
+            // unified callback (fires for success + error)
+            onSubmit?.({ success: outcome.type === "success", outcome });
         },
         onError: (event) => {
             toast.error("Erreur lors de la mise à jour de l'utilisateur");
             console.error("Form submission error:", event);
+            onSubmit?.({ success: false, error: event });
         },
     });
 

@@ -11,9 +11,36 @@
     import UserStatusDot from "../UserStatusDot.svelte";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
+    import type { LiveUser } from "$src/lib/shared-models";
+    import AdminStatusDot from "../AdminStatusDot.svelte";
+    import { getLocalApi } from "$src/lib/utils";
+    import { PUBLIC_AGENT_URL } from "$env/static/public";
 
-    let { user }: { user: User } = $props();
+    let { user }: { user: LiveUser } = $props();
     let name = user.name;
+
+    const handleDisconnect = async () => {
+        try {
+            await authClient.signOut();
+            cookieStore.delete("token");
+            
+            if (liveAgentConnection?.connection) {
+                liveAgentConnection.connection.stop();
+            }
+
+            if (liveServerConnection?.connection) {
+                liveServerConnection.connection.stop();
+            }
+
+            cookieStore.delete("token");
+            await fetch(`${PUBLIC_AGENT_URL}/Logout`, { method: "POST", credentials: "include" });
+            
+        } catch (error) {
+            console.error("Error during sign out:", error);
+        }finally {
+            goto("/signin");
+        }
+    };
 </script>
 
 <DropdownMenu.Root>
@@ -28,7 +55,7 @@
                 </Avatar.Root>
 
                 <!-- Status dot -->
-                <UserStatusDot status={"Connected"} />
+                <AdminStatusDot user={user} />
             </div>
 
             {#if !global.sidebarCollapsed}
@@ -64,17 +91,7 @@
             </DropdownMenu.Group>
             <DropdownMenu.Item
                 class="text-danger hover:!bg-danger/20 hover:!text-danger"
-                onclick={async () => {
-                    await authClient.signOut();
-                    if (liveAgentConnection?.connection) {
-                        liveAgentConnection.connection.stop();
-                    }
-
-                    if (liveServerConnection?.connection) {
-                        liveServerConnection.connection.stop();
-                    }
-                    await goto("/signin");
-                }}>
+                onclick={handleDisconnect}>
                 <LogOut class="mr-2 size-4" />
                 <span>{$t("logout")}</span>
             </DropdownMenu.Item>
