@@ -2,6 +2,7 @@
     import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
     import type { Snippet } from "svelte";
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
+    import * as Tooltip from "$lib/components/ui/tooltip";
     import {
         CloudLightning,
         DownloadCloud,
@@ -27,6 +28,7 @@
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
+    import { Button } from "../ui/button";
     let { children, class: klazz }: { children?: Snippet; class?: string } = $props();
 
     const user = page.data["user"] as User;
@@ -47,10 +49,19 @@
 
     const handleStartAgent = async () => {
         try {
-            window.open("nagent://start","_self");
+            window.open("nagent://start", "_self");
             GamesStore.isLoading = false;
         } catch (error) {
             toast.error("Erreur lors du démarrage de l'agent");
+        }
+    };
+
+    const handleOpenFolder = async () => {
+        try {
+            await getLocalApi().openGameFolder();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erreur lors de l'ouverture du dossier des jeux");
         }
     };
 </script>
@@ -126,6 +137,36 @@
                             <AdminMenu />
                         </div>
                     {/if}
+
+                        <SideMenuItem label="Actions rapides" class="{global.sidebarCollapsed ? 'text-xss' : ''}" />
+
+                        <div
+                            class={cn(
+                                "flex flex-col gap-1",
+                                global.sidebarCollapsed ? "items-center space-y-2" : "text-base",
+                            )}>
+                            {#if global.sidebarCollapsed}
+                                <Tooltip.Root>
+                                    <Tooltip.Trigger>
+                                        <Button
+                                            size="icon"
+                                            variant="outline"
+                                            onclick={handleOpenFolder}
+                                            class="h-8 w-8">
+                                            <FolderOpen class="h-4 w-4" />
+                                        </Button>
+                                    </Tooltip.Trigger>
+                                    <Tooltip.Content side="right">
+                                        <p>Ouvrir le dossier des jeux</p>
+                                    </Tooltip.Content>
+                                </Tooltip.Root>
+                            {:else}
+                                <Button variant="outline" onclick={handleOpenFolder}>
+                                    <FolderOpen />
+                                    <span class="ml-2">Ouvrir le dossier des jeux</span>
+                                </Button>
+                            {/if}
+                        </div>
                 </div>
             </div>
         </ScrollArea>

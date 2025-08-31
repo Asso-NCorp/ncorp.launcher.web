@@ -43,6 +43,7 @@
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
     import StatusDot from "$src/lib/components/custom/StatusDot.svelte";
+    import SideMenuItem from "$src/lib/components/custom/SideMenuItem.svelte";
     let loading = $state(false);
     let rightSidebarHidden = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
@@ -127,8 +128,7 @@
     });
 
     beforeNavigate((event) => {
-        if(!event.to)
-            return;
+        if (!event.to) return;
 
         loading = true;
         global.gamesSearchQuery = "";
@@ -441,10 +441,10 @@
                                 <StatusDot
                                     class="static left-0 top-0 m-0 p-0"
                                     status={liveAgentConnection.connectionState} />
-                                    {#if liveAgentConnection.isConnected}
+                                {#if liveAgentConnection.isConnected}
                                     <span>{liveAgentConnection.agentVersion}</span>
-                                    {/if}
-                                </div>
+                                {/if}
+                            </div>
 
                             <div class="flex w-full items-center justify-between gap-2">
                                 <span>Serveur</span>
@@ -470,6 +470,7 @@
                     class="z-[100] flex-shrink-0 overflow-hidden border-border bg-card transition-all duration-300 ease-in-out"
                     style:width={global.sidebarCollapsed ? "80px" : "250px"}>
                     <SideMenu class="h-full">
+                       
                         <div class="mt-auto flex w-full">
                             <ProfileDropdown user={liveUsers.getUser(user?.id!)} />
                         </div>

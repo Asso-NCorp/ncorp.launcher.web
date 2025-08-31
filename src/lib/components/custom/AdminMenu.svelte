@@ -36,14 +36,7 @@
         }
     };
 
-    const handleOpenFolder = async () => {
-        try {
-            await getLocalApi().openGameFolder();
-        } catch (error) {
-            console.error(error);
-            toast.error("Erreur lors de l'ouverture du dossier des jeux");
-        }
-    };
+   
 </script>
 
 <div class={cn("flex w-auto flex-col", global.sidebarCollapsed ? "items-center space-y-3" : "space-y-0", klazz)}>
@@ -78,9 +71,7 @@
         icon={FerrisWheel}
         iconOnly={global.sidebarCollapsed} />
     <!-- Actions section - always visible but adapts to collapsed state -->
-    {#if !global.sidebarCollapsed}
-        <SideMenuItem label="Actions rapides" class="mt-5" />
-    {/if}
+    
 
     <div class={cn("mt-5 flex flex-col gap-1", global.sidebarCollapsed ? "items-center space-y-2" : "text-base")}>
         {#if global.sidebarCollapsed}
@@ -93,17 +84,6 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content side="right">
                     <p>Rafraîchir les jeux</p>
-                </Tooltip.Content>
-            </Tooltip.Root>
-
-            <Tooltip.Root>
-                <Tooltip.Trigger>
-                    <Button size="icon" variant="outline" onclick={handleOpenFolder} class="h-8 w-8">
-                        <FolderOpen class="h-4 w-4" />
-                    </Button>
-                </Tooltip.Trigger>
-                <Tooltip.Content side="right">
-                    <p>Ouvrir le dossier des jeux</p>
                 </Tooltip.Content>
             </Tooltip.Root>
         {:else}
@@ -130,10 +110,7 @@
                     </p>
                 </Tooltip.Content>
             </Tooltip.Root>
-            <Button variant="outline" onclick={handleOpenFolder}>
-                <FolderOpen />
-                <span class="ml-2">Ouvrir le dossier des jeux</span>
-            </Button>
+            
         {/if}
     </div>
     {@render children?.()}

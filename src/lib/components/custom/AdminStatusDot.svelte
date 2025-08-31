@@ -32,13 +32,13 @@
             variant="ghost"
             class="z-[9999] cursor-default rounded-md px-3 py-1.5 text-sm font-medium text-[hsl(var(--foreground)_/_var(--tw-text-opacity,1))] shadow-md">
             {#if user.status === "LauncherOnly"}
-                Connecté (Launcher uniquement)
+                <span>Connecté (Launcher uniquement)</span>
             {:else if user.status === "AgentOnly"}
-                Connecté (Agent uniquement <span class="text-muted-foreground">v{user?.agentVersion}</span>)
+                <span>Connecté (Agent uniquement <span class="text-muted-foreground">v{user?.agentVersion}</span>)</span>
             {:else if user.status === "Full"}
-                Connecté (Launcher + Agent <span class="text-muted-foreground">v{user?.agentVersion}</span>)
+                <span>Connecté (Launcher + Agent <span class="text-muted-foreground">v{user?.agentVersion}</span>)</span>
             {:else if user.status === "Disconnected"}
-                Déconnecté
+                <span>Déconnecté</span>
             {/if}
         </Root>
     </Tooltip.Content>
