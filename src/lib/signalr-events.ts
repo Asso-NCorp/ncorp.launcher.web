@@ -3,18 +3,14 @@ import { browser } from '$app/environment';
 import * as signalR from '@microsoft/signalr';
 import { GamesStore } from './states/games.svelte';
 import { gameStatuses } from './stores/gameStatusesStore';
-import type { InstallableGame, LiveUser, UserActivity, UserConnectionStatus } from './shared-models';
-import { toast } from 'svelte-sonner';
-import { liveUsers } from './states/live-users.svelte';
-import { logger } from './stores/loggerStore';
-import { global } from './states/global.svelte';
+import type { InstallableGame, LiveUser, UserActivity } from "./shared-models";
 
-/// Types utilitaires (adapte si besoin)
-export type SignalRConnection = {
-    connection: signalR.HubConnection;
-    connectionState: signalR.HubConnectionState;
-    startConnection: () => Promise<void>;
-};
+import { toast } from "svelte-sonner";
+import { liveUsers } from "./states/live-users.svelte";
+import { logger } from "./stores/loggerStore";
+import { global } from "./states/global.svelte";
+import type { liveAgentConnection } from "./states/live-agent.svelte";
+import type { UserConnectionStatus } from "./shared-models/models/UserConnectionStatus";
 
 // Options pour la fonction utilitaire
 export interface SignalREventBinderOptions {
@@ -22,11 +18,19 @@ export interface SignalREventBinderOptions {
     refreshSideLinks?: () => Promise<void>;
 }
 
+interface SignalRConnection {
+    connection: signalR.HubConnection;
+    connectionState: signalR.HubConnectionState;
+    startConnection: () => Promise<void> | void;
+    stopConnection?: () => Promise<void> | void;
+    agentVersion?: string;
+}
+
 export class SignalREventBinder {
     static bindAllEvents(
         liveServerConnection: SignalRConnection,
         liveAgentConnection: SignalRConnection,
-        options?: SignalREventBinderOptions
+        options?: SignalREventBinderOptions,
     ) {
         if (!browser) return;
 
@@ -37,10 +41,9 @@ export class SignalREventBinder {
 
         this.offAndOn(liveAgentConnection, "NoGameConfig", (gameSlug: string) => {
             toast.warning(
-                `Attention, la mise à jour du pseudo du jeu ${gameSlug} a échouée.\nVous devrez mettre à jour le pseudo manuellement.`
+                `Attention, la mise à jour du pseudo du jeu ${gameSlug} a échouée.\nVous devrez mettre à jour le pseudo manuellement.`,
             );
         });
-
 
         this.offAndOn(liveAgentConnection, "GameStatusChanged", (gameSlug: string, status: string) => {
             gameStatuses.update((words) => {
@@ -49,16 +52,20 @@ export class SignalREventBinder {
             });
         });
 
-        this.offAndOn(liveServerConnection, "UserGameProgressChanged", (userId: string, gameSlug: string, progress: number) => {
-            liveUsers.updateUserGameProgress(userId, progress);
-        });
+        this.offAndOn(
+            liveServerConnection,
+            "UserGameProgressChanged",
+            (userId: string, gameSlug: string, progress: number) => {
+                liveUsers.updateUserGameProgress(userId, progress);
+            },
+        );
 
         this.offAndOn(liveAgentConnection, "GameInstalled", (gameSlug: string) => {
             toast.success(`Installation terminée : ${gameSlug}`, {
                 action: {
                     label: "Voir",
                     onClick: () => goto(`/games/${gameSlug}`),
-                }
+                },
             });
             GamesStore.setGameIsInstalled(gameSlug, true);
             GamesStore.deselect(gameSlug);
@@ -82,7 +89,6 @@ export class SignalREventBinder {
             await GamesStore.getAvailableGames();
         });
 
-
         this.offAndOn(liveServerConnection, "UserActivityChanged", (userId: string, activity: UserActivity) => {
             liveUsers.updateUserActivity(userId, activity);
         });
@@ -103,10 +109,19 @@ export class SignalREventBinder {
             await global.refreshSideLinks();
         });
 
-        this.offAndOn(liveServerConnection, "UserStatusChanged", async (userId: string, status: UserConnectionStatus) => {
-            logger.info(`UserStatusChanged: ${userId} is now ${status}`);
-            await liveUsers.updateUserStatus(userId, status);
-        });
+        this.offAndOn(
+            liveServerConnection,
+            "UserStatusChanged",
+            async (userId: string, status: UserConnectionStatus, agentVersion: string) => {
+                logger.info(`UserStatusChanged: ${userId} is now ${status}`);
+                await liveUsers.updateUserStatus(userId, status);
+                logger.info(`User ${userId} agent version: ${agentVersion}`);
+                liveUsers.updateUserAgentVersion(userId, agentVersion);
+                if (userId === global.currentUser?.id) {
+                    liveAgentConnection.agentVersion = agentVersion;
+                }
+            },
+        );
 
         // Gestion reconnexion si besoin
         if (liveServerConnection.connectionState === signalR.HubConnectionState.Disconnected) {
@@ -118,11 +133,7 @@ export class SignalREventBinder {
     }
 
     // Utilitaire générique off+on
-    private static offAndOn(
-        conn: SignalRConnection,
-        eventName: string,
-        handler: (...args: never[]) => void
-    ) {
+    private static offAndOn(conn: SignalRConnection, eventName: string, handler: (...args: never[]) => void) {
         conn.connection.off(eventName);
         conn.connection.on(eventName, handler);
     }

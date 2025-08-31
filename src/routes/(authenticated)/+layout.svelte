@@ -129,7 +129,7 @@
     beforeNavigate((event) => {
         if(!event.to)
             return;
-        
+
         loading = true;
         global.gamesSearchQuery = "";
     });
@@ -441,6 +441,7 @@
                                 <StatusDot
                                     class="static left-0 top-0 m-0 p-0"
                                     status={liveAgentConnection.connectionState} />
+                                <span>{liveAgentConnection.agentVersion}</span>
                             </div>
 
                             <div class="flex w-full items-center justify-between gap-2">

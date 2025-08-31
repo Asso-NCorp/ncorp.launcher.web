@@ -138,7 +138,7 @@ export interface InstallableGame {
      * @type {boolean}
      * @memberof InstallableGame
      */
-    isInstalled?: boolean;
+    useNotifications?: boolean;
     /**
      * 
      * @type {boolean}
@@ -150,7 +150,7 @@ export interface InstallableGame {
      * @type {boolean}
      * @memberof InstallableGame
      */
-    useNotifications?: boolean;
+    isInstalled?: boolean;
     /**
      * 
      * @type {boolean}
@@ -195,9 +195,9 @@ export function InstallableGameFromJSONTyped(json: any, ignoreDiscriminator: boo
         'description': json['description'] == null ? undefined : json['description'],
         'startCommand': json['startCommand'] == null ? undefined : json['startCommand'],
         'maxPlayers': json['maxPlayers'] == null ? undefined : json['maxPlayers'],
-        'isInstalled': json['isInstalled'] == null ? undefined : json['isInstalled'],
-        'isCompressedAvailable': json['isCompressedAvailable'] == null ? undefined : json['isCompressedAvailable'],
         'useNotifications': json['useNotifications'] == null ? undefined : json['useNotifications'],
+        'isCompressedAvailable': json['isCompressedAvailable'] == null ? undefined : json['isCompressedAvailable'],
+        'isInstalled': json['isInstalled'] == null ? undefined : json['isInstalled'],
         'isPlaying': json['isPlaying'] == null ? undefined : json['isPlaying'],
     };
 }
@@ -231,9 +231,9 @@ export function InstallableGameToJSONTyped(value?: Omit<InstallableGame, 'genres
         'description': value['description'],
         'startCommand': value['startCommand'],
         'maxPlayers': value['maxPlayers'],
-        'isInstalled': value['isInstalled'],
-        'isCompressedAvailable': value['isCompressedAvailable'],
         'useNotifications': value['useNotifications'],
+        'isCompressedAvailable': value['isCompressedAvailable'],
+        'isInstalled': value['isInstalled'],
         'isPlaying': value['isPlaying'],
     };
 }

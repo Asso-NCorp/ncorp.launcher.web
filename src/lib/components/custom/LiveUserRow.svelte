@@ -111,7 +111,7 @@
                     : undefined}
                 ring={user.isSpeaking} />
             {#if page.data?.user?.role === "admin"}
-                <AdminStatusDot status={user.status} />
+                <AdminStatusDot user={user} />
             {:else}
                 <UserStatusDot status={user.status} />
             {/if}

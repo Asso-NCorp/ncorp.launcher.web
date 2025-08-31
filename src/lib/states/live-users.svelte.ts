@@ -7,15 +7,14 @@ import { GamesStore } from "./games.svelte";
 class LiveUsers {
     users = $state<LiveUser[]>([]);
     loading = $state<boolean>(false);
-    constructor() {
-    }
+    constructor() {}
 
     addUser(user: LiveUser) {
         this.users.push(user);
     }
 
     removeUser(userId: string) {
-        this.users = this.users.filter(u => u.id !== userId);
+        this.users = this.users.filter((u) => u.id !== userId);
     }
 
     getUserCount(): number {
@@ -27,11 +26,21 @@ class LiveUsers {
     }
 
     userExists(userId: string): boolean {
-        return this.users.some(u => u.id === userId);
+        return this.users.some((u) => u.id === userId);
     }
 
     getUser(userId: string): LiveUser | undefined {
-        return this.users.find(u => u.id === userId);
+        return this.users.find((u) => u.id === userId);
+    }
+
+    updateUserAgentVersion(userId: string, agentVersion: string) {
+        const user = this.getUser(userId);
+        if (user) {
+            logger.info(`User ${userId} agent version updated to ${agentVersion}`);
+            user.agentVersion = agentVersion;
+        } else {
+            logger.info(`[updateUserAgentVersion] : User ${userId} not found.`);
+        }
     }
 
     updateUserActivity(userId: string, activity: UserActivity) {
@@ -39,7 +48,6 @@ class LiveUsers {
         if (user) {
             logger.info(`User ${userId} activity updated to ${activity}`);
             user.activity = activity;
-
 
             if (userId == global.currentUser?.id) {
                 if (user.activity.activityType == "Playing") {
@@ -54,7 +62,6 @@ class LiveUsers {
                     GamesStore.resetGamesPlayingStates();
                 }
             }
-
         } else {
             logger.info(`[updateUserActivity] : User ${userId} not found.`);
         }
@@ -79,7 +86,7 @@ class LiveUsers {
             user.status = status;
         } else {
             const users = await getServerApi().getOnlineUsers();
-            user = users.find(u => u.id === userId);
+            user = users.find((u) => u.id === userId);
             if (user) {
                 if (this.getUser(userId)) {
                     this.removeUser(userId);

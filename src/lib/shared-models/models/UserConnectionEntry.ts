@@ -27,6 +27,13 @@ import {
     LiveUserToJSON,
     LiveUserToJSONTyped,
 } from './LiveUser';
+import type { UserConnectionType } from './UserConnectionType';
+import {
+    UserConnectionTypeFromJSON,
+    UserConnectionTypeFromJSONTyped,
+    UserConnectionTypeToJSON,
+    UserConnectionTypeToJSONTyped,
+} from './UserConnectionType';
 
 /**
  * 
@@ -64,7 +71,15 @@ export interface UserConnectionEntry {
      * @memberof UserConnectionEntry
      */
     readonly hasBothConnections?: boolean;
+    /**
+     * 
+     * @type {UserConnectionType}
+     * @memberof UserConnectionEntry
+     */
+    readonly connectionType?: UserConnectionType;
 }
+
+
 
 /**
  * Check if a given object implements the UserConnectionEntry interface.
@@ -88,6 +103,7 @@ export function UserConnectionEntryFromJSONTyped(json: any, ignoreDiscriminator:
         'hasAgentConnection': json['hasAgentConnection'] == null ? undefined : json['hasAgentConnection'],
         'hasWebConnection': json['hasWebConnection'] == null ? undefined : json['hasWebConnection'],
         'hasBothConnections': json['hasBothConnections'] == null ? undefined : json['hasBothConnections'],
+        'connectionType': json['connectionType'] == null ? undefined : UserConnectionTypeFromJSON(json['connectionType']),
     };
 }
 
@@ -95,7 +111,7 @@ export function UserConnectionEntryToJSON(json: any): UserConnectionEntry {
     return UserConnectionEntryToJSONTyped(json, false);
 }
 
-export function UserConnectionEntryToJSONTyped(value?: Omit<UserConnectionEntry, 'hasAgentConnection'|'hasWebConnection'|'hasBothConnections'> | null, ignoreDiscriminator: boolean = false): any {
+export function UserConnectionEntryToJSONTyped(value?: Omit<UserConnectionEntry, 'hasAgentConnection'|'hasWebConnection'|'hasBothConnections'|'connectionType'> | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

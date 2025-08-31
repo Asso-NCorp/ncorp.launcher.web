@@ -9,6 +9,7 @@ class SignalRAgent {
     connection: signalR.HubConnection;
     isConnected = $state(false);
     connectionState = $state<signalR.HubConnectionState>(signalR.HubConnectionState.Disconnected);
+    agentVersion = $state<string>("");
 
     constructor() {
         this.connection = this.createConnection();
