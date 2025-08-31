@@ -39,6 +39,19 @@ const isCacheableResponse = (res: Response) => {
     return true;
 };
 
+// Never cache this specific backend endpoint.
+const isNeverCacheRequest = (req: Request) => {
+    try {
+        const u = new URL(req.url);
+        return u.hostname === "agent.n-lan.com" && u.pathname === "/api/Local/InstalledGames";
+    } catch {
+        return false;
+    }
+};
+
+// Wrapper combining rules.
+const canCache = (req: Request, res: Response) => !isNeverCacheRequest(req) && isCacheableResponse(res);
+
 // ---- Install: precache assets (dont prerendered) ----
 self.addEventListener("install", (event) => {
     event.waitUntil(
@@ -81,7 +94,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
                 const hit = (await cache.match(request)) || (await cache.match(toURL(url.pathname)));
                 if (hit) return hit;
                 const res = await fetch(request);
-                if (sameOrigin && isCacheableResponse(res)) {
+                if (sameOrigin && canCache(request, res)) {
                     await cache.put(toURL(url.pathname), res.clone());
                 }
                 return res;
@@ -108,7 +121,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
                     (async () => {
                         try {
                             const fresh = await fetch(request);
-                            if (isCacheableResponse(fresh)) await cache.put(request, fresh.clone());
+                            if (canCache(request, fresh)) await cache.put(request, fresh.clone());
                         } catch {
                             /* offline */
                         }
@@ -119,7 +132,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 
                 try {
                     const res = await fetch(request);
-                    if (isCacheableResponse(res)) await cache.put(request, res.clone());
+                    if (canCache(request, res)) await cache.put(request, res.clone());
                     return res;
                 } catch {
                     return new Response("Offline", { status: 503 });
@@ -129,7 +142,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
             // 4) Tout le reste (JSON, APIs, images same-origin, etc.) : network-first, cache si cacheable (non-HTML)
             try {
                 const res = await fetch(request);
-                if (sameOrigin && isCacheableResponse(res)) await cache.put(request, res.clone());
+                if (sameOrigin && canCache(request, res)) await cache.put(request, res.clone());
                 return res;
             } catch {
                 // fallback cache (mais comme on n'y met pas de HTML, pas de pollution)
