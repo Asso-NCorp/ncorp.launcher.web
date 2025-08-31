@@ -10,6 +10,69 @@ import { loginFormSchema } from "../schemas";
 import { logger } from "$src/lib/stores/loggerStore";
 import { parse as parseTopLevelDomain } from "tldts";
 import { db } from "$srv/db";
+import { setTimeout as nodeSetTimeout } from "node:timers/promises"; // for race-based timeout
+
+// Central domain resolution (avoids repeated parsing & potential undefined issues)
+const parsedDomain = parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain;
+const apexDomain = parsedDomain ? `.${parsedDomain}` : undefined;
+if (!apexDomain) {
+    logger.error(
+        { PUBLIC_BETTER_AUTH_URL, parsedDomain },
+        "Unable to derive apex domain from PUBLIC_BETTER_AUTH_URL; cookies will fall back to host-only.",
+    );
+}
+
+// Tunables
+const AUTH_TIMEOUT_MS = 8000;
+const TOKEN_TIMEOUT_MS = 6000;
+const DB_UPDATE_TIMEOUT_MS = 5000;
+
+// Helper: step timing
+function startStep(name: string) {
+    const started = Date.now();
+    logger.info({ step: name, at: started }, "Signin step start");
+    return (extra?: Record<string, unknown>) =>
+        logger.info({ step: name, ms: Date.now() - started, ...(extra || {}) }, "Signin step end");
+}
+
+// Generic timeout wrapper for promises
+async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+    let to: NodeJS.Timeout;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        to = setTimeout(() => reject(new Error(`${label} timeout after ${ms} ms`)), ms);
+    });
+    try {
+        return await Promise.race([p, timeoutPromise]);
+    } finally {
+        clearTimeout(to!);
+    }
+}
+
+// fetch wrapper with AbortController timeout
+async function fetchWithTimeout(
+    fetchFn: typeof fetch,
+    url: string,
+    options: RequestInit,
+    timeoutMs: number,
+    label: string,
+) {
+    const ac = new AbortController();
+    const id = setTimeout(() => ac.abort(), timeoutMs);
+    const start = Date.now();
+    try {
+        const res = await fetchFn(url, { ...options, signal: ac.signal });
+        logger.info({ label, url, status: res.status, ms: Date.now() - start }, "External fetch completed");
+        return res;
+    } catch (e) {
+        logger.error(
+            { label, url, ms: Date.now() - start, error: e instanceof Error ? e.message : e },
+            "External fetch failed",
+        );
+        throw e;
+    } finally {
+        clearTimeout(id);
+    }
+}
 
 export const load: PageServerLoad = (async (event) => {
     // Redirect if already authenticated
@@ -23,9 +86,13 @@ export const load: PageServerLoad = (async (event) => {
     // Otherwise clear all the cookies
     event.cookies.delete("__Secure-better-auth.session_token", {
         path: "/",
-        domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
+        // Only include domain if resolved
+        ...(apexDomain && { domain: apexDomain }),
     });
-    event.cookies.delete("token", { path: "/", domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}` });
+    event.cookies.delete("token", {
+        path: "/",
+        ...(apexDomain && { domain: apexDomain }),
+    });
 
     return {
         form: await superValidate(zod(loginFormSchema)),
@@ -42,13 +109,19 @@ export const actions: Actions = {
         }
 
         try {
-            const authResponse = await auth.api.signInUsername({
-                asResponse: true,
-                body: {
-                    username: form.data.username,
-                    password: form.data.password,
-                },
-            });
+            const endSignIn = startStep("auth.api.signInUsername");
+            const authResponse = await withTimeout(
+                auth.api.signInUsername({
+                    asResponse: true,
+                    body: {
+                        username: form.data.username,
+                        password: form.data.password,
+                    },
+                }),
+                AUTH_TIMEOUT_MS,
+                "auth.api.signInUsername",
+            );
+            endSignIn({ ok: !!authResponse });
 
             if (!authResponse) throw new Error("No response from auth server");
 
@@ -66,7 +139,7 @@ export const actions: Actions = {
                     path: options.path ?? "/",
                     httpOnly: options.httponly,
                     sameSite: "none",
-                    domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
+                    ...(apexDomain && { domain: apexDomain }),
                 });
             }
 
@@ -82,15 +155,19 @@ export const actions: Actions = {
             // Get the JWT token
             let jwtTokenResponse: Response | null = null;
             try {
-                logger.info({ username: form.data.username }, "Fetching JWT token for user");
-                logger.info({ bearerCookie }, "Bearer cookie");
-                logger.info({ PUBLIC_BETTER_AUTH_URL }, "Public better auth url");
-
-                jwtTokenResponse = await event.fetch(`${PUBLIC_BETTER_AUTH_URL}/api/auth/token`, {
-                    headers: {
-                        cookie: `${bearerCookie}`,
+                const endToken = startStep("fetch.jwtToken");
+                jwtTokenResponse = await fetchWithTimeout(
+                    event.fetch,
+                    `${PUBLIC_BETTER_AUTH_URL}/api/auth/token`,
+                    {
+                        headers: {
+                            cookie: `${bearerCookie}`,
+                        },
                     },
-                });
+                    TOKEN_TIMEOUT_MS,
+                    "jwtToken",
+                );
+                endToken({ status: jwtTokenResponse.status });
             } catch (error) {
                 logger.error({ error }, "Error occured while fetching jwt token");
                 return fail(500, { form, response: error });
@@ -116,25 +193,44 @@ export const actions: Actions = {
                 path: "/",
                 httpOnly: true,
                 sameSite: "lax",
-                domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
+                ...(apexDomain && { domain: apexDomain }),
             });
 
             logger.info({ username: form.data.username }, "User logged in successfully");
 
-            const sessionHeaders: Headers = new Headers();
-            sessionHeaders.set("Cookie", `${bearerCookie}`);
-
-            const session = await auth.api.getSession({ headers: sessionHeaders });
+            const endSession = startStep("auth.api.getSession");
+            const session = await withTimeout(
+                auth.api.getSession({
+                    headers: new Headers({ Cookie: `${bearerCookie}` }),
+                }),
+                AUTH_TIMEOUT_MS,
+                "auth.api.getSession",
+            );
+            endSession({ userId: session?.user?.id });
             if (!session) {
                 logger.error({ username: form.data.username }, "Session retrieval failed for user");
                 return fail(500, { form, response: "Session retrieval failed" });
             }
 
-            // Update the lastLogin
-            await db.user.update({
-                where: { id: session.user.id },
-                data: { lastLogin: new Date() },
+            // Update the lastLogin with timeout
+            const endDbUpdate = startStep("db.user.update(lastLogin)");
+            await withTimeout(
+                db.user.update({
+                    where: { id: session.user.id },
+                    data: { lastLogin: new Date() },
+                }),
+                DB_UPDATE_TIMEOUT_MS,
+                "db.user.update",
+            ).catch((e) => {
+                logger.error(
+                    {
+                        userId: session.user.id,
+                        error: e instanceof Error ? e.message : e,
+                    },
+                    "Failed to update lastLogin (continuing)",
+                );
             });
+            endDbUpdate();
         } catch (err) {
             console.log(err);
             if (err instanceof APIError) {
