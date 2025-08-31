@@ -323,7 +323,10 @@ class GameStore {
                     }
                 } catch (err) {
                     console.error(err);
-                    toast.error("Impossible de récupérer les jeux installés. Veuillez vérifier l'agent");
+                    if (liveAgentConnection.isConnected)
+                        toast.error(
+                            "L'agent semble lancé mais il est impossible de récupérer les jeux installés. Veuillez vérifier l'agent.",
+                        );
                     installedGames = [];
                 }
 

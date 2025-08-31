@@ -25,6 +25,8 @@
     import { global } from "$src/lib/states/global.svelte";
     import type { User } from "$src/lib/auth/client";
     import { GamesStore } from "$src/lib/states/games.svelte";
+    import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
+    import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     let { children, class: klazz }: { children?: Snippet; class?: string } = $props();
 
     const user = page.data["user"] as User;
@@ -40,6 +42,15 @@
             } else {
                 toast.error("Erreur lors du démarrage de TeamSpeak3");
             }
+        }
+    };
+
+    const handleStartAgent = async () => {
+        try {
+            window.open("nagent://start","_self");
+            GamesStore.isLoading = false;
+        } catch (error) {
+            toast.error("Erreur lors du démarrage de l'agent");
         }
     };
 </script>
@@ -86,6 +97,15 @@
                         href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
                         label="Télécharger l'agent"
                         iconOnly={global.sidebarCollapsed} />
+
+                    {#if liveAgentConnection.isConnected === false}
+                        <SideMenuSubItem
+                            icon="{PUBLIC_BACKEND_API_URL}/resources/agent_icon.ico"
+                            class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+                            label="Lancer l'agent"
+                            onClick={handleStartAgent}
+                            iconOnly={global.sidebarCollapsed} />
+                    {/if}
                 </div>
 
                 <!-- Side Links and Admin Menu - always visible but adapt to collapsed state -->

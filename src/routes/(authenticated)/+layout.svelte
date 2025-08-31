@@ -126,7 +126,10 @@
         }
     });
 
-    beforeNavigate(() => {
+    beforeNavigate((event) => {
+        if(!event.to)
+            return;
+        
         loading = true;
         global.gamesSearchQuery = "";
     });
