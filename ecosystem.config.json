@@ -3,8 +3,7 @@
         {
             "name": "launcher-front",
             "script": "index.js",
-            "interpreter": "bun",
-            "interpreter_args": "run",
+            "interpreter": "node",
             "env": {
                 "NODE_ENV": "production",
                 "PORT": 5173

@@ -184,7 +184,7 @@ export const actions: Actions = {
                 return fail(500, { form });
             }
 
-            logger.info({ jwtToken }, "JWT token received");
+            logger.info("JWT token received");
 
             // Set the token in apex domain so that it is available in all subdomains
             // As we are using different domain for c# backend
