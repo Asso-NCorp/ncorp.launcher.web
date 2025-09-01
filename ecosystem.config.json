@@ -8,7 +8,7 @@
                 "NODE_ENV": "production",
                 "PORT": 5173,
                 "NODE_TLS_REJECT_UNAUTHORIZED": 0,
-                "BODY_SIZE_LIMIT": "150MB"
+                "BODY_SIZE_LIMIT": "150M"
             }
         }
     ]
