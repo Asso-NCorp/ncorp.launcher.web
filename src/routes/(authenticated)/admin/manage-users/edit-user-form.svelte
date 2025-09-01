@@ -9,18 +9,21 @@
     import { Input } from "$src/lib/components/ui/input";
     import { Button } from "$lib/components/ui/button";
     import * as Card from "$lib/components/ui/card";
-    import { Check, CircleAlert, Loader } from "@lucide/svelte";
+    import { CircleAlert, Loader } from "@lucide/svelte";
     import * as Alert from "$lib/components/ui/alert";
     import * as Select from "$lib/components/ui/select";
-    import type { UserWithRole } from "better-auth/plugins/admin";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
     import * as Form from "$lib/components/ui/form";
     import { editUserFormSchema, type EditUserFormSchema } from "./schema";
     import type { User } from "$src/lib/auth/client";
-
+    import type { role } from "@prisma/client";
+    import { page } from "$app/state";
+    
+    const roles = (page.data["roles"] as role[]) || [];
+    
     // Available roles for the select dropdown
-    const availableRoles = ["user", "admin"];
+    const availableRoles = [...roles.map(r => r.name)];
 
     const {
         data,

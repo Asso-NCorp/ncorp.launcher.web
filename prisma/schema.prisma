@@ -285,4 +285,8 @@ model role {
  * - Tu fais npx prisma migrate dev --name ajout_model
  * - Prisma applique la migration + met à jour _prisma_migrations
  * - Tu fais npx prisma generate si tu veux rafraîchir le client TypeScript (en général migrate dev le fait déjà automatiquement).
+ * Une fois en prod : transférer les nouvelles migrations .sql dans le dossier prisma/migrations sur le serveur
+ * Appliquer les migrations : npx prisma migrate deploy
+ * Regénérer le client : npx prisma generate
+ * Mais tout ça se fait automatiquement via le CI/CD .github/workflows/main.yml
  */

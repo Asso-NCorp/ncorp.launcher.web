@@ -6,8 +6,6 @@
     import { t } from "$src/lib/translations";
     import LiveUserRow from "./LiveUserRow.svelte";
     import type { LiveUser } from "$src/lib/shared-models";
-    import { page } from "$app/state";
-    import type { role } from "@prisma/client";
 
 	
     let { class: klazz }: { class?: string } = $props();

@@ -16,6 +16,8 @@
     import * as Card from "$lib/components/ui/card";
     import { Check } from "@lucide/svelte";
     import * as Select from "$lib/components/ui/select/index.js";
+    import type { role } from "@prisma/client";
+    import { page } from "$app/state";
 
     // Debounce function to limit API calls while typing
     function debounce<T extends (...args: any[]) => any>(fn: T, delay = 300) {
@@ -49,8 +51,10 @@
         );
     }
 
+    const roles = (page.data["roles"] as role[]) || [];
+    
     // Available roles for the select dropdown
-    const availableRoles = ["user", "admin"];
+    const availableRoles = [...roles.map(r => r.name)];
 
     const {
         data,
