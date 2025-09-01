@@ -103,6 +103,7 @@ export default {
         offline: "Hors ligne",
         download_in_progress: "Téléchargement en cours",
         cancelling: "Annulation",
+        beta_tester: "Bêta testeur",
     },
     en: {
         lang,
@@ -206,5 +207,6 @@ export default {
         offline: "Offline",
         download_in_progress: "Downloading in progress",
         cancelling: "Cancelling",
+        beta_tester: "Beta tester",
     },
 };

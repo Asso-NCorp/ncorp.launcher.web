@@ -79,7 +79,7 @@ model user {
   createdAt                                                   DateTime               @db.DateTime(0)
   updatedAt                                                   DateTime               @db.DateTime(0)
   username                                                    String?                @unique(map: "username") @db.VarChar(255)
-  role                                                        String                 @db.Text
+  role                                                        String                 @default("user") @db.VarChar(100)
   banned                                                      Boolean?
   banReason                                                   String?                @db.Text
   banExpires                                                  DateTime?              @db.DateTime(0)
@@ -269,6 +269,14 @@ model game {
   @@index([created_by], map: "game_user_created_FK")
   @@index([updated_by], map: "game_user_updated_FK")
   @@index([folder_slug], map: "game_folder_slug_IDX")
+}
+
+model role {
+  name                          String  @id @unique @db.VarChar(100)
+  avatar_decoration_static      String? @db.Text
+  avatar_decoration_animated    String? @db.Text
+  nameplate_decoration_static   String? @db.Text
+  nameplate_decoration_animated String? @db.Text
 }
 
 /**

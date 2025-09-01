@@ -66,6 +66,13 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         logger.error("Error fetching available games", error);
     }
 
+    try {
+        const roles = await db.role.findMany();
+        locals.roles = roles;
+    } catch (error) {
+        logger.error("Error fetching user roles", error);
+    }
+
     const winnersGifsFiles = await getWinnerGifFiles();
 
     return {
@@ -76,5 +83,6 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         globalSettings: locals.globalSettings as global_settings[],
         winnersGifsFiles,
         availableGames: locals.availableGames,
+        roles: locals.roles,
     };
 };

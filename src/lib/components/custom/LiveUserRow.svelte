@@ -10,20 +10,39 @@
     import AdminStatusDot from "./AdminStatusDot.svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { page } from "$app/state";
-    import { gameStatuses } from "$src/lib/stores/gameStatusesStore";
+    import type { role } from "@prisma/client";
 
     let { user }: { user: LiveUser } = $props();
+
+    var roles = (page.data["roles"] as role[]) || [];
 
     let videoEl: HTMLVideoElement | null = null;
     let hovering = $state(false);
     let playToken = 0;
     let isPlaying = $state(false);
 
-    const base = `/api/medias/nametemplates?filename=${user.role}`;
-    const videoUrl = `${base}&animated=true`;
-    const posterUrl = `${base}&animated=false`;
+    const userRole = roles.find((r) => r.name === user.role);
 
-    const shouldShowNameplate = user.role === "admin";
+    // Avatar decoration: prefer static when idle, animated on hover; fallback if only one provided
+    let avatarDecorationSrc = $derived(() => {
+        if (!userRole) return undefined;
+        const staticDeco = userRole.avatar_decoration_static;
+        const animatedDeco = userRole.avatar_decoration_animated;
+        if (hovering) return animatedDeco || staticDeco;
+        return staticDeco || animatedDeco;
+    });
+
+    // Nameplate assets presence
+    const hasNameplateStatic = $derived(!!userRole?.nameplate_decoration_static);
+    const hasNameplateAnimated = $derived(!!userRole?.nameplate_decoration_animated);
+    const shouldShowNameplate = $derived(() => !!userRole && (hasNameplateStatic || hasNameplateAnimated));
+
+    // Accessors (functions because $derived returns functions in this setup)
+    const nameplateStatic = $derived(() =>
+        userRole ? userRole.nameplate_decoration_static || userRole.nameplate_decoration_animated : undefined,
+    );
+    const nameplateAnimated = $derived(() => (userRole ? userRole.nameplate_decoration_animated : undefined));
+
     let shouldShowActivityImage = $derived(
         user.activity?.activityType === "Playing" ||
             (user.activity?.activityType === "Installing" && user.activity?.gameSlug),
@@ -33,12 +52,8 @@
         !!user.activity && user.activity.activityType !== "Idle" && user.status !== "Disconnected",
     );
 
-    // 👇 Normalisation de la progression
     const installProgress = $derived(
-        user.activity?.installProgress ??
-        user.activity?.progress ??
-        user.gameInstallProgress ??
-        0
+        user.gameInstallProgress ?? 0,
     );
 
     function waitCanPlay(el: HTMLVideoElement) {
@@ -53,20 +68,25 @@
     }
 
     async function handleMouseEnter() {
-        if (!shouldShowNameplate) return;
+        if (!shouldShowNameplate() || !hasNameplateAnimated) {
+            hovering = true; // still allow avatar decoration hover effect
+            return;
+        }
         hovering = true;
         const myToken = ++playToken;
         await tick();
-
         if (!videoEl) return;
-        if (videoEl.currentSrc !== videoUrl && videoEl.src !== videoUrl) {
-            videoEl.src = videoUrl;
+
+        // Ensure correct src only if not already set
+        const targetUrl = nameplateAnimated();
+        if (!targetUrl) return;
+        if (videoEl.currentSrc !== targetUrl && videoEl.src !== targetUrl) {
+            videoEl.src = targetUrl;
             videoEl.load();
         }
 
         await waitCanPlay(videoEl);
         if (myToken !== playToken) return;
-
         try {
             const p = videoEl.play();
             if (p && typeof p.then === "function") await p;
@@ -99,40 +119,41 @@
     onmouseleave={handleMouseLeave}
     class:opacity-50={user.status === "Disconnected"}
     class="group ml-2 h-10 w-full max-w-[calc(var(--userlist-width)_-_1rem)] cursor-pointer py-[1px]">
-    <div class="relative flex h-full items-center justify-start gap-2 overflow-hidden rounded-[0.5rem] px-2 group-hover:bg-secondary/50">
+    <div
+        class="relative flex h-full items-center justify-start gap-2 overflow-hidden rounded-[0.5rem] px-2 group-hover:bg-secondary/50">
         <div class="relative">
             <AvatarDiscord
                 size={32}
                 name={user.name!}
                 src={`/api/avatars/${user.id}`}
                 alt={user.name}
-                decorationSrc={user.role === "admin"
-                    ? `/api/medias/decorations?filename=admin&animated=${hovering}`
-                    : undefined}
+                decorationSrc={avatarDecorationSrc()}
                 ring={user.isSpeaking} />
             {#if page.data?.user?.role === "admin"}
-                <AdminStatusDot user={user} />
+                <AdminStatusDot {user} />
             {:else}
                 <UserStatusDot status={user.status} />
             {/if}
         </div>
 
         <!-- GRID pour garder le nom centré quand l’activité est absente -->
-        <div class="name-activity-grid min-h-8 h-8 overflow-hidden text-start w-full">
+        <div class="name-activity-grid h-8 min-h-8 w-full overflow-hidden text-start">
             {#if shouldShowActivityImage}
                 <img
                     in:fade={{ duration: 300 }}
                     out:fade={{ duration: 200 }}
                     src={GamesStore.getGameScreenshot(user.activity!.gameSlug!)}
                     alt={user.activity?.gameTitle || user.name}
-                    style="mask-image:linear-gradient(90deg, transparent 0%, rgba(0, 128, 183, .08) 20%, rgba(0, 128, 183, .08) 50%, rgba(0, 128, 183, .6) {hovering ? '70' : '100'}%);"
-                    class="pointer-events-none absolute right-0 w-full object-contain object-center opacity-70 group-hover:opacity-100 transition-all duration-300"/>
+                    style="mask-image:linear-gradient(90deg, transparent 0%, rgba(0, 128, 183, .08) 20%, rgba(0, 128, 183, .08) 50%, rgba(0, 128, 183, .6) {hovering
+                        ? '70'
+                        : '100'}%);"
+                    class="pointer-events-none absolute right-0 w-full object-contain object-center opacity-70 transition-all duration-300 group-hover:opacity-100" />
             {/if}
 
             <!-- Nom -->
             <span
                 class:text-primary={user.role === "admin"}
-                class="self-center truncate font-ggsans-medium text-base font-thin leading-tight max-w-[90%]">
+                class="max-w-[90%] self-center truncate font-ggsans-medium text-base font-thin leading-tight">
                 {user.name}
             </span>
 
@@ -141,7 +162,7 @@
                 {#if showActivity}
                     <div
                         transition:fly={{ y: -10, duration: 250 }}
-                        class="z-20 flex items-center gap-1 overflow-hidden text-xs font-bold text-gray-500 w-full">
+                        class="z-20 flex w-full items-center gap-1 overflow-hidden text-xs font-bold text-gray-500">
                         {#if user.activity?.activityType === "Playing"}
                             <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
                         {:else}
@@ -150,46 +171,46 @@
                         <div
                             role="button"
                             onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
-                            class="flex flex-1 h-3 items-center justify-items-start gap-1 p-0 text-xs">
-                            <span class="truncate p-1 text-primary/70 max-w-[75%] w-full">{user.activity?.gameTitle}</span>
-							{#if installProgress > 0 && installProgress < 100}
-								<span class="text-white/70 text-xs">({installProgress}%)</span>
-							{/if}
+                            class="flex h-3 flex-1 items-center justify-items-start gap-1 p-0 text-xs">
+                            <span class="w-full max-w-[75%] truncate p-1 text-primary/70">
+                                {user.activity?.gameTitle}
+                            </span>
+                            {#if installProgress > 0 && installProgress < 100}
+                                <span class="text-xs text-white/70">({installProgress}%)</span>
+                            {/if}
                         </div>
                     </div>
                 {/if}
             </div>
 
-			{#if installProgress > 0 && installProgress < 100}
-            <Progress
-                value={installProgress}
-                class="pointer-events-none absolute -bottom-px right-2 h-[3px] w-[80%] self-center"
-                color="primary"
-                aria-label="Game install progress" />
-        {/if}
+            {#if installProgress > 0 && installProgress < 100}
+                <Progress
+                    value={installProgress}
+                    class="pointer-events-none absolute -bottom-px right-2 h-[3px] w-[80%] self-center"
+                    color="primary"
+                    aria-label="Game install progress" />
+            {/if}
         </div>
 
-        
-
-        {#if shouldShowNameplate && !shouldShowActivityImage}
-            {#if hovering === false || user.status === "Disconnected"}
+        {#if shouldShowNameplate()}
+            {#if !hasNameplateAnimated || hovering === false || user.status === "Disconnected"}
                 <img
                     in:fade={{ duration: 300 }}
                     out:fade={{ duration: 200 }}
-                    src={posterUrl}
+                    src={nameplateStatic()}
                     alt={user.activity?.gameTitle || user.name}
                     class="pointer-events-none absolute right-0 h-full object-cover object-center"
                     style="background: linear-gradient(90deg, transparent 0%, rgba(0,128,183,.08) 20%, rgba(0,128,183,.08) 50%, rgba(0,128,183,.2) 100%);" />
             {/if}
-            {#if user.status !== "Disconnected"}
+            {#if hasNameplateAnimated && user.status !== "Disconnected"}
                 <video
                     bind:this={videoEl}
-                    src={videoUrl}
+                    poster={nameplateStatic()}
                     muted
                     playsinline
                     loop
+                    src={nameplateAnimated()}
                     preload="metadata"
-                    poster={posterUrl}
                     class:opacity-80={hovering}
                     class:opacity-0={hovering === false}
                     class="pointer-events-none absolute right-0 h-full object-cover transition-opacity duration-300 ease-linear"
