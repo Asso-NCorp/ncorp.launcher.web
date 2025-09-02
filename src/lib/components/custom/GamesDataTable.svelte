@@ -2,18 +2,18 @@
     import { Skeleton } from "../ui/skeleton";
     import { fly } from "svelte/transition";
     import { global } from "$src/lib/states/global.svelte";
-    import type { InstallableGame } from "$src/lib/shared-models";
     import DataTable, { type Api } from "datatables.net";
     import "datatables.net-select";
     import "datatables.net-plugins/sorting/file-size.js";
 
-    let { games, loading }: { games: InstallableGame[]; loading: boolean } = $props();
+    let { games, loading }: { games: InstallableGameExtended[]; loading: boolean } = $props();
     let table: HTMLTableElement | null = null;
     let tableApi: Api<any> | null = null;
 
     import { onMount, onDestroy, mount } from "svelte";
     import GameActionButton from "./GameActionButton.svelte";
     import { t } from "$src/lib/translations";
+    import type { InstallableGameExtended } from "$src/lib/types";
 
     onMount(() => {
         if (table) {
@@ -48,8 +48,9 @@
                         },
                     },
                     { data: "genres" },
-                    { data: "maxPlayers" },
-                    { data: "sizeGb", render: (data) => `${data} GB`, type: "file-size" },
+                    { data: "maxPlayers", className: "text-center" },
+                    { data: "sizeGb", render: (data) => `${data} GB`, type: "file-size", className: "text-center" },
+                    { data: "totalInstallations", className: "text-center" },
                     {
                         data: null,
                         defaultContent: "",
@@ -60,12 +61,12 @@
                 pageLength: 10,
                 createdRow: (row, data, dataIndex) => {
                     // Mount GameActionButton in the last column
-                    const td = row.cells[3]; // Last cell (index 3, assuming 4 columns)
+                    const td = row.cells[5]; // Last cell (index 5, assuming 6 columns)
                     row.className = "h-16";
 
                     mount(GameActionButton, {
                         target: td,
-                        props: { game: data as InstallableGame },
+                        props: { game: data as InstallableGameExtended },
                     });
                 },
             });
@@ -101,6 +102,7 @@
                         {$t("max_players")}
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">{$t("size")}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">{$t("total_installs_count")}</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"></th>
                 </tr>
             </thead>

@@ -7,6 +7,7 @@ import { db } from "$srv/db";
 import type { event, global_settings } from "@prisma/client";
 import { getWinnerGifFiles } from "$src/lib/server/fileUtils";
 import { extendGames } from "$src/lib/utils/games";
+import type { InstallableGameExtended } from "$src/lib/types";
 export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
     const session = locals.session;
     const user = locals.user;
@@ -28,14 +29,14 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         liveUsers = await getServerApi(jwtToken).getOnlineUsers();
         locals.liveUsers = liveUsers;
     } catch (error) {
-        logger.error("Error fetching live users", error);
+        console.error("Error fetching live users", error);
     }
 
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/admin")) {
         if (!user?.role?.includes("admin")) {
-            logger.error("Unauthorized access attempt to admin route by:", user?.id);
+            logger.error(`Unauthorized access attempt to admin route by: ${user?.id}`);
             return redirect(302, "/");
         }
     }
@@ -47,7 +48,7 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         });
         locals.events = events;
     } catch (error) {
-        logger.error("Error fetching events", error);
+        logger.error(`Error fetching events: ${error}`);
     }
 
     try {
@@ -55,22 +56,38 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         const globalSettings = await db.global_settings.findMany();
         locals.globalSettings = globalSettings;
     } catch (error) {
-        logger.error("Error fetching global settings", error);
+        logger.error(`Error fetching global settings: ${error}`);
     }
 
     try {
-        // Get available games
         const availableGames = extendGames(await getServerApi(jwtToken).getAvailableGames());
-        locals.availableGames = availableGames;
+        const slugs = availableGames.map((g: InstallableGameExtended) => g.folderSlug!);
+        if (slugs.length === 0) return { availableGames: [] };
+
+        const rows = await db.user_game.groupBy({
+            by: ["game_slug"],
+            where: { game_slug: { in: slugs }, installed_at: { not: null } },
+            _count: { _all: true },
+        });
+
+        const counts = new Map(rows.map((r) => [r.game_slug, r._count._all]));
+
+        const withCounts = availableGames.map((g: InstallableGameExtended) => ({
+            ...g,
+            totalInstallations: counts.get(g.folderSlug!) ?? 0,
+        }));
+
+        // si tu utilises locals ailleurs
+        locals.availableGames = withCounts;
     } catch (error) {
-        logger.error("Error fetching available games", error);
+        logger.error(`Error fetching available games: ${error}`);
     }
 
     try {
         const roles = await db.role.findMany();
         locals.roles = roles;
     } catch (error) {
-        logger.error("Error fetching user roles", error);
+        logger.error(`Error fetching user roles: ${error}`);
     }
 
     const winnersGifsFiles = await getWinnerGifFiles();

@@ -8,12 +8,14 @@
     import { goto } from "$app/navigation";
     import GameActionButton from "./GameActionButton.svelte";
     import { t } from "$src/lib/translations";
-    import { FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
+    import { ArrowBigDown, ArrowDown, Clock, FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
     import Button from "../ui/button/button.svelte";
     import { getLocalApi, isRecentlyAdded } from "$src/lib/utils";
     import type { InstallableGameExtended } from "$src/lib/types";
     import WordRotate from "./WordRotate.svelte";
+    import { liveUsers } from "$src/lib/states/live-users.svelte";
+    import { Progress } from "../ui/progress";
     let { game }: { game: InstallableGameExtended } = $props();
     let currentScreenshot = $state(game.screenshots ? game.screenshots[0] : "");
     let showDetails = $state(false);
@@ -43,6 +45,14 @@
             gameSlug: game.folderSlug,
         });
     };
+
+    const isGameInstallingCurrentGame = $derived(
+        liveUsers.currentUser?.activity?.gameSlug === game.folderSlug && game.isInstalling,
+    );
+
+    const STATUS_MIN_CH = 14; // fallback min width
+    const STATUS_WORDS = ["Queued", "Waiting", "Downloading", "Extracting", "Installing", "Finalizing", "Verifying"]; // adjust if more
+    const STATUS_LONGEST = STATUS_WORDS.reduce((a, b) => (b.length > a.length ? b : a), "");
 </script>
 
 <div
@@ -205,6 +215,9 @@
                 <div class="text-sm text-gray-500">
                     <span>{$t("max_players")}: {game.maxPlayers}</span>
                 </div>
+                <div class="text-sm text-gray-500">
+                    <span>{$t("total_installs_count")}: {game.totalInstallations}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -216,28 +229,62 @@
     {/if}
 
     {#if game.isInstalling && !showDetails}
-        <!-- Install overlay last so it naturally sits on top (removed z-index) -->
         <div
             class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black bg-opacity-50">
-            {#if game.installProgress > 0}
-                <Loader size={40} class="!text-white" />
+            {#if !game.isCancellingInstall}
+                {#if isGameInstallingCurrentGame}
+                    <ArrowDown class="absolute left-2 top-2 size-6 animate-bounce text-blue-600 " />
+                {:else}
+                    <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/80">
+                        <Clock class="size-8" />
+                        <span class="text-sm">Dans la file d'attente...</span>
+                    </div>
+                {/if}
             {/if}
-            <div class="flex flex-col">
-                <div class="text-center text-white">
-                    (
-                    <span>{game.installProgress}%</span>
-                    )
-                    <WordRotate
-                        class="text-white"
-                        word={game.isCancellingInstall
-                            ? $t("cancelling") // ou "annulation"
-                            : game.installProgress < 50
-                              ? $t("download_in_progress")
-                              : $t("install_in_progress")} />
+
+            {#if game.isCancellingInstall}
+                <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/80">
+                    <Clock class="size-8" />
+                    <span class="text-sm">Annulation en cours...</span>
                 </div>
+            {/if}
+
+            {#if isGameInstallingCurrentGame && !game.isCancellingInstall}
+                <div class="flex flex-col">
+                    <div class="text-center text-white">
+                        <WordRotate
+                            class="text-white"
+                            word={game.status}
+                            minCh={STATUS_MIN_CH}
+                            longest={STATUS_LONGEST} />
+                    </div>
+                </div>
+            {/if}
+
+            <!-- Gradient shadow for stats readability -->
+            <div
+                class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
             </div>
-            <br />
-            <!-- <Progress class="absolute bottom-2 mx-auto h-4 w-2/3 px-2" value={game.installProgress} /> -->
+
+            <div
+                class:hidden={!isGameInstallingCurrentGame}
+                class="absolute inset-x-0 bottom-2 z-10 flex flex-col gap-2 px-2 text-xs">
+                <div class="mx-auto flex flex-1 justify-between gap-2">
+                    <span>📦{game.installProgress}%</span>
+                    {#if liveUsers.currentUser?.downloadSpeedMegaBytesPerSecond}
+                        <span class="text-blue-600">↓</span>
+                        <span>{liveUsers.currentUser.downloadSpeedMegaBytesPerSecond.toFixed(1)} Mo/s</span>
+                    {/if}
+                    {#if game.installProgress > 50}
+                        <span>🍗 Extraction</span>
+                    {/if}
+                    {#if game.eta}
+                        <span>⏳</span>
+                        <span>{game.eta}</span>
+                    {/if}
+                </div>
+                <Progress class="h-1 w-full" value={game.installProgress} />
+            </div>
         </div>
     {/if}
 </div>

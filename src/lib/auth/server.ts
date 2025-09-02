@@ -3,8 +3,9 @@ import { username, jwt, bearer, admin, organization, openAPI, createAuthMiddlewa
 import { createPool } from "mysql2/promise";
 import { BETTER_AUTH_SECRET, MYSQL_DATABASE, MYSQL_HOST, MYSQL_PASSWORD, MYSQL_PORT, MYSQL_USER } from "$env/static/private";
 import { PUBLIC_BETTER_AUTH_URL } from "$env/static/public";
-
-import { parse as parseTopLevelDomain } from 'tldts';
+import { getRequestEvent } from "$app/server";
+import { parse as parseTopLevelDomain } from "tldts";
+import { sveltekitCookies } from "better-auth/svelte-kit";
 
 export const auth = betterAuth({
     database: createPool({
@@ -49,6 +50,7 @@ export const auth = betterAuth({
         username(),
         admin(),
         bearer(),
+        sveltekitCookies(getRequestEvent),
         jwt({
             jwks: {
                 disablePrivateKeyEncryption: true,

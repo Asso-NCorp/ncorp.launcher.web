@@ -52,10 +52,6 @@
         !!user.activity && user.activity.activityType !== "Idle" && user.status !== "Disconnected",
     );
 
-    const installProgress = $derived(
-        user.gameInstallProgress ?? 0,
-    );
-
     function waitCanPlay(el: HTMLVideoElement) {
         return new Promise<void>((resolve) => {
             if (el.readyState >= 2) return resolve();
@@ -136,6 +132,7 @@
             {/if}
         </div>
 
+        
         <!-- GRID pour garder le nom centré quand l’activité est absente -->
         <div class="name-activity-grid h-8 min-h-8 w-full overflow-hidden text-start">
             {#if shouldShowActivityImage}
@@ -175,17 +172,17 @@
                             <span class="w-full max-w-[75%] truncate p-1 text-primary/70">
                                 {user.activity?.gameTitle}
                             </span>
-                            {#if installProgress > 0 && installProgress < 100}
-                                <span class="text-xs text-white/70">({installProgress}%)</span>
+                            {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
+                                <span class="text-xs text-white/70">({user.gameInstallProgress}%)</span>
                             {/if}
                         </div>
                     </div>
                 {/if}
             </div>
 
-            {#if installProgress > 0 && installProgress < 100}
+            {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
                 <Progress
-                    value={installProgress}
+                    value={user.gameInstallProgress}
                     class="pointer-events-none absolute -bottom-px right-2 h-[3px] w-[80%] self-center"
                     color="primary"
                     aria-label="Game install progress" />
@@ -218,6 +215,14 @@
                 </video>
             {/if}
         {/if}
+
+        {#if user.downloadSpeedMegaBytesPerSecond && user.downloadSpeedMegaBytesPerSecond > 0}
+            <div class="absolute top-0 right-2 text-xss flex gap-1 items-center text-white/60 font-ggsans-bold" style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);">
+                <span class="text-[0.65rem] text-blue-600">↓</span>
+                <span>{user.downloadSpeedMegaBytesPerSecond.toFixed(1)} Mo/s</span>
+            </div>
+        {/if}
+
     </div>
 </div>
 

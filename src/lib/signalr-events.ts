@@ -46,19 +46,9 @@ export class SignalREventBinder {
         });
 
         this.offAndOn(liveAgentConnection, "GameStatusChanged", (gameSlug: string, status: string) => {
-            gameStatuses.update((words) => {
-                words[gameSlug] = status;
-                return { ...words };
-            });
+            console.log(`Game status changed: ${gameSlug} is now ${status}`);
+            GamesStore.setGameStatus(gameSlug, status);
         });
-
-        this.offAndOn(
-            liveServerConnection,
-            "UserGameProgressChanged",
-            (userId: string, gameSlug: string, progress: number) => {
-                liveUsers.updateUserGameProgress(userId, progress);
-            },
-        );
 
         this.offAndOn(liveAgentConnection, "GameInstalled", (gameSlug: string) => {
             toast.success(`Installation terminée : ${gameSlug}`, {
@@ -68,10 +58,24 @@ export class SignalREventBinder {
                 },
             });
             GamesStore.setGameIsInstalled(gameSlug, true);
+            GamesStore.setGameStatus(gameSlug, undefined);
+            GamesStore.setGameETA(gameSlug, undefined);
             GamesStore.deselect(gameSlug);
         });
 
+        this.offAndOn(liveAgentConnection, "GameEtaChanged", (gameSlug: string, eta: string) => {
+            GamesStore.setGameETA(gameSlug, eta);
+        });
+
         // SERVER EVENTS
+
+        this.offAndOn(
+            liveServerConnection,
+            "UserGameProgressChanged",
+            (userId: string, gameSlug: string, progress: number) => {
+                liveUsers.updateUserGameProgress(gameSlug, userId, progress);
+            },
+        );
 
         this.offAndOn(liveServerConnection, "SetLocalGamesFolderValid", async (localGamesDir: string) => {
             if (!localGamesDir && options?.showConfigGamesDirDialogSetter) {
@@ -85,8 +89,56 @@ export class SignalREventBinder {
             }
         });
 
+        this.offAndOn(
+            liveServerConnection,
+            "GameSpeedChanged",
+            (userId: string, slug: string, payload: { moPerSeconds: number; mbitsPerSeconds: number }) => {
+                liveUsers.updateUserDownloadSpeed(userId, slug, payload.moPerSeconds, payload.mbitsPerSeconds);
+                if (userId === global.currentUser?.id) {
+                    let game = GamesStore.get(slug);
+                    if (game) {
+                        game.isInstalling = true;
+                    }
+                }
+            },
+        );
+
         this.offAndOn(liveServerConnection, "GamesListUpdated", async () => {
             await GamesStore.getAvailableGames();
+        });
+
+        this.offAndOn(liveServerConnection, "UserFinishedInstalling", (userId: string, gameSlug: string) => {
+            if (userId === global.currentUser?.id) {
+                let game = GamesStore.get(gameSlug);
+                if (game) {
+                    game.isInstalling = false;
+                }
+            }
+        });
+
+        this.offAndOn(liveServerConnection, "UserCancelledInstallation", (userId: string, gameSlug: string) => {
+            let user = liveUsers.getUser(userId);
+            if (!user) return;
+
+            if (user.activity) {
+                user.activity.gameSlug = undefined;
+                user.activity.gameTitle = undefined;
+                user.activity.activityType = "Idle";
+            }
+            user.gameInstallProgress = 0;
+            user.downloadSpeedMegaBytesPerSecond = 0;
+            user.downloadSpeedMegabitsPerSecond = 0;
+
+            if (user.id === global.currentUser?.id) {
+                let game = GamesStore.get(gameSlug);
+                if (game) {
+                    game.isInstalling = false;
+                    game.installProgress = 0;
+                    game.isLoading = false;
+                    game.isCancellingInstall = false;
+                    game.eta = undefined;
+                }
+            }
         });
 
         this.offAndOn(liveServerConnection, "UserActivityChanged", (userId: string, activity: UserActivity) => {
@@ -113,9 +165,7 @@ export class SignalREventBinder {
             liveServerConnection,
             "UserStatusChanged",
             async (userId: string, status: UserConnectionStatus, agentVersion: string) => {
-                logger.info(`UserStatusChanged: ${userId} is now ${status}`);
                 await liveUsers.updateUserStatus(userId, status);
-                logger.info(`User ${userId} agent version: ${agentVersion}`);
                 liveUsers.updateUserAgentVersion(userId, agentVersion);
                 if (userId === global.currentUser?.id) {
                     liveAgentConnection.agentVersion = agentVersion;

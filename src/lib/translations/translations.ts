@@ -104,6 +104,8 @@ export default {
         download_in_progress: "Téléchargement en cours",
         cancelling: "Annulation",
         beta_tester: "Bêta testeur",
+        install_count: "Nombre d'installations",
+        total_installs_count: "Nombre total d'installations",
     },
     en: {
         lang,
@@ -208,5 +210,7 @@ export default {
         download_in_progress: "Downloading in progress",
         cancelling: "Cancelling",
         beta_tester: "Beta tester",
+        install_count: "Install Count",
+        total_installs_count: "Total Installs Count",
     },
 };

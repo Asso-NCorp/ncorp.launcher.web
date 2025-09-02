@@ -1,6 +1,6 @@
 import { toast } from "svelte-sonner";
 import { FetchError } from "../shared-models";
-import type { InstallableGameExtended as InstallableGame } from "../types";
+import type { InstallableGameExtended as InstallableGame, InstallableGameExtended } from "../types";
 import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi, syncArrayInPlace } from "../utils";
@@ -8,11 +8,11 @@ import { liveAgentConnection } from "../states/live-agent.svelte";
 import { extendGames } from "../utils/games";
 
 class GameStore {
-    games: InstallableGame[] = $state([]);
-    selected: InstallableGame[] = $derived(this.games.filter((g) => g.isSelected));
+    games: InstallableGameExtended[] = $state([]);
+    selected: InstallableGameExtended[] = $derived(this.games.filter((g) => g.isSelected));
     isLoading = $state(false);
-    installedGames: InstallableGame[] = $derived(this.games.filter((g) => g.isInstalled));
-    allGames: InstallableGame[] = $state([]);
+    installedGames: InstallableGameExtended[] = $derived(this.games.filter((g) => g.isInstalled));
+    allGames: InstallableGameExtended[] = $state([]);
 
     lastGameFetchAt: number = $state(0); // ms epoch (info)
     private inFlight?: Promise<boolean>;
@@ -72,16 +72,30 @@ class GameStore {
         this.tickTimer = null;
     }
 
-    setGames(games: InstallableGame[]) {
+    setGames(games: InstallableGameExtended[]) {
         syncArrayInPlace(this.allGames, games, (g) => g.folderSlug);
         syncArrayInPlace(this.games, games, (g) => g.folderSlug);
     }
 
-    get(slug: string): InstallableGame | undefined {
+    setGameETA(gameSlug: string, eta?: string) {
+        const game = this.get(gameSlug);
+        if (game) {
+            game.eta = eta;
+        }
+    }
+
+    setGameStatus(gameSlug: string, status?: string) {
+        const game = this.get(gameSlug);
+        if (game) {
+            game.status = status;
+        }
+    }
+
+    get(slug: string): InstallableGameExtended | undefined {
         return this.allGames.find((g) => g.folderSlug === slug);
     }
 
-    select(game: InstallableGame) {
+    select(game: InstallableGameExtended) {
         game.isSelected = true;
     }
     deselect(slug: string) {
@@ -108,6 +122,7 @@ class GameStore {
         g.isInstalled = isInstalled;
         g.isInstalling = false;
         g.installProgress = isInstalled ? 100 : 0;
+        g.isLoading = !isInstalled;
     }
 
     getGameCover = (slug: string): string => {
@@ -173,7 +188,7 @@ class GameStore {
         });
     };
 
-    installGame = async (game: InstallableGame) => {
+    installGame = async (game: InstallableGameExtended) => {
         if (game.isInstalled) return;
         try {
             game.isInstalling = true;
@@ -192,7 +207,7 @@ class GameStore {
         }
     };
 
-    cancelGameInstallation = async (game: InstallableGame) => {
+    cancelGameInstallation = async (game: InstallableGameExtended) => {
         try {
             game.isCancellingInstall = true;
             await getLocalApi().cancelInstallation({ gameSlug: game.folderSlug });
@@ -203,11 +218,12 @@ class GameStore {
             console.error(error);
             game.installError = (error as Error)?.message;
             toast.error("Erreur lors de l'annulation", { class: "bg-red-500" });
+        } finally {
             game.isCancellingInstall = false;
         }
     };
 
-    installGames = async (games: InstallableGame[]) => {
+    installGames = async (games: InstallableGameExtended[]) => {
         if (games.length === 0) {
             toast.error("Aucun jeu sélectionné");
             return;
@@ -237,7 +253,7 @@ class GameStore {
         }
     };
 
-    uninstallGame = async (game: InstallableGame) => {
+    uninstallGame = async (game: InstallableGameExtended) => {
         if (!game.isInstalled) return;
         try {
             game.isLoading = true;
@@ -254,7 +270,7 @@ class GameStore {
         }
     };
 
-    uninstallGames = async (games: InstallableGame[]) => {
+    uninstallGames = async (games: InstallableGameExtended[]) => {
         if (games.length === 0) {
             toast.error("Aucun jeu sélectionné");
             return;
@@ -307,8 +323,8 @@ class GameStore {
 
         this.isLoading = true;
         this.inFlight = (async () => {
-            let games: InstallableGame[] = [];
-            let installedGames: InstallableGame[] = [];
+            let games: InstallableGameExtended[] = [];
+            let installedGames: InstallableGameExtended[] = [];
 
             try {
                 // Server games

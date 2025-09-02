@@ -40,6 +40,9 @@
             {:else if user.status === "Disconnected"}
                 <span>Déconnecté</span>
             {/if}
+            {#if user.downloadSpeedMegaBytesPerSecond && user.downloadSpeedMegaBytesPerSecond > 0}
+                <span>Téléchargement : {user.downloadSpeedMegaBytesPerSecond} Mo/s</span>
+            {/if}
         </Root>
     </Tooltip.Content>
 </Tooltip.Root>

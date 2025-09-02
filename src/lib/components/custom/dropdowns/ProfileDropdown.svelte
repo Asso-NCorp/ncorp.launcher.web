@@ -16,8 +16,8 @@
     import { getLocalApi } from "$src/lib/utils";
     import { PUBLIC_AGENT_URL } from "$env/static/public";
 
-    let { user }: { user: LiveUser } = $props();
-    let name = user.name;
+    let { user }: { user: LiveUser | undefined } = $props();
+    let name = user?.name;
 
     const handleDisconnect = async () => {
         try {
@@ -48,14 +48,17 @@
         <SideMenuItem href="/" class="w-full py-0 pb-0 text-base" collapsed={global.sidebarCollapsed}>
             <div class="relative">
                 <Avatar.Root class="size-8 ring-primary">
-                    <Avatar.Image src="/api/avatars/{user.id}" alt={user.name} class="object-cover object-center" />
+                    <Avatar.Image src="/api/avatars/{user?.id}" alt={user?.name} class="object-cover object-center" />
                     <Avatar.Fallback class="text-muted-foreground">
-                        {user.name?.charAt(0)}{user.name?.charAt(1)}
+                        {user?.name?.charAt(0)}{user?.name?.charAt(1)}
                     </Avatar.Fallback>
                 </Avatar.Root>
 
                 <!-- Status dot -->
-                <AdminStatusDot user={user} />
+                 {#if user}
+                 <AdminStatusDot user={user} />
+                 {/if}
+                
             </div>
 
             {#if !global.sidebarCollapsed}

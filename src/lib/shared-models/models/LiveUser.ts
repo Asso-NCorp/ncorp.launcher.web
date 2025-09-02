@@ -90,6 +90,18 @@ export interface LiveUser {
     gameInstallProgress?: number;
     /**
      * 
+     * @type {number}
+     * @memberof LiveUser
+     */
+    downloadSpeedMegaBytesPerSecond?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof LiveUser
+     */
+    downloadSpeedMegabitsPerSecond?: number;
+    /**
+     * 
      * @type {string}
      * @memberof LiveUser
      */
@@ -124,6 +136,8 @@ export function LiveUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'isSpeaking': json['isSpeaking'] == null ? undefined : json['isSpeaking'],
         'status': json['status'] == null ? undefined : UserConnectionTypeFromJSON(json['status']),
         'gameInstallProgress': json['gameInstallProgress'] == null ? undefined : json['gameInstallProgress'],
+        'downloadSpeedMegaBytesPerSecond': json['downloadSpeedMegaBytesPerSecond'] == null ? undefined : json['downloadSpeedMegaBytesPerSecond'],
+        'downloadSpeedMegabitsPerSecond': json['downloadSpeedMegabitsPerSecond'] == null ? undefined : json['downloadSpeedMegabitsPerSecond'],
         'agentVersion': json['agentVersion'] == null ? undefined : json['agentVersion'],
     };
 }
@@ -148,6 +162,8 @@ export function LiveUserToJSONTyped(value?: LiveUser | null, ignoreDiscriminator
         'isSpeaking': value['isSpeaking'],
         'status': UserConnectionTypeToJSON(value['status']),
         'gameInstallProgress': value['gameInstallProgress'],
+        'downloadSpeedMegaBytesPerSecond': value['downloadSpeedMegaBytesPerSecond'],
+        'downloadSpeedMegabitsPerSecond': value['downloadSpeedMegabitsPerSecond'],
         'agentVersion': value['agentVersion'],
     };
 }

@@ -1,10 +1,17 @@
 import { logger } from "../stores/loggerStore";
 import { getServerApi, syncArrayInPlace } from "../utils";
 import { global } from "./global.svelte";
-import type { LiveUser, UserActivity, UserConnectionStatus } from "$src/lib/shared-models";
+import type { LiveUser, UserActivity, UserConnectionType } from "$src/lib/shared-models";
 import { GamesStore } from "./games.svelte";
 
 class LiveUsers {
+    updateUserDownloadSpeed(userId: string, slug: string, moPerSeconds: number, mbitsPerSeconds: number) {
+        const user = this.getUser(userId);
+        if (user) {
+            user.downloadSpeedMegaBytesPerSecond = moPerSeconds;
+            user.downloadSpeedMegabitsPerSecond = mbitsPerSeconds;
+        }
+    }
     users = $state<LiveUser[]>([]);
     loading = $state<boolean>(false);
     constructor() {}
@@ -49,6 +56,12 @@ class LiveUsers {
             logger.info(`User ${userId} activity updated to ${activity}`);
             user.activity = activity;
 
+            if (user.activity.activityType === "Idle") {
+                user.downloadSpeedMegaBytesPerSecond = 0;
+                user.downloadSpeedMegabitsPerSecond = 0;
+                user.gameInstallProgress = 0;
+            }
+
             if (userId == global.currentUser?.id) {
                 if (user.activity.activityType == "Playing") {
                     if (GamesStore.has(user.activity.gameSlug!)) {
@@ -67,10 +80,21 @@ class LiveUsers {
         }
     }
 
-    updateUserGameProgress(userId: string, progress: number) {
+    updateUserGameProgress(gameSlug: string, userId: string, progress: number) {
         const user = this.getUser(userId);
         if (user) {
             user.gameInstallProgress = progress;
+            if (user.activity) {
+                user.activity.activityType = "Installing";
+                user.activity.gameSlug = gameSlug;
+            } else {
+                user.activity = {
+                    activityType: "Installing",
+                    gameSlug: gameSlug,
+                    gameTitle: GamesStore.get(gameSlug)?.title,
+                };
+            }
+
             if (progress >= 100) {
                 user.gameInstallProgress = 0; // Reset progress when installation is complete
             }
@@ -79,7 +103,7 @@ class LiveUsers {
         }
     }
 
-    async updateUserStatus(userId: string, status: UserConnectionStatus) {
+    async updateUserStatus(userId: string, status: UserConnectionType) {
         let user = this.getUser(userId);
         if (user) {
             logger.info(`User ${userId} status updated to ${status}`);
@@ -122,6 +146,8 @@ class LiveUsers {
             liveUsers.loading = false;
         }
     };
+
+    currentUser = $derived(this.getUser(global.currentUser?.id));
 }
 
 export const liveUsers = new LiveUsers();
