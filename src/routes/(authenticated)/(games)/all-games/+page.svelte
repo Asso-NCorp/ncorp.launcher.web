@@ -12,6 +12,7 @@
     import { t } from "$src/lib/translations";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import FeaturedGame from "$src/lib/components/custom/FeaturedGame.svelte";
+    import { browser } from "$app/environment";
     // Sort all games by title asc
     const sortedGames = $derived([...GamesStore.games].sort((a, b) => a.title.localeCompare(b.title)));
     const filteredGames = $derived(sortedGames.filter((game) => game.isSelected && !game.isInstalled));
@@ -69,10 +70,12 @@
     {/if}
 {/snippet}
 
-<div class="mt-0">
-    {#if global.gamesDisplayMode === "grid"}
-        <GamesGrid games={sortedGames} />
-    {:else}
-        <GamesDataTable games={sortedGames} loading={GamesStore.isLoading} />
-    {/if}
-</div>
+{#if browser}
+    <div class="mt-0">
+        {#if global.gamesDisplayMode === "grid"}
+            <GamesGrid games={sortedGames} />
+        {:else}
+            <GamesDataTable games={sortedGames} loading={GamesStore.isLoading} />
+        {/if}
+    </div>
+{/if}

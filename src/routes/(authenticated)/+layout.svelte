@@ -88,7 +88,6 @@
     global.currentUser = user;
     liveUsers.users = data.liveUsers; // Filter and sort upcoming events
     GamesStore.setGames(data.availableGames ?? []);
-    console.log("Available games:", data.availableGames);
 
     const upcomingEvents = $derived(() => {
         const now = new Date();
