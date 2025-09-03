@@ -24,13 +24,13 @@
     const userRole = roles.find((r) => r.name === user.role);
 
     // Avatar decoration: prefer static when idle, animated on hover; fallback if only one provided
-    let avatarDecorationSrc = $derived(() => {
-        if (!userRole) return undefined;
-        const staticDeco = userRole.avatar_decoration_static;
-        const animatedDeco = userRole.avatar_decoration_animated;
-        if (hovering) return animatedDeco || staticDeco;
-        return staticDeco || animatedDeco;
-    });
+        let avatarDecorationSrc = $derived(() => {
+            if (!userRole) return undefined;
+            const staticDeco = userRole.avatar_decoration_static;
+            const animatedDeco = userRole.avatar_decoration_animated;
+            if (hovering) return animatedDeco ?? staticDeco ?? undefined;
+            return staticDeco ?? animatedDeco ?? undefined;
+        });
 
     // Nameplate assets presence
     const hasNameplateStatic = $derived(!!userRole?.nameplate_decoration_static);
