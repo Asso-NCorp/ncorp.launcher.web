@@ -1,59 +1,73 @@
 name: Deploy to production
 
 on:
-    push:
-        branches: [main]
+  push:
+    branches: [main]
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v1
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'   # ou la version que tu utilises en prod
+          check-latest: true
 
-            - name: Install dependencies
-              run: bun install
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
-            - name: Inject .env from secrets
-              run: echo "${{ secrets.ENV_FILE }}" > .env
+      - name: Install dependencies
+        run: bun install
 
-            - name: Build app
-              run: NODE_ENV=production bunx vite build
+      - name: Inject .env from secrets
+        run: echo "${{ secrets.ENV_FILE }}" > .env
 
-            - name: Install 7-Zip
-              run: sudo apt update && sudo apt install -y p7zip-full
+      - name: Build app
+        run: NODE_ENV=production bunx vite build
 
-            - name: Create archive
-              run: |
-                  7z a ncorp.launcher.7z ./build/* ./prisma/ package.json .env ecosystem.config.json
+      - name: Install 7-Zip
+        run: sudo apt update && sudo apt install -y p7zip-full
 
-            - name: Upload via SFTP
-              uses: appleboy/scp-action@v0.1.7
-              with:
-                  host: ${{ secrets.SFTP_HOST }}
-                  port: ${{ secrets.SFTP_PORT }}
-                  username: ${{ secrets.SFTP_USER }}
-                  key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  source: ./ncorp.launcher.7z
-                  target: /var/www/launcher/front/
+      - name: Create archive
+        run: |
+          7z a ncorp.launcher.7z ./build/* ./prisma/ package.json .env ecosystem.config.json
 
-            - name: Remote deploy via SSH
-              uses: appleboy/ssh-action@master
-              with:
-                  host: ${{ secrets.SFTP_HOST }}
-                  port: ${{ secrets.SFTP_PORT }}
-                  username: ${{ secrets.SFTP_USER }}
-                  key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  script: |
-                      cd /var/www/launcher/front/
-                      /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 stop ecosystem.config.json || true
-                      7z x ncorp.launcher.7z -y
-                      /home/lan/.bun/bin/bun install
-                      /home/lan/.nvm/versions/node/v22.14.0/bin/npx prisma migrate deploy
-                      /home/lan/.nvm/versions/node/v22.14.0/bin/npx prisma generate
-                      /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
-                      rm ncorp.launcher.7z
+      - name: Upload via SFTP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          port: ${{ secrets.SFTP_PORT }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ./ncorp.launcher.7z
+          target: /var/www/launcher/front/
+
+      - name: Remote deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          port: ${{ secrets.SFTP_PORT }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/launcher/front/
+            # Met Node (nvm) dans le PATH pour que "node" soit trouvable par les postinstall
+            export PATH=/home/lan/.nvm/versions/node/v22.14.0/bin:$PATH
+
+            /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 stop ecosystem.config.json || true
+            7z x ncorp.launcher.7z -y
+
+            # OPTION A: rester sur npm (recommandé côté serveur)
+            npm ci --omit=dev
+
+            # Prisma
+            npx prisma migrate deploy
+            npx prisma generate
+
+            /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
+            rm ncorp.launcher.7z
