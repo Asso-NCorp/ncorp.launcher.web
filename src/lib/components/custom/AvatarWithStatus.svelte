@@ -2,6 +2,7 @@
     import AvatarDiscord from "./AvatarDiscord.svelte";
     import UserStatusDot from "./UserStatusDot.svelte";
     import AdminStatusDot from "./AdminStatusDot.svelte";
+    import { global } from "$lib/states/global.svelte";
     import type { LiveUser, UserConnectionType } from "$src/lib/shared-models";
 
     const {
@@ -30,7 +31,7 @@
         {decorationSrc}
         ring={isSpeaking} />
     {#if showStatusDot}
-        {#if user.role === "admin"}
+        {#if global.currentUser?.role === "admin"}
             <AdminStatusDot {user} />
         {:else}
             <UserStatusDot {status} />
