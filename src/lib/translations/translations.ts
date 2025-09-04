@@ -106,6 +106,7 @@ export default {
         beta_tester: "Bêta testeur",
         install_count: "Nombre d'installations",
         total_installs_count: "Nombre total d'installations",
+        chat: "Chat",
     },
     en: {
         lang,
@@ -212,5 +213,6 @@ export default {
         beta_tester: "Beta tester",
         install_count: "Install Count",
         total_installs_count: "Total Installs Count",
+        chat: "Chat",
     },
 };

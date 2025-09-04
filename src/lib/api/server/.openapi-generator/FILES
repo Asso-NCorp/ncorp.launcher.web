@@ -37,6 +37,8 @@ models/CompanyWebsiteIdentitiesOrValues.ts
 models/ConnectionInfo.ts
 models/Cover.ts
 models/CoverIdentityOrValue.ts
+models/CreateDmRequest.ts
+models/CreateGroupRequest.ts
 models/ExternalCategory.ts
 models/ExternalGame.ts
 models/ExternalGameIdentitiesOrValues.ts
@@ -75,8 +77,12 @@ models/LanguageSupportTypeIdentityOrValue.ts
 models/LiveUser.ts
 models/LoginRequest.ts
 models/LoginResponse.ts
+models/MessageDto.ts
+models/MessagePage.ts
+models/MessageType.ts
 models/MultiplayerMode.ts
 models/MultiplayerModeIdentitiesOrValues.ts
+models/PageCursor.ts
 models/Platform.ts
 models/PlatformCategory.ts
 models/PlatformFamily.ts
@@ -98,6 +104,9 @@ models/PlatformWebsiteCategory.ts
 models/PlatformWebsiteIdentitiesOrValues.ts
 models/PlayerPerspective.ts
 models/PlayerPerspectiveIdentitiesOrValues.ts
+models/ReactRequest.ts
+models/ReactionDeltaDto.ts
+models/ReactionViewDto.ts
 models/Region.ts
 models/RegionIdentityOrValue.ts
 models/ReleaseDate.ts
@@ -106,8 +115,10 @@ models/ReleaseDateIdentitiesOrValues.ts
 models/ReleaseDateRegion.ts
 models/ReleaseDateStatus.ts
 models/ReleaseDateStatusIdentityOrValue.ts
+models/RoomDto.ts
 models/Screenshot.ts
 models/ScreenshotIdentitiesOrValues.ts
+models/SendMessageRequest.ts
 models/StartDateCategory.ts
 models/StringTR.ts
 models/TR.ts

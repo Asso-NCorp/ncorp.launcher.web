@@ -2,15 +2,13 @@
     import type { LiveUser } from "$src/lib/shared-models";
     import { ArrowDown, Gamepad2 } from "@lucide/svelte";
     import { fade, fly } from "svelte/transition";
-    import UserStatusDot from "./UserStatusDot.svelte";
     import { goto } from "$app/navigation";
-    import Progress from "../ui/progress/progress.svelte";
-    import AvatarDiscord from "./AvatarDiscord.svelte";
+    import Progress from "$lib/components/ui/progress/progress.svelte";
     import { tick } from "svelte";
-    import AdminStatusDot from "./AdminStatusDot.svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { page } from "$app/state";
     import type { role } from "@prisma/client";
+    import AvatarWithStatus from "./AvatarWithStatus.svelte";
 
     let { user }: { user: LiveUser } = $props();
 
@@ -24,13 +22,13 @@
     const userRole = roles.find((r) => r.name === user.role);
 
     // Avatar decoration: prefer static when idle, animated on hover; fallback if only one provided
-        let avatarDecorationSrc = $derived(() => {
-            if (!userRole) return undefined;
-            const staticDeco = userRole.avatar_decoration_static;
-            const animatedDeco = userRole.avatar_decoration_animated;
-            if (hovering) return animatedDeco ?? staticDeco ?? undefined;
-            return staticDeco ?? animatedDeco ?? undefined;
-        });
+    let avatarDecorationSrc = $derived(() => {
+        if (!userRole) return undefined;
+        const staticDeco = userRole.avatar_decoration_static;
+        const animatedDeco = userRole.avatar_decoration_animated;
+        if (hovering) return animatedDeco ?? staticDeco ?? undefined;
+        return staticDeco ?? animatedDeco ?? undefined;
+    });
 
     // Nameplate assets presence
     const hasNameplateStatic = $derived(!!userRole?.nameplate_decoration_static);
@@ -117,22 +115,14 @@
     class="group ml-2 h-10 w-full max-w-[calc(var(--userlist-width)_-_1rem)] cursor-pointer py-[1px]">
     <div
         class="relative flex h-full items-center justify-start gap-2 overflow-hidden rounded-[0.5rem] px-2 group-hover:bg-secondary/50">
-        <div class="relative">
-            <AvatarDiscord
-                size={32}
-                name={user.name!}
-                src={`/api/avatars/${user.id}`}
-                alt={user.name}
-                decorationSrc={avatarDecorationSrc()}
-                ring={user.isSpeaking} />
-            {#if page.data?.user?.role === "admin"}
-                <AdminStatusDot {user} />
-            {:else}
-                <UserStatusDot status={user.status} />
-            {/if}
-        </div>
+        <!-- Replaced avatar + status dot block with reusable component -->
+        <AvatarWithStatus
+            {user}
+            decorationSrc={avatarDecorationSrc()}
+            isSpeaking={user.isSpeaking}
+            showStatusDot={true}
+            status={user.status} />
 
-        
         <!-- GRID pour garder le nom centré quand l’activité est absente -->
         <div class="name-activity-grid h-8 min-h-8 w-full overflow-hidden text-start">
             {#if shouldShowActivityImage}
@@ -169,7 +159,7 @@
                             role="button"
                             onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
                             class="flex h-3 flex-1 items-center justify-items-start gap-1 p-0 text-xs">
-                            <span class="w-full max-w-[75%] truncate p-1 text-primary/70">
+                            <span class="w-full max-w-[65%] truncate p-1 text-primary/70">
                                 {user.activity?.gameTitle}
                             </span>
                             {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
@@ -217,12 +207,13 @@
         {/if}
 
         {#if user.downloadSpeedMegaBytesPerSecond && user.downloadSpeedMegaBytesPerSecond > 0}
-            <div class="absolute top-0 right-2 text-xss flex gap-1 items-center text-white/60 font-ggsans-bold" style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);">
+            <div
+                class="absolute right-2 top-0 flex items-center gap-1 font-ggsans-bold text-xss text-white/60"
+                style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);">
                 <span class="text-[0.65rem] text-blue-600">↓</span>
                 <span>{user.downloadSpeedMegaBytesPerSecond.toFixed(1)} Mo/s</span>
             </div>
         {/if}
-
     </div>
 </div>
 

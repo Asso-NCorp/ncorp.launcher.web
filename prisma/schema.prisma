@@ -71,29 +71,37 @@ model session {
 }
 
 model user {
-  id                                                          String                 @id @db.VarChar(36)
-  name                                                        String                 @db.Text
-  email                                                       String                 @unique(map: "email") @db.VarChar(255)
-  emailVerified                                               Boolean
-  image                                                       String?                @db.Text
-  createdAt                                                   DateTime               @db.DateTime(0)
-  updatedAt                                                   DateTime               @db.DateTime(0)
-  username                                                    String?                @unique(map: "username") @db.VarChar(255)
-  role                                                        String                 @default("user") @db.VarChar(100)
-  banned                                                      Boolean?
-  banReason                                                   String?                @db.Text
-  banExpires                                                  DateTime?              @db.DateTime(0)
-  displayUsername                                             String?                @db.Text
-  lastLogin                                                   DateTime?              @db.DateTime(0)
-  chat_message                                                chat_message[]
-  chat_private_message_chat_private_message_senderIdTouser    chat_private_message[] @relation("chat_private_message_senderIdTouser")
-  chat_private_message_chat_private_message_recipientIdTouser chat_private_message[] @relation("chat_private_message_recipientIdTouser")
-  user_settings                                               user_settings?
-  game_session                                                game_session[]
-  event_created                                               event[]                @relation("event_created_by")
-  event_updated                                               event[]                @relation("event_updated_by")
-  gamesCreated                                                game[]                 @relation("GameCreatedBy")
-  gamesUpdated                                                game[]                 @relation("GameUpdatedBy")
+  id              String         @id @db.VarChar(36)
+  name            String         @db.Text
+  email           String         @unique(map: "email") @db.VarChar(255)
+  emailVerified   Boolean
+  image           String?        @db.Text
+  createdAt       DateTime       @db.DateTime(0)
+  updatedAt       DateTime       @db.DateTime(0)
+  username        String?        @unique(map: "username") @db.VarChar(255)
+  role            String         @default("user") @db.VarChar(100)
+  banned          Boolean?
+  banReason       String?        @db.Text
+  banExpires      DateTime?      @db.DateTime(0)
+  displayUsername String?        @db.Text
+  lastLogin       DateTime?      @db.DateTime(0)
+  user_settings   user_settings?
+  game_session    game_session[]
+  event_created   event[]        @relation("event_created_by")
+  event_updated   event[]        @relation("event_updated_by")
+  gamesCreated    game[]         @relation("GameCreatedBy")
+  gamesUpdated    game[]         @relation("GameUpdatedBy")
+
+  // Relations chat
+  guild_memberships   guild_member[]
+  room_participations room_participant[]
+  messages            message[]
+  message_reads       message_read[]
+  message_reactions   message_reaction[]
+  channel_memberships channel_member[]
+  guild               guild[]
+  room                room[]
+  room_view           room_view[]
 }
 
 model verification {
@@ -103,52 +111,6 @@ model verification {
   expiresAt  DateTime  @db.DateTime(0)
   createdAt  DateTime? @db.DateTime(0)
   updatedAt  DateTime? @db.DateTime(0)
-}
-
-model chat_channel {
-  id           Int            @id @default(autoincrement())
-  name         String         @db.VarChar(100)
-  createdAt    DateTime       @default(now()) @db.Timestamp(0)
-  serverId     Int
-  chat_server  chat_server    @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_channel_chat_server_FK")
-  chat_message chat_message[]
-
-  @@index([serverId], map: "chat_channel_chat_server_FK")
-}
-
-model chat_message {
-  id           Int          @id @default(autoincrement())
-  senderId     String       @db.VarChar(36)
-  channelId    Int
-  timestamp    DateTime     @default(now()) @db.DateTime(0)
-  text         String       @db.VarChar(1000)
-  chat_channel chat_channel @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "chat_messages_chat_channel_FK")
-  user         user         @relation(fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_messages_user_FK")
-
-  @@index([channelId], map: "chat_messages_chat_channel_FK")
-  @@index([senderId], map: "chat_messages_user_FK")
-}
-
-model chat_private_message {
-  id                                          Int                         @id @default(autoincrement())
-  senderId                                    String                      @db.VarChar(36)
-  recipientId                                 String                      @db.VarChar(36)
-  timestamp                                   DateTime                    @default(now()) @db.Timestamp(0)
-  text                                        String                      @db.VarChar(1000)
-  status                                      chat_private_message_status @default(sent)
-  user_chat_private_message_senderIdTouser    user                        @relation("chat_private_message_senderIdTouser", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK")
-  user_chat_private_message_recipientIdTouser user                        @relation("chat_private_message_recipientIdTouser", fields: [recipientId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_private_message_user_FK_1")
-
-  @@index([senderId], map: "chat_private_message_user_FK")
-  @@index([recipientId], map: "chat_private_message_user_FK_1")
-}
-
-model chat_server {
-  id           Int            @id @default(autoincrement())
-  name         String         @db.VarChar(100)
-  createdAt    DateTime       @default(now()) @db.DateTime(0)
-  creatorId    String         @db.VarChar(36)
-  chat_channel chat_channel[]
 }
 
 model sidelink {
@@ -280,8 +242,8 @@ model role {
 }
 
 model user_game {
-  user_id String @db.VarChar(36)
-  game_slug String @db.VarChar(100)
+  user_id      String    @db.VarChar(36)
+  game_slug    String    @db.VarChar(100)
   installed_at DateTime? @db.DateTime(0)
 
   @@id([user_id, game_slug])
@@ -289,6 +251,215 @@ model user_game {
   @@index([game_slug], map: "user_game_game_slug_FK")
   @@index([game_slug, installed_at], map: "user_game_slug_installed_at_idx")
 }
+
+/// ====== ENAMS ======
+enum room_type {
+  DM
+  GROUP
+  GUILD_CHANNEL
+}
+
+enum channel_type {
+  TEXT
+  VOICE
+  CATEGORY
+}
+
+enum message_type {
+  TEXT
+  SYSTEM
+  EVENT // join/leave/rename, etc.
+}
+
+/// ====== GUILDS ======
+model guild {
+  id        String   @id @default(uuid()) @db.Char(36)
+  name      String   @db.VarChar(100)
+  slug      String   @unique @db.VarChar(255)
+  icon      String?  @db.Text
+  ownerId   String   @db.VarChar(36) // user id -> pas de default
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @default(now()) @updatedAt @db.DateTime(0)
+
+  owner    user           @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  members  guild_member[]
+  channels channel[]
+  room     room[]
+
+  @@index([ownerId], map: "guild_owner_FK")
+}
+
+/// ====== GUILD MEMBERS ======
+model guild_member {
+  id       String   @id @default(uuid()) @db.Char(36)
+  guildId  String   @db.Char(36)
+  userId   String   @db.VarChar(36) // user id
+  nickname String?  @db.VarChar(100)
+  roles    String?  @db.Text
+  joinedAt DateTime @default(now()) @db.DateTime(0)
+
+  guild guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  user  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([guildId, userId], map: "guild_member_unique")
+  @@index([guildId], map: "guild_member_guild_idx")
+  @@index([userId], map: "guild_member_user_idx")
+}
+
+/// ====== CHANNELS ======
+model channel {
+  id        String       @id @default(uuid()) @db.Char(36)
+  guildId   String       @db.Char(36)
+  name      String       @db.VarChar(100)
+  slug      String       @db.VarChar(255)
+  type      channel_type @default(TEXT)
+  topic     String?      @db.VarChar(500)
+  position  Int          @default(0)
+  isPrivate Boolean      @default(false)
+  parentId  String?      @db.Char(36)
+  createdAt DateTime     @default(now()) @db.DateTime(0)
+  updatedAt DateTime     @default(now()) @updatedAt @db.DateTime(0)
+
+  guild    guild            @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  parent   channel?         @relation("ChannelToChildren", fields: [parentId], references: [id])
+  children channel[]        @relation("ChannelToChildren")
+  room     room?
+  members  channel_member[]
+
+  @@unique([guildId, slug], map: "channel_slug_per_guild")
+  @@index([guildId], map: "channel_guild_idx")
+  @@index([parentId], map: "channel_parent_idx")
+}
+
+/// Membres autorisés d’un channel privé
+model channel_member {
+  channelId String   @db.Char(36)
+  userId    String   @db.VarChar(36) // user id
+  addedAt   DateTime @default(now()) @db.DateTime(0)
+
+  channel channel @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    user    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([channelId, userId])
+  @@index([userId], map: "channel_member_user_idx")
+}
+
+/// ====== ROOMS ======
+model room {
+  id            String    @id @default(uuid()) @db.Char(36)
+  type          room_type
+  name          String?   @db.VarChar(255)
+  ownerId       String?   @db.VarChar(36) // user id
+  guildId       String?   @db.Char(36)
+  channelId     String?   @db.Char(36)
+  lastMessageAt DateTime? @db.DateTime(0)
+  createdAt     DateTime  @default(now()) @db.DateTime(0)
+  updatedAt     DateTime  @default(now()) @updatedAt @db.DateTime(0)
+
+  owner          user?              @relation(fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  guild          guild?             @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  channel        channel?           @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  participants   room_participant[]
+  messages       message[]
+  dm_pair_unique dm_pair_unique[]
+  room_view      room_view[]
+
+  @@unique([channelId], map: "room_unique_channel")
+  @@index([type], map: "room_type_idx")
+  @@index([guildId], map: "room_guild_idx")
+  @@index([lastMessageAt], map: "room_lastMessageAt_idx")
+}
+
+/// Participants
+model room_participant {
+  roomId   String   @db.Char(36)
+  userId   String   @db.VarChar(36) // user id
+  joinedAt DateTime @default(now()) @db.DateTime(0)
+  isMuted  Boolean  @default(false)
+  isPinned Boolean  @default(false)
+
+  room room @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([roomId, userId])
+  @@index([userId], map: "room_participant_user_idx")
+}
+
+/// DMs (paire unique)
+model dm_pair_unique {
+  id     String @id @default(uuid()) @db.Char(36)
+  userA  String @db.VarChar(36) // user id
+  userB  String @db.VarChar(36) // user id
+  roomId String @db.Char(36)
+
+  room room @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userA, userB], map: "dm_pair_users_unique")
+  @@index([roomId], map: "dm_pair_room_idx")
+}
+
+/// ====== MESSAGES ======
+model message {
+  id          String       @id @default(uuid()) @db.Char(36)
+  roomId      String       @db.Char(36)
+  authorId    String       @db.VarChar(36) // user id
+  type        message_type @default(TEXT)
+  content     String?      @db.Text
+  attachments String?      @db.Text
+  createdAt   DateTime     @default(now()) @db.DateTime(0)
+  editedAt    DateTime?    @db.DateTime(0)
+  deletedAt   DateTime?    @db.DateTime(0)
+
+  room      room               @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author    user               @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reads     message_read[]
+  reactions message_reaction[]
+
+  @@index([roomId, createdAt, id], map: "message_room_created_id_idx")
+  @@index([authorId, createdAt], map: "message_author_created_idx")
+}
+
+/// Accusés de lecture
+model message_read {
+  messageId String   @db.Char(36)
+  userId    String   @db.VarChar(36) // user id
+  readAt    DateTime @default(now()) @db.DateTime(0)
+
+  message message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    user    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([messageId, userId])
+  @@index([userId, readAt], map: "message_read_user_idx")
+}
+
+/// Réactions
+model message_reaction {
+  messageId String   @db.Char(36)
+  userId    String   @db.VarChar(36) // user id
+  emoji     String   @db.VarChar(64)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+
+  message message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    user    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([messageId, userId, emoji])
+  @@index([userId], map: "message_reaction_user_idx")
+  @@index([messageId, emoji], map: "IX_message_emoji")
+}
+
+/// Vues de salon
+model room_view {
+  roomId     String   @db.Char(36)
+  userId     String   @db.VarChar(36) // user id
+  lastSeenAt DateTime @default(now()) @db.DateTime(0)
+
+  room room @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([roomId, userId])
+  @@index([userId, lastSeenAt], map: "room_view_user_idx")
+}
+
 
 /**
  * Rappels psq j'ai pas de mémoire :

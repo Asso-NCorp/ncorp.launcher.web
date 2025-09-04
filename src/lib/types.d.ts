@@ -24,4 +24,23 @@ type InstallableGameUI = {
     totalInstallations: number;
 };
 
+export interface ServerItemData {
+    id: string;
+    name: string;
+    icon?: string | null;
+    active?: boolean;
+    unread?: boolean;
+}
+
+export interface ChannelItemData {
+    id: string; // identifiant unique
+    name: string; // nom du channel ou de la personne
+    type: "direct" | "group"; // type de conversation
+    lastMessage?: string; // aperçu du dernier message
+    lastMessageAt?: Date; // date du dernier message
+    unreadCount?: number; // nombre de messages non lus
+    avatarUrl?: string; // URL d’avatar ou icône
+    isActive?: boolean; // si le channel est sélectionné
+}
+
 export type InstallableGameExtended = InstallableGame & InstallableGameUI;

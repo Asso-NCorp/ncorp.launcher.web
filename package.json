@@ -1,7 +1,7 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.48",
+  "version": "1.5.49",
   "type": "module",
   "scripts": {
     "dev": "cp .env.development .env && dotenv -e .env.development -- cross-env NODE_ENV=development vite dev",
@@ -102,6 +102,7 @@
     "superjson": "^2.2.2",
     "svelte-inview": "^4.0.4",
     "svelte-motion": "^0.12.2",
+    "svelte-overflow-fade": "^1.0.2",
     "svelte-persisted-store": "^0.12.0",
     "sveltekit-i18n": "^2.4.2",
     "sveltekit-superforms": "^2.27.1",

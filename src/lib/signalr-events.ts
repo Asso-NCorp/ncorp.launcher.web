@@ -1,8 +1,7 @@
 import { goto } from '$app/navigation';
 import { browser } from '$app/environment';
 import * as signalR from '@microsoft/signalr';
-import { GamesStore } from './states/games.svelte';
-import { gameStatuses } from './stores/gameStatusesStore';
+import { GamesStore } from "./states/games.svelte";
 import type { InstallableGame, LiveUser, UserActivity } from "./shared-models";
 
 import { toast } from "svelte-sonner";

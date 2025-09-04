@@ -8,6 +8,7 @@
         DownloadCloud,
         FolderOpen,
         Gamepad2,
+        MessageCircle,
         MicVocal,
         PackageOpen,
         PackagePlus,
@@ -95,6 +96,13 @@
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/recently-added-games"
                         label={$t("recently_added_games")}
+                        iconOnly={global.sidebarCollapsed} />
+
+                        <SideMenuSubItem
+                        icon={MessageCircle}
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+                        href="/chat"
+                        label={$t("chat")}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={MicVocal}

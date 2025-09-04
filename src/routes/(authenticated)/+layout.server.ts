@@ -101,5 +101,6 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         winnersGifsFiles,
         availableGames: locals.availableGames,
         roles: locals.roles,
+        token: jwtToken,
     };
 };

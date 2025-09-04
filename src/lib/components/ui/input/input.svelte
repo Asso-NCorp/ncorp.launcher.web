@@ -14,7 +14,7 @@
     }: WithElementRef<HTMLInputAttributes> & { icon?: ComponentType<LucideIconType> } = $props();
 </script>
 
-<div class="relative">
+
     {#if Icon}
         <!-- Affichage conditionnel de l'icône -->
         <Icon class="absolute left-2.5 top-2.5 size-5 text-muted-foreground" />
@@ -28,4 +28,4 @@
         bind:this={ref}
         bind:value
         {...restProps} />
-</div>
+
