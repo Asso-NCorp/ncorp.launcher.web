@@ -50,10 +50,10 @@ jobs:
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: |
                       cd /var/www/launcher/front/
-                      /home/lan/.bun/bin/bun /home/lan/.bun/bin/pm2 stop ecosystem.config.json || true
+                      /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 stop ecosystem.config.json || true
                       7z x ncorp.launcher.7z -y
                       /home/lan/.bun/bin/bun install
                       /home/lan/.nvm/versions/node/v22.14.0/bin/npx prisma migrate deploy
                       /home/lan/.nvm/versions/node/v22.14.0/bin/npx prisma generate
-                      /home/lan/.bun/bin/bun /home/lan/.bun/bin/pm2 start ecosystem.config.json
+                      /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
                       rm ncorp.launcher.7z
