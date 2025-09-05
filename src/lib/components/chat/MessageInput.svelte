@@ -3,6 +3,7 @@
     import { Button } from "$lib/components/ui/button";
     import { Paperclip } from "@lucide/svelte";
     import { onDestroy } from "svelte";
+    import { cn } from "$src/lib/utils";
 
     // callbacks
     let {
@@ -11,12 +12,14 @@
         onsend,
         ontyping,
         onblur,
+        class: klazz = "",
     }: {
         placeholder?: string;
         disabled?: boolean;
         onsend?: (msg: string) => void;
         ontyping?: (state: boolean) => void;
         onblur?: () => void;
+        class?: string;
     } = $props();
 
     let value = $state("");
@@ -41,7 +44,7 @@
     onDestroy(() => stopTimer && clearTimeout(stopTimer));
 </script>
 
-<form class="flex items-center gap-2 border-t p-3" on:submit|preventDefault={submit}>
+<form class={cn("flex items-center gap-2 border-t p-3", klazz)} on:submit|preventDefault={submit}>
     <Button type="button" variant="ghost" size="icon" aria-label="Pièce jointe">
         <Paperclip class="h-4 w-4" />
     </Button>

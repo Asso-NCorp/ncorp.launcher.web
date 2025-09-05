@@ -1,7 +1,7 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.54",
+  "version": "1.5.55",
   "type": "module",
   "scripts": {
     "dev": "cp .env.development .env && dotenv -e .env.development -- cross-env NODE_ENV=development vite dev",
@@ -100,6 +100,7 @@
     "prisma": "6.14.0",
     "socket.io-client": "^4.8.1",
     "superjson": "^2.2.2",
+    "svelte-intersection-observer": "^1.0.0",
     "svelte-inview": "^4.0.4",
     "svelte-motion": "^0.12.2",
     "svelte-overflow-fade": "^1.0.2",

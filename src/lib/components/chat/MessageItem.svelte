@@ -3,12 +3,14 @@
     import type { MessageDto } from "$src/lib/shared-models";
     import { global } from "$src/lib/states/global.svelte";
     import { liveUsers } from "$src/lib/states/live-users.svelte";
-    import { Ellipsis } from "@lucide/svelte";
+    import { Ellipsis, Trash, Trash2 } from "@lucide/svelte";
     import AvatarWithStatus from "../custom/AvatarWithStatus.svelte";
     import Button from "../ui/button/button.svelte";
     import { page } from "$app/state";
     import type { role } from "@prisma/client";
     import { transformMessageContent } from "$lib/utils/messageContentMiddleware";
+    import { chatClient } from "$src/lib/chat/chatclient.svelte";
+    import { toast } from "svelte-sonner";
 
     // === Props ===
     const {
@@ -19,10 +21,12 @@
         previousCreatedAt = null,
         showDaySeparator = false,
         dayLabel = "",
+        onDelete
     } = $props<{
         msg: MessageDto;
         authorName?: string;
         onReact?: (e: { messageId: string; emoji: string }) => void;
+        onDelete?: (messageId: string) => void;
         previousAuthorId?: string | null;
         previousCreatedAt?: string | null;
         showDaySeparator?: boolean;
@@ -86,6 +90,21 @@
     const showHeader = $derived(startsNewGroup);
 
     const processedContent = $derived(transformMessageContent(msg.content || ""));
+
+    const handlDeleteMessage = async () => {
+        if (msg.authorId === global.currentUser?.id) {
+            try {
+                const deleted = await chatClient.deleteMessage(msg.id);
+                if (deleted) {
+                    onDelete?.(msg.id);
+                }else{
+                    toast.error("Erreur lors de la suppression du message");
+                }
+            } catch (error) {
+                toast.error("Erreur lors de la suppression du message");
+            }
+        }
+    };
 </script>
 
 {#if showDaySeparator}
@@ -110,6 +129,20 @@
                     {e}
                 </Button>
             {/each}
+            <!-- Divider -->
+            <div class="pointer-events-none my-auto h-4 w-px bg-border" />
+
+            <!-- Delete own message -->
+            {#if msg.authorId === global.currentUser?.id}
+                <Button
+                    variant="ghost"
+                    class="pointer-events-auto flex h-7 w-7 items-center justify-center rounded text-base hover:bg-muted"
+                    onclick={handlDeleteMessage}
+                    title="Supprimer le message">
+                    <Trash2 class="h-4 w-4 text-red-600" />
+                </Button>
+            {/if}
+
             <Button
                 variant="ghost"
                 class="pointer-events-auto flex h-7 w-7 items-center justify-center rounded text-base hover:bg-muted"

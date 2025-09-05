@@ -71,6 +71,8 @@ class ChatStore {
             this.typingUsers[p.roomId] = new Map(map); // reactivité
         });
 
+        chatClient.on<{roomId:string; messageId:string}>("message:deleted", (({roomId, messageId}) => this.deleteMessage(messageId)));
+
         if (!this.typingPurgeInterval) {
             this.typingPurgeInterval = setInterval(() => {
                 const now = Date.now();
@@ -311,6 +313,33 @@ class ChatStore {
         if (!rid) return;
         await chatClient.react(rid, messageId, emoji);
         // Pas d’optimistic ici : l’état viendra via message:reaction
+    }
+
+    deleteMessage(messageId: string) {
+        const rid = this.currentRoomId;
+        if (!rid) {
+            console.warn("[deleteMessage] Aucun roomId actif, annulation", { messageId });
+            return;
+        }
+
+        const list = this.messagesByRoom[rid];
+        if (!list) {
+            console.warn("[deleteMessage] Aucun message pour la room", { rid, messageId });
+            return;
+        }
+
+        const i = list.findIndex((m) => m.id === messageId);
+        if (i === -1) {
+            console.warn("[deleteMessage] Message introuvable dans la liste", { rid, messageId });
+            return;
+        }
+
+        const copy = [...list];
+        const removed = copy[i];
+        copy.splice(i, 1);
+
+        this.messagesByRoom[rid] = copy;
+        this.idsByRoom[rid]?.delete(messageId);
     }
 }
 

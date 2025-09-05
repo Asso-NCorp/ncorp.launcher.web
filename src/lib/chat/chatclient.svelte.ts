@@ -64,6 +64,10 @@ class ChatClient {
         return this.invoke<MessageDto>("SendMessage", { roomId, content, type: "TEXT" });
     }
 
+    deleteMessage(messageId: string) {
+        return this.invoke("DeleteMessage", messageId);
+    }
+
     typing(roomId: string, isTyping: boolean) {
         return this.invoke("Typing", roomId, isTyping);
     }
