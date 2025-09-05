@@ -43,6 +43,7 @@
 
     onMount(async () => {
         await detectSWUpdate();
+        (window as any).__hideBoot?.()
     });
 </script>
 

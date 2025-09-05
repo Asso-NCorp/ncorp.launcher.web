@@ -6,11 +6,102 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="manifest" href="%sveltekit.assets%/manifest.json" />
         %sveltekit.head%
+        <style>
+            :root {
+                --background: 260 40% 9%;
+                --foreground: 250 25% 95%;
+                --card: 260 40% 7%;
+                --card-foreground: 250 25% 95%;
+                --popover: 260 40% 11%;
+                --popover-foreground: 250 25% 95%;
+                --primary: 270 85% 65%;
+                --primary-foreground: 270 15% 98%;
+                --secondary: 260 40% 15%;
+                --secondary-foreground: 250 25% 95%;
+                --muted: 260 40% 13%;
+                --muted-foreground: 250 25% 70%;
+                --accent: 290 70% 60%;
+                --accent-foreground: 290 15% 98%;
+                --destructive: 0 85% 52%;
+                --destructive-foreground: 0 0% 98%;
+                --border: 260 40% 17%;
+                --input: 260 40% 17%;
+                --ring: 270 85% 65%;
+                --success: 145 80% 45%;
+                --info: 210 90% 60%;
+                --warning: 40 90% 52%;
+                --danger: 0 85% 52%;
+                --background-subtle: 260 40% 6%;
+            }
+
+            #boot-loader {
+                position: fixed;
+                inset: 0;
+                z-index: 2147483647;
+                display: grid;
+                place-items: center;
+                background: hsl(var(--background));
+                color: hsl(var(--foreground));
+                font:
+                    14px system-ui,
+                    sans-serif;
+                transition: opacity 0.2s ease;
+            }
+            #boot-wrap {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: center;
+            }
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: 3px solid hsl(var(--muted-foreground) / 0.3);
+                border-top-color: hsl(var(--primary));
+                animation: spin 1s linear infinite;
+            }
+            #boot-msg {
+                opacity: 0.8;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
     </head>
     <body
         data-sveltekit-preload-data="hover"
         class="dark h-screen max-h-screen min-h-screen scroll-smooth font-ggsans-medium antialiased"
     >
+        <div id="boot-loader">
+            <div id="boot-wrap">
+                <div class="spinner" role="img" aria-label="Chargement"></div>
+                <p id="boot-msg">Chargement…</p>
+            </div>
+        </div>
+
         <div style="display: contents">%sveltekit.body%</div>
+
+        <script>
+            // Hide API
+            window.__hideBoot = function () {
+                const el = document.getElementById("boot-loader");
+                if (!el) return;
+                el.style.opacity = "0";
+                el.addEventListener("transitionend", () => el.remove(), { once: true });
+                setTimeout(() => el && el.remove(), 300);
+            };
+
+            // 1) Le plus tôt possible: quand SvelteKit démarre côté client
+            addEventListener("sveltekit:start", () => window.__hideBoot());
+
+            // 2) Backup: si le bundle charge mais l’événement passe à l’as (très rare)
+            addEventListener("DOMContentLoaded", () => setTimeout(() => window.__hideBoot?.(), 0));
+
+            // 3) Failsafe ultime
+            setTimeout(() => window.__hideBoot?.(), 8000);
+        </script>
     </body>
 </html>
