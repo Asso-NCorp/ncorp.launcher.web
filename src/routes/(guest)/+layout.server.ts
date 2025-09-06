@@ -15,10 +15,9 @@ export const load: LayoutServerLoad = (async ({ locals }) => {
         // Get global settings
         const globalSettings = await db.global_settings.findMany();
         locals.globalSettings = globalSettings;
-        logger.info('Global settings fetched successfully', { count: globalSettings.length });
 
     } catch (error) {
-        logger.error('Error fetching global settings', error);
+        logger.error(`Error fetching global settings: ${error}`);
     }
 
     return {

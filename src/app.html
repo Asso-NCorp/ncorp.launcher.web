@@ -76,16 +76,17 @@
         class="dark h-screen max-h-screen min-h-screen scroll-smooth font-ggsans-medium antialiased"
     >
         <div id="boot-loader">
-            <div id="boot-wrap">
-                <div class="spinner" role="img" aria-label="Chargement"></div>
-                <p id="boot-msg">Chargement…</p>
+            <div id="boot-wrap" class="relative">
+                <img src="%sveltekit.assets%/logo_small.png" alt="Logo" width="40" height="auto" />
+                <div class="spinner absolute" role="img" aria-label="Chargement"></div>
             </div>
         </div>
 
         <div style="display: contents">%sveltekit.body%</div>
 
+        <svelte:window  on:sveltekit:start={window.__hideBoot()} />
         <script>
-            // Hide API
+            // Hide API, sera appellée dans hooks.client.ts (init)
             window.__hideBoot = function () {
                 const el = document.getElementById("boot-loader");
                 if (!el) return;
@@ -94,13 +95,9 @@
                 setTimeout(() => el && el.remove(), 300);
             };
 
-            // 1) Le plus tôt possible: quand SvelteKit démarre côté client
-            addEventListener("sveltekit:start", () => window.__hideBoot());
 
-            // 2) Backup: si le bundle charge mais l’événement passe à l’as (très rare)
-            addEventListener("DOMContentLoaded", () => setTimeout(() => window.__hideBoot?.(), 0));
 
-            // 3) Failsafe ultime
+            // Failsafe ultime au cas où
             setTimeout(() => window.__hideBoot?.(), 8000);
         </script>
     </body>

@@ -8,8 +8,10 @@ import type { event, global_settings } from "@prisma/client";
 import { getWinnerGifFiles } from "$src/lib/server/fileUtils";
 import { extendGames } from "$src/lib/utils/games";
 import type { InstallableGameExtended } from "$src/lib/types";
+import { auth } from "$src/lib/auth/server";
 export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
-    const session = locals.session;
+    const session = await auth.api.getSession(request);
+    console.log("Session : ", session);
     const user = locals.user;
     const localGamesDir = locals.localGamesDir;
 
@@ -29,7 +31,7 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
         liveUsers = await getServerApi(jwtToken).getOnlineUsers();
         locals.liveUsers = liveUsers;
     } catch (error) {
-        console.error("Error fetching live users", error);
+        console.error("Error fetching live users");
     }
 
     const url = new URL(request.url);
