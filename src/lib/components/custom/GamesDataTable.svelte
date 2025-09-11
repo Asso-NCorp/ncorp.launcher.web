@@ -3,7 +3,6 @@
     import { fly } from "svelte/transition";
     import { global } from "$src/lib/states/global.svelte";
     import DataTable, { type Api } from "datatables.net";
-    import "datatables.net-select";
     import "datatables.net-plugins/sorting/file-size.js";
 
     let { games, loading }: { games: InstallableGameExtended[]; loading: boolean } = $props();
