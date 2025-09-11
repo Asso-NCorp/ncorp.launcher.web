@@ -10,8 +10,11 @@ import { extendGames } from "$src/lib/utils/games";
 import type { InstallableGameExtended } from "$src/lib/types";
 import { auth } from "$src/lib/auth/server";
 export const load: LayoutServerLoad = async ({ locals }) => {
+    // Data (events, settings, roles, gifs, availableGames) now provided via hook with caching.
     const user = locals.user;
     const localGamesDir = locals.localGamesDir;
+
+    logger.info("Layout load");
 
     return {
         user,

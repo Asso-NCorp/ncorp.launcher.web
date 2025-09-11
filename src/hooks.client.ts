@@ -11,7 +11,7 @@ if (browser && !dev && "serviceWorker" in navigator) {
     navigator.serviceWorker.register("/service-worker.js", { type: "module" });
 }
 
-export const init = () => {
+export const init: ClientInit = () => {
     if (browser) {
         if ((window as any).__hideBoot) {
             (window as any).__hideBoot();

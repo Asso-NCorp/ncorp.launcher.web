@@ -466,39 +466,42 @@
                 </div>
             </div>
             <!-- Main Content Area -->
-<div class="flex flex-1 overflow-hidden min-h-[calc(100vh-var(--header-height))]">
-  <!-- Collapsible Left Sidebar -->
-  <aside
-    class="z-[100] flex-shrink-0 overflow-hidden border-border bg-card transition-all duration-300 ease-in-out"
-    style:width={global.sidebarCollapsed ? "80px" : "250px"}>
-    <SideMenu class="h-full">
-      <div class="mt-auto flex w-full">
-        <ProfileDropdown user={liveUsers.getUser(user?.id!)} />
-      </div>
-    </SideMenu>
-  </aside>
+            <div class="flex min-h-[calc(100vh-var(--header-height))] flex-1 overflow-hidden">
+                <!-- Collapsible Left Sidebar -->
+                <aside
+                    class="z-[100] flex-shrink-0 overflow-hidden border-border bg-card transition-all duration-300 ease-in-out"
+                    style:width={global.sidebarCollapsed ? "80px" : "250px"}>
+                    <SideMenu class="h-full">
+                        <div class="mt-auto flex w-full">
+                            <ProfileDropdown user={liveUsers.getUser(user?.id!)} />
+                        </div>
+                    </SideMenu>
+                </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 min-h-full min-w-0 overflow-y-auto overflow-x-hidden p-2">
-    {@render children?.()}
-  </main>
+                <!-- Main Content -->
+                <main class="min-h-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-2">
+                    {@render children?.()}
+                </main>
 
-  <!-- Right Sidebar - LiveUsers -->
-  <aside
-    class="right-sidebar h-full w-68 flex-shrink-0 border-l border-border bg-card transition-all duration-300 ease-in-out"
-    class:hidden={rightSidebarHidden}>
-    <div class="flex h-full flex-col">
-      <LiveUsers class="h-full" />
-      <div class="mt-auto flex items-center justify-center gap-2 border-t py-2">
-        <a href="https://ko-fi.com/keytrap" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2">
-          <img src="/img/kofi.webp" alt="Ko-Fi" class="h-4 w-4" />
-          <span class="text-xs text-muted-foreground">Offrir un kawa au dev ☕</span>
-        </a>
-      </div>
-    </div>
-  </aside>
-</div>
-
+                <!-- Right Sidebar - LiveUsers -->
+                <aside
+                    class="right-sidebar h-full w-68 flex-shrink-0 border-l border-border bg-card transition-all duration-300 ease-in-out"
+                    class:hidden={rightSidebarHidden}>
+                    <div class="flex h-full flex-col">
+                        <LiveUsers class="h-full" />
+                        <div class="mt-auto flex items-center justify-center gap-2 border-t py-2">
+                            <a
+                                href="https://ko-fi.com/keytrap"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex items-center gap-2">
+                                <img src="/img/kofi.webp" alt="Ko-Fi" class="h-4 w-4" />
+                                <span class="text-xs text-muted-foreground">Offrir un kawa au dev ☕</span>
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+            </div>
 
             <!-- Footer (placeholder for future use) -->
             <!-- <footer class="bg-card border-t border-border p-2 flex-shrink-0">

@@ -8,8 +8,32 @@ import { getServerApi } from "./lib/utils";
 import { getWinnerGifFiles } from "./lib/server/fileUtils";
 import type { InstallableGameExtended } from "./lib/types";
 import { extendGames } from "./lib/utils/games";
+import type { event, global_settings, role } from "@prisma/client";
 
-const initializeDefaults = (event: Parameters<Handle>[0]['event']) => {
+// Caching configuration (tune as needed)
+const GLOBAL_CACHE_TTL_MS = 60_000; // 60s
+const GAMES_CACHE_TTL_MS = 30_000; // 30s
+const GAME_ROUTE_PREFIXES = ["/games"]; // paths that need available games
+
+// In-memory caches (reset on server restart / deploy)
+let globalCache: {
+    events: event[];
+    globalSettings: global_settings[];
+    roles: role[];
+    winnersGifsFiles: string[];
+    fetchedAt: number;
+} | null = null;
+
+let gamesCache: {
+    availableGames: InstallableGameExtended[];
+    fetchedAt: number;
+} | null = null;
+
+const isStale = (cached: { fetchedAt: number } | null, ttl: number) => !cached || Date.now() - cached.fetchedAt > ttl;
+
+const routeRequiresGames = (path: string) => GAME_ROUTE_PREFIXES.some((p) => path.startsWith(p));
+
+const initializeDefaults = (event: Parameters<Handle>[0]["event"]) => {
     event.locals.session = undefined;
     event.locals.user = undefined;
     event.locals.liveUsers = [];
@@ -21,7 +45,7 @@ const initializeDefaults = (event: Parameters<Handle>[0]['event']) => {
     event.locals.winnersGifsFiles = [];
 };
 
-const handleAuthentication = async (event: Parameters<Handle>[0]['event'], jwtToken: string | undefined) => {
+const handleAuthentication = async (event: Parameters<Handle>[0]["event"], jwtToken: string | undefined) => {
     try {
         const session = await auth.api.getSession({
             headers: event.request.headers,
@@ -36,10 +60,10 @@ const handleAuthentication = async (event: Parameters<Handle>[0]['event'], jwtTo
                     getServerApi(jwtToken).getOnlineUsers(),
                     db.user_settings.findFirst({
                         where: { user_id: event.locals.user.id },
-                        select: { local_games_dir: true }
-                    })
+                        select: { local_games_dir: true },
+                    }),
                 ]);
-                
+
                 event.locals.liveUsers = liveUsers;
                 event.locals.localGamesDir = userSettings?.local_games_dir;
             } catch (error) {
@@ -56,61 +80,88 @@ const handleAuthentication = async (event: Parameters<Handle>[0]['event'], jwtTo
 
 export const handle: Handle = async ({ event, resolve }) => {
     const jwtToken = event.cookies.get("token");
-    
+    const path = event.url.pathname;
+
+    logger.info(`Handling request for ${path}`);
+
     // Initialize all locals with default values
     initializeDefaults(event);
-    
+
     // Handle authentication and user-specific data
     await handleAuthentication(event, jwtToken);
 
-    // Fetch global data in parallel for better performance
+    // Global (mostly static) data with cache
     try {
-        const [events, globalSettings, roles, winnersGifsFiles] = await Promise.all([
-            db.event.findMany({ orderBy: { start_time: "asc" } }),
-            db.global_settings.findMany(),
-            db.role.findMany(),
-            getWinnerGifFiles()
-        ]);
-        
-        event.locals.events = events;
-        event.locals.globalSettings = globalSettings;
-        event.locals.roles = roles;
-        event.locals.winnersGifsFiles = winnersGifsFiles;
+        if (isStale(globalCache, GLOBAL_CACHE_TTL_MS)) {
+            logger.info("Global cache stale -> fetching");
+            const [events, globalSettings, roles, winnersGifsFiles] = await Promise.all([
+                db.event.findMany({ orderBy: { start_time: "asc" } }),
+                db.global_settings.findMany(),
+                db.role.findMany(),
+                getWinnerGifFiles(),
+            ]);
+            globalCache = {
+                events,
+                globalSettings,
+                roles,
+                winnersGifsFiles,
+                fetchedAt: Date.now(),
+            };
+        } else {
+            logger.debug("Using cached global data");
+        }
+
+        // Apply cached globals to locals
+        event.locals.events = globalCache.events;
+        event.locals.globalSettings = globalCache.globalSettings;
+        event.locals.roles = globalCache.roles;
+        event.locals.winnersGifsFiles = globalCache.winnersGifsFiles;
     } catch (error) {
         logger.error(`Error fetching global data: ${error}`);
-        // Keep defaults from initializeDefaults
+        // defaults remain
     }
 
-    // Handle games data separately as it depends on JWT token
-    if (jwtToken) {
+    // Available games (conditional + cache)
+    if (jwtToken && routeRequiresGames(path)) {
         try {
-            const availableGames = extendGames(await getServerApi(jwtToken).getAvailableGames());
-            const slugs = availableGames
-                .map((g: InstallableGameExtended) => g.folderSlug)
-                .filter((slug): slug is string => typeof slug === 'string');
-            
-            if (slugs.length > 0) {
-                const installationCounts = await db.user_game.groupBy({
-                    by: ["game_slug"],
-                    where: { game_slug: { in: slugs }, installed_at: { not: null } },
-                    _count: { _all: true },
-                });
+            if (isStale(gamesCache, GAMES_CACHE_TTL_MS)) {
+                logger.info("Games cache stale -> fetching available games");
+                const availableGamesRaw = await getServerApi(jwtToken).getAvailableGames();
+                const availableGames = extendGames(availableGamesRaw);
+                const slugs = availableGames
+                    .map((g: InstallableGameExtended) => g.folderSlug)
+                    .filter((slug): slug is string => typeof slug === "string");
 
-                const countsMap = new Map(
-                    installationCounts.map((r) => [r.game_slug, r._count._all || 0])
-                );
-
-                event.locals.availableGames = availableGames.map((game: InstallableGameExtended) => ({
-                    ...game,
-                    totalInstallations: countsMap.get(game.folderSlug!) ?? 0,
-                }));
+                if (slugs.length > 0) {
+                    const installationCounts = await db.user_game.groupBy({
+                        by: ["game_slug"],
+                        where: { game_slug: { in: slugs }, installed_at: { not: null } },
+                        _count: { _all: true },
+                    });
+                    const countsMap = new Map(installationCounts.map((r) => [r.game_slug, r._count._all || 0]));
+                    gamesCache = {
+                        availableGames: availableGames.map((game: InstallableGameExtended) => ({
+                            ...game,
+                            totalInstallations: countsMap.get(game.folderSlug!) ?? 0,
+                        })),
+                        fetchedAt: Date.now(),
+                    };
+                } else {
+                    gamesCache = {
+                        availableGames,
+                        fetchedAt: Date.now(),
+                    };
+                }
             } else {
-                event.locals.availableGames = availableGames;
+                logger.debug("Using cached available games");
             }
+            event.locals.availableGames = gamesCache.availableGames;
         } catch (error) {
             logger.error(`Error fetching available games: ${error}`);
             event.locals.availableGames = [];
         }
+    } else {
+        logger.debug("Skipping available games fetch (not needed for this route)");
     }
 
     return svelteKitHandler({ event, resolve, auth, building });
