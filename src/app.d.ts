@@ -18,6 +18,7 @@ declare global {
             roles: role[];
             availableGames: InstallableGameExtended[];
             globalSettings: global_settings[];
+            winnersGifsFiles: string[];
         }
     }
 }

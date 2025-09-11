@@ -130,7 +130,7 @@ export const actions: Actions = {
                 return setError(form, "", "Identifiants incorrects");
             }
 
-            logger.info({ cookieString }, "Cookies received");
+            logger.info("Cookies received");
             // Manually set the cookies as we login with a server action
             const parsed = parseSetCookieHeader(cookieString);
             for (const [name, options] of parsed.entries()) {

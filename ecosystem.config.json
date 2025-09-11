@@ -1,7 +1,7 @@
 {
     "apps": [
         {
-            "name": "launcher-front",
+            "name": "front",
             "script": "index.js",
             "interpreter": "node",
             "env": {
