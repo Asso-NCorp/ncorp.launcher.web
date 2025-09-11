@@ -2,7 +2,6 @@ import * as signalR from "@microsoft/signalr";
 import { browser } from "$app/environment";
 import type { MessageDto, MessagePage, PageCursor, RoomDto } from "../shared-models";
 import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
-import { page } from "$app/state";
 
 const HUB_URL = `${PUBLIC_BACKEND_API_URL}/chat-live`; // SignalR hub
 
@@ -12,18 +11,11 @@ class ChatClient {
     async connect(getToken?: () => string | Promise<string>) {
         if (!browser || this.connection?.state === "Connected") return;
 
-        const token = page.data.token;
-
-        if (!token) throw new Error("No token found in page data");
-
         console.log(HUB_URL);
 
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl(HUB_URL, {
                 withCredentials: true,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
             })
             .withAutomaticReconnect()
             .configureLogging(signalR.LogLevel.None)
