@@ -19,6 +19,7 @@ declare global {
             availableGames: InstallableGameExtended[];
             globalSettings: global_settings[];
             winnersGifsFiles: string[];
+            token: string | undefined;
         }
     }
 }

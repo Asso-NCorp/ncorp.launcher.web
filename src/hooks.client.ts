@@ -18,5 +18,5 @@ export const init: ClientInit = () => {
             delete (window as any).__hideBoot;
         }
     }
-    return {};
+    return;
 };
