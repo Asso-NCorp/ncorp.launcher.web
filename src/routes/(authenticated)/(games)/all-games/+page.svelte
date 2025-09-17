@@ -16,12 +16,12 @@
     // Sort all games by title asc
     const sortedGames = $derived([...GamesStore.games].sort((a, b) => a.title.localeCompare(b.title)));
     const filteredGames = $derived(sortedGames.filter((game) => game.isSelected && !game.isInstalled));
-    const featuredGames = $derived(
+    const featuredGames = 
         sortedGames
             .filter((game) => game.isFeatured)
             .sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0))
-            .slice(0, 10),
-    );
+            .slice(0, 10);
+            
     $effect(() => {
         setHeadMenu(head, title);
         return cleanHeadMenu;

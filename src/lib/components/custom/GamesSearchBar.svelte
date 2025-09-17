@@ -79,12 +79,21 @@
 
 <div class="flex flex-col gap-2 px-1">
     <div class="flex">
-        <Input
-            bind:value={global.gamesSearchQuery}
-            oninput={handleSearch}
-            icon={Search}
-            class="left-0 top-0 w-96 rounded-[var(--radius)]"
-            placeholder="{$t('search_game')}..." />
+        <div class="relative">
+            <div>
+                <Input
+                    placeholder="{$t('search_game')}..."
+                    autocomplete="off"
+                    bind:value={global.gamesSearchQuery}
+                    id="title"
+                    type="text"
+                    oninput={handleSearch}
+                    class="pl-10 min-w-96" />
+            </div>
+            <div class="absolute inset-y-0 left-2 flex items-center pr-3">
+                <Search class="size-4 opacity-50" />
+            </div>
+        </div>
         <Button
             variant="outline"
             class="border-l-0"
@@ -133,16 +142,18 @@
 
         <Tooltip.Root>
             <Tooltip.Trigger>
-                <Button onclick={handleRefreshGamesClick} disabled={!GamesStore.canFetchGames} variant="outline" class="border-l-0">
+                <Button
+                    onclick={handleRefreshGamesClick}
+                    disabled={!GamesStore.canFetchGames}
+                    variant="outline"
+                    class="border-l-0">
                     <RefreshCw />
                 </Button>
             </Tooltip.Trigger>
             <Tooltip.Content>
                 <p>Rafraîchir la liste des jeux</p>
                 <p class="text-xs text-muted-foreground">
-                    {GamesStore.cooldownRemaining > 0
-                        ? `Accessible dans ${GamesStore.cooldownRemaining}s`
-                        : ""}
+                    {GamesStore.cooldownRemaining > 0 ? `Accessible dans ${GamesStore.cooldownRemaining}s` : ""}
                 </p>
             </Tooltip.Content>
         </Tooltip.Root>
