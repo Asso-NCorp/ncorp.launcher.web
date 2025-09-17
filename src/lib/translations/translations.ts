@@ -107,6 +107,7 @@ export default {
         install_count: "Nombre d'installations",
         total_installs_count: "Nombre total d'installations",
         chat: "Chat",
+        start_server: "Lancer le serveur",
     },
     en: {
         lang,
@@ -214,5 +215,6 @@ export default {
         install_count: "Install Count",
         total_installs_count: "Total Installs Count",
         chat: "Chat",
+        start_server: "Start server",
     },
 };

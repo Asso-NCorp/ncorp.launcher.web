@@ -156,6 +156,12 @@ export interface InstallableGame {
      * @type {boolean}
      * @memberof InstallableGame
      */
+    hasLocalServer?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof InstallableGame
+     */
     isPlaying?: boolean;
 }
 
@@ -198,6 +204,7 @@ export function InstallableGameFromJSONTyped(json: any, ignoreDiscriminator: boo
         'useNotifications': json['useNotifications'] == null ? undefined : json['useNotifications'],
         'isCompressedAvailable': json['isCompressedAvailable'] == null ? undefined : json['isCompressedAvailable'],
         'isInstalled': json['isInstalled'] == null ? undefined : json['isInstalled'],
+        'hasLocalServer': json['hasLocalServer'] == null ? undefined : json['hasLocalServer'],
         'isPlaying': json['isPlaying'] == null ? undefined : json['isPlaying'],
     };
 }
@@ -234,6 +241,7 @@ export function InstallableGameToJSONTyped(value?: Omit<InstallableGame, 'genres
         'useNotifications': value['useNotifications'],
         'isCompressedAvailable': value['isCompressedAvailable'],
         'isInstalled': value['isInstalled'],
+        'hasLocalServer': value['hasLocalServer'],
         'isPlaying': value['isPlaying'],
     };
 }

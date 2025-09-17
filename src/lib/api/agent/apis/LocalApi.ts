@@ -72,6 +72,10 @@ export interface StartGameRequest {
     gameSlug?: string;
 }
 
+export interface StartServerRequest {
+    gameSlug?: string;
+}
+
 export interface StopGameRequest {
     slug?: string;
 }
@@ -539,6 +543,41 @@ export class LocalApi extends runtime.BaseAPI {
      */
     async startGame(requestParameters: StartGameRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.startGameRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     */
+    async startServerRaw(requestParameters: StartServerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['gameSlug'] != null) {
+            queryParameters['gameSlug'] = requestParameters['gameSlug'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Local/StartServer`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async startServer(requestParameters: StartServerRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.startServerRaw(requestParameters, initOverrides);
     }
 
     /**

@@ -3,21 +3,21 @@
     import type { WithElementRef } from "bits-ui";
     import type { Icon as LucideIconType } from "@lucide/svelte";
     import { cn } from "$lib/utils.js";
-    import type { ComponentType } from "svelte";
 
     let {
         ref = $bindable(null),
         value = $bindable(),
         class: className,
+        iconClass = "",
         icon: Icon,
         ...restProps
-    }: WithElementRef<HTMLInputAttributes> & { icon?: ComponentType<LucideIconType> } = $props();
+    }: WithElementRef<HTMLInputAttributes> & { icon?: typeof LucideIconType, iconClass?: string } = $props();
 </script>
 
 
     {#if Icon}
         <!-- Affichage conditionnel de l'icône -->
-        <Icon class="absolute left-2.5 top-2.5 size-5 text-muted-foreground" />
+        <Icon class={cn("absolute left-2.5 top-2.5 size-5 text-muted-foreground", iconClass)} />
     {/if}
     <input
         class:pl-8={Icon != null}

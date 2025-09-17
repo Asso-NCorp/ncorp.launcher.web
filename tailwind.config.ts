@@ -109,7 +109,7 @@ const config: Config = {
                 "ggsans-medium": ['"gg sans Medium Regular"'],
                 "ggsans-semibold": ['"gg sans SemiBold Regular"'],
                 clash: ['"ClashDisplay-Variable"', ...fontFamily.sans],
-                body: ['"Rubik Variable"', ...fontFamily.sans],
+                body: ['"Rubik"', ...fontFamily.sans],
             },
             keyframes: {
                 "accordion-down": {
