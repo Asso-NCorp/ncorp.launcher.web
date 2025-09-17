@@ -12,7 +12,7 @@ import type { LiveUser } from "$src/lib/shared-models";
 // Cache config
 const GLOBAL_CACHE_TTL_MS = 60_000;
 const GAMES_CACHE_TTL_MS = 30_000;
-const GAME_ROUTE_PREFIXES = ["/games"];
+const GAME_ROUTE_PREFIXES = ["/"];
 
 let globalCache: {
     events: event[];
