@@ -163,11 +163,11 @@
     let winnerOverlay: WinnerOverlay;
 
     onMount(async () => {
-        try {
+        /* try {
             await getLocalApi().authenticate({ redirect: false });
         } catch (error) {
             console.error(error);
-        }
+        } */
 
         if (browser) {
             if (localStorage.getItem("gamesSortOrder")) {
