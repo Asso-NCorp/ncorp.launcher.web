@@ -31,6 +31,7 @@
     const game = $derived(installableGame);
     let downloadIcon = game.isCompressedAvailable ? ZapIcon : ArrowBigDownDash;
     const localApi = getLocalApi();
+    let isGameQuitting = $state(false);
 
     const handlePlayClick = async () => {
         if (game.isInstalled) {
@@ -50,11 +51,14 @@
 
     const handleExitClick = async () => {
         try {
+            isGameQuitting = true;
             await localApi.stopGame({
                 slug: game.folderSlug,
             });
         } catch (error) {
             console.error(error);
+        }finally {
+            isGameQuitting = false;
         }
     };
 
@@ -95,6 +99,8 @@
                     <Button
                         variant="destructive"
                         class={cn("w-auto", klazz)}
+                        isLoading={isGameQuitting}
+                        disabled={isGameQuitting}
                         onclick={handleExitClick}
                         icon={StopCircle}>
                         {$t("exit")}
