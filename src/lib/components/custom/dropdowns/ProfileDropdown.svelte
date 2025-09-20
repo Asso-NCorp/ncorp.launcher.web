@@ -38,7 +38,7 @@
         } catch (error) {
             console.error("Error during sign out:", error);
         }finally {
-            goto("/signin");
+            goto("/login");
         }
     };
 </script>

@@ -285,7 +285,7 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
 export const load: PageServerLoad = async ({ locals }) => {
     const user = locals.user;
     if (!user) {
-        throw redirect(302, "/signin");
+        throw redirect(302, "/login");
     }
 
     // Fetch data from database

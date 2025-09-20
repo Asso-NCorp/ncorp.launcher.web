@@ -8,6 +8,7 @@
         FolderOpen,
         Link,
         List,
+        MessageCircleQuestion,
         PlusIcon,
         RefreshCcwDot,
         Settings2,
@@ -35,44 +36,48 @@
             refreshing = false;
         }
     };
-
-   
 </script>
 
-<div class={cn("flex w-auto flex-col", global.sidebarCollapsed ? "items-center space-y-3" : "space-y-0", klazz)}>
+<div class={cn("flex w-auto flex-col", global.sidebarCollapsed ? "items-center" : "space-y-0", klazz)}>
     <SideMenuSubItem
         href="/admin/manage-games"
         label={$t("manage_games")}
-        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Settings2}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/manage-games/featured"
         label={$t("featured_games")}
-        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Star}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/manage-users"
         label={$t("users_management")}
-        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Users}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/manage-sidelinks"
         label={$t("links_management")}
-        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Link}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/lottery"
         label="Loterie"
-        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={FerrisWheel}
         iconOnly={global.sidebarCollapsed} />
-    <!-- Actions section - always visible but adapts to collapsed state -->
-    
 
+    <!-- <SideMenuSubItem
+        href="/admin/faq"
+        label="FAQ"
+        class={global.sidebarCollapsed ? "p-2" : ""}
+        icon={MessageCircleQuestion}
+        iconOnly={global.sidebarCollapsed} /> -->
+
+    <!-- Actions section - always visible but adapts to collapsed state -->
     <div class={cn("mt-5 flex flex-col gap-1", global.sidebarCollapsed ? "items-center space-y-2" : "text-base")}>
         {#if global.sidebarCollapsed}
             <!-- Collapsed: icon-only buttons with tooltips -->
@@ -110,7 +115,6 @@
                     </p>
                 </Tooltip.Content>
             </Tooltip.Root>
-            
         {/if}
     </div>
     {@render children?.()}

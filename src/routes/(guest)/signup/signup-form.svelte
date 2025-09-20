@@ -148,7 +148,7 @@
         </form>
         <div class="m-4 text-center text-sm">
             {$t("already_have_account")} ?
-            <a href="/signin" class="underline">{$t("log_in")}</a>
+            <a href="/login" class="underline">{$t("log_in")}</a>
         </div>
     </Card.Content>
 </div>

@@ -102,6 +102,10 @@ model user {
   guild               guild[]
   room                room[]
   room_view           room_view[]
+
+  // Relations FAQ
+  faq_created faq[] @relation("faq_created_by")
+  faq_updated faq[] @relation("faq_updated_by")
 }
 
 model verification {
@@ -250,6 +254,26 @@ model user_game {
   @@index([user_id], map: "user_game_user_id_FK")
   @@index([game_slug], map: "user_game_game_slug_FK")
   @@index([game_slug, installed_at], map: "user_game_slug_installed_at_idx")
+}
+
+/// ====== FAQ ======
+model faq {
+  id         Int      @id @default(autoincrement())
+  question   String   @db.VarChar(500)
+  answer     String   @db.Text
+  published  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.DateTime(0)
+  updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
+  created_by String   @db.VarChar(36)
+  updated_by String   @db.VarChar(36)
+
+  // relations to user (consistent with event/global_settings)
+  creator user @relation("faq_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updater user @relation("faq_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_by], map: "faq_created_by_FK")
+  @@index([updated_by], map: "faq_updated_by_FK")
+  @@index([published], map: "faq_published_IDX")
 }
 
 /// ====== ENAMS ======

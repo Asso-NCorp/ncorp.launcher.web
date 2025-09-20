@@ -10,7 +10,6 @@ import { loginFormSchema } from "../schemas";
 import { logger } from "$src/lib/stores/loggerStore";
 import { parse as parseTopLevelDomain } from "tldts";
 import { db } from "$srv/db";
-import { setTimeout as nodeSetTimeout } from "node:timers/promises"; // for race-based timeout
 
 // Central domain resolution (avoids repeated parsing & potential undefined issues)
 const parsedDomain = parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain;

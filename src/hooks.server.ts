@@ -7,12 +7,14 @@ import { building } from "$app/environment";
 import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
 import { logger } from "better-auth";
 
+const loginPath = "/login";
+
 const isUnprotected = (routeId: string | null, pathname: string) => {
     // 1) groupe public/guest
     if (routeId && routeId.includes("(guest)")) return true;
 
     // 2) pages publiques
-    const publicPages = new Set(["/signin", "/signup"]);
+    const publicPages = new Set([loginPath, "/signup"]);
     if (publicPages.has(pathname)) return true;
 
     // 3) routes internes better-auth
@@ -29,12 +31,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     // PROTÉGER PAR DÉFAUT
     if (!isUnprotected(event.route.id, event.url.pathname)) {
-        if (!session?.user) redirect(302, "/signin");
+        if (!session?.user) redirect(302, loginPath);
 
         const token = event.cookies.get("token");
         if (!token) {
             logger.error("No token in cookies");
-            redirect(302, "/signin");
+            redirect(302, loginPath);
         }
 
         event.locals.token = token;

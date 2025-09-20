@@ -9,6 +9,7 @@
         FolderOpen,
         Gamepad2,
         MessageCircle,
+        MessageCircleQuestion,
         MicVocal,
         PackageOpen,
         PackagePlus,
@@ -98,12 +99,14 @@
                         label={$t("recently_added_games")}
                         iconOnly={global.sidebarCollapsed} />
 
-                        <SideMenuSubItem
+                    <SideMenuSubItem
                         icon={MessageCircle}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/chat"
                         label={$t("chat")}
                         iconOnly={global.sidebarCollapsed} />
+
+
                     <SideMenuSubItem
                         icon={MicVocal}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
@@ -125,6 +128,13 @@
                             onClick={handleStartAgent}
                             iconOnly={global.sidebarCollapsed} />
                     {/if}
+
+                    <!-- <SideMenuSubItem
+                        icon={MessageCircleQuestion}
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+                        href="/faq"
+                        label="FAQ"
+                        iconOnly={global.sidebarCollapsed} /> -->
                 </div>
 
                 <!-- Side Links and Admin Menu - always visible but adapt to collapsed state -->
@@ -146,35 +156,31 @@
                         </div>
                     {/if}
 
-                        <SideMenuItem label="Actions rapides" class="{global.sidebarCollapsed ? 'text-xss' : ''}" />
+                    <SideMenuItem label="Actions rapides" class={global.sidebarCollapsed ? "text-xss" : ""} />
 
-                        <div
-                            class={cn(
-                                "flex flex-col gap-1",
-                                global.sidebarCollapsed ? "items-center space-y-2" : "text-base",
-                            )}>
-                            {#if global.sidebarCollapsed}
-                                <Tooltip.Root>
-                                    <Tooltip.Trigger>
-                                        <Button
-                                            size="icon"
-                                            variant="outline"
-                                            onclick={handleOpenFolder}
-                                            class="h-8 w-8">
-                                            <FolderOpen class="h-4 w-4" />
-                                        </Button>
-                                    </Tooltip.Trigger>
-                                    <Tooltip.Content side="right">
-                                        <p>Ouvrir le dossier des jeux</p>
-                                    </Tooltip.Content>
-                                </Tooltip.Root>
-                            {:else}
-                                <Button variant="outline" onclick={handleOpenFolder}>
-                                    <FolderOpen />
-                                    <span class="ml-2">Ouvrir le dossier des jeux</span>
-                                </Button>
-                            {/if}
-                        </div>
+                    <div
+                        class={cn(
+                            "flex flex-col gap-1",
+                            global.sidebarCollapsed ? "items-center space-y-2" : "text-base",
+                        )}>
+                        {#if global.sidebarCollapsed}
+                            <Tooltip.Root>
+                                <Tooltip.Trigger>
+                                    <Button size="icon" variant="outline" onclick={handleOpenFolder} class="h-8 w-8">
+                                        <FolderOpen class="h-4 w-4" />
+                                    </Button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content side="right">
+                                    <p>Ouvrir le dossier des jeux</p>
+                                </Tooltip.Content>
+                            </Tooltip.Root>
+                        {:else}
+                            <Button variant="outline" onclick={handleOpenFolder}>
+                                <FolderOpen />
+                                <span class="ml-2">Ouvrir le dossier des jeux</span>
+                            </Button>
+                        {/if}
+                    </div>
                 </div>
             </div>
         </ScrollArea>

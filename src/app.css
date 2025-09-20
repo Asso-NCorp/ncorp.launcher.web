@@ -69,7 +69,7 @@ iconify-icon {
     /* Piste (arrière-plan) de la barre de défilement */
     ::-webkit-scrollbar-track {
         background: hsl(var(--border) / 0.12);
-            /* subtle visible track */
+        /* subtle visible track */
         border-radius: var(--radius);
     }
 
@@ -81,7 +81,7 @@ iconify-icon {
     }
 
     /* Poignée au survol */
-        ::-webkit-scrollbar-thumb:hover,
+    ::-webkit-scrollbar-thumb:hover,
     ::-webkit-scrollbar-thumb:active {
         background-color: hsl(var(--border) / var(--tw-border-opacity, 1));
     }
