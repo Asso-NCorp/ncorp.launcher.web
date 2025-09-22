@@ -2,7 +2,7 @@
     import * as Alert from "$lib/components/ui/alert";
     import { toast } from "svelte-sonner";
     import SuperDebug, { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
-    import { zodClient } from "sveltekit-superforms/adapters";
+    import { zod4Client } from "sveltekit-superforms/adapters";
     import { invalidateAll } from "$app/navigation";
     import { CircleAlert } from "@lucide/svelte";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
@@ -29,7 +29,7 @@
     // Initialize the form
     const form = superForm(data.addForm, {
         dataType: "json",
-        validators: zodClient(sidelinkFormSchema),
+        validators: zod4Client(sidelinkFormSchema),
         onResult: async (result) => {
             if (result.result.type === "success") {
                 toast.success("Lien ajouté avec succès", { class: "bg-green-500" });

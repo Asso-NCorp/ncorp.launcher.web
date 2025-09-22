@@ -1,6 +1,6 @@
 import { auth } from "$src/lib/auth/server";
 import { setError, superValidate } from "sveltekit-superforms";
-import { zod } from "sveltekit-superforms/adapters";
+import { zod4 } from "sveltekit-superforms/adapters";
 import type { Actions, PageServerLoad } from "./$types";
 import { userFormSchema, editUserFormSchema } from "./schema";
 import { APIError } from "better-auth/api";
@@ -18,8 +18,8 @@ export const load = (async ({ request }) => {
     });
 
     return {
-        addForm: await superValidate(zod(userFormSchema)),
-        editForm: await superValidate(zod(editUserFormSchema)),
+        addForm: await superValidate(zod4(userFormSchema)),
+        editForm: await superValidate(zod4(editUserFormSchema)),
         users: usersResult.users.sort((a, b) => a.name.localeCompare(b.name)),
     };
 }) satisfies PageServerLoad;
@@ -27,7 +27,7 @@ export const load = (async ({ request }) => {
 export const actions: Actions = {
     // Action for adding a new user
     add: async (event) => {
-        const form = await superValidate(event, zod(userFormSchema));
+        const form = await superValidate(event, zod4(userFormSchema));
         if (!form.valid) {
             return fail(400, {
                 addForm: form,
@@ -47,7 +47,7 @@ export const actions: Actions = {
 
         try {
             // Create new user
-            const result: { user: User } = await auth.api.createUser({
+            const result = await auth.api.createUser({
                 body: {
                     email: form.data.email,
                     password: form.data.password || "", // Ensure password is not undefined
@@ -79,7 +79,7 @@ export const actions: Actions = {
 
     // Action for updating an existing user
     update: async (event) => {
-        const form = await superValidate(event, zod(editUserFormSchema));
+        const form = await superValidate(event, zod4(editUserFormSchema));
         if (!form.valid) {
             return fail(400, {
                 editForm: form,

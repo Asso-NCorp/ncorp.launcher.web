@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const addGameFormSchema = z.object({
     title: z.string().min(2).max(80),
@@ -8,18 +8,16 @@ export const addGameFormSchema = z.object({
     isCompressed: z.boolean(),
     maxPlayers: z.number().int().min(1).max(100).optional(),
     genres: z.array(z.string()),
-    cover: z.record(z.string()),
-    screenshots: z.record(z.string()),
-    folderSlug: z
-        .string({ required_error: "Veuillez sélectionner un dossier" })
-        .min(1, "Veuillez sélectionner un dossier"),
+    cover: z.record(z.string(), z.string()),
+    screenshots: z.record(z.string(), z.string()),
+    folderSlug: z.string("Veuillez sélectionner un dossier").min(1, "Veuillez sélectionner un dossier"),
     mainProcessName: z.string().optional(),
     useNotifications: z.boolean().default(true),
     gameModes: z.array(z.string()).min(1, "Veuillez sélectionner au moins un mode de jeu"),
-    logo: z.record(z.string()).optional(),
+    logo: z.record(z.string(), z.string()).optional(),
     dateUpdated: z.coerce.date().optional(),
     dateAdded: z.coerce.date().optional(),
     isFeatured: z.boolean().default(false),
 });
 
-export type AddGameFormSchema = typeof addGameFormSchema;
+export type AddGameFormSchema = z.infer<typeof addGameFormSchema>;

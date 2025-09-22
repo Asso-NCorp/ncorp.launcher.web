@@ -1,6 +1,6 @@
 <script lang="ts">
     import { superForm, type SuperValidated } from "sveltekit-superforms";
-    import { zodClient } from "sveltekit-superforms/adapters";
+    import { zod4Client } from "sveltekit-superforms/adapters";
     import { browser } from "$app/environment";
     import { invalidateAll } from "$app/navigation";
     import { toast } from "svelte-sonner";
@@ -30,7 +30,7 @@
     // Initialize the form with the sidelink data
     const editForm = superForm(data.editForm, {
         dataType: "json",
-        validators: zodClient(sidelinkFormSchema),
+        validators: zod4Client(sidelinkFormSchema),
         clearOnSubmit: "none",
         onResult: async (result) => {
             if (result.result.type === "success") {

@@ -1,23 +1,22 @@
 import { db } from '$srv/db';
 import { fail } from '@sveltejs/kit';
 import { setError, superValidate } from "sveltekit-superforms";
-import { zod } from "sveltekit-superforms/adapters";
-import type { Actions, PageServerLoad } from './$types';
-import { sidelinkFormSchema } from './schema';
-import { logger } from '$src/lib/stores/loggerStore';
+import { zod4 } from "sveltekit-superforms/adapters";
+import type { Actions, PageServerLoad } from "./$types";
+import { sidelinkFormSchema } from "./schema";
+import { logger } from "$src/lib/stores/loggerStore";
 
 export const load = (async () => {
-
     const sideLinks = await db.sidelink.findMany({
         orderBy: {
-            name: 'asc'
-        }
-    })
+            name: "asc",
+        },
+    });
 
     return {
         sideLinks,
-        addForm: await superValidate(zod(sidelinkFormSchema)),
-        editForm: await superValidate(zod(sidelinkFormSchema)),
+        addForm: await superValidate(zod4(sidelinkFormSchema)),
+        editForm: await superValidate(zod4(sidelinkFormSchema)),
     };
 }) satisfies PageServerLoad;
 
@@ -25,7 +24,7 @@ export const actions: Actions = {
     // Action for adding a new sidelink
     add: async ({ locals, request }) => {
         const formData = await request.formData();
-        const form = await superValidate(formData, zod(sidelinkFormSchema));
+        const form = await superValidate(formData, zod4(sidelinkFormSchema));
         if (!form.valid) {
             return fail(400, { form });
         }
@@ -55,7 +54,7 @@ export const actions: Actions = {
     // Action for updating an existing sidelink
     update: async ({ locals, request }) => {
         const formData = await request.formData();
-        const form = await superValidate(formData, zod(sidelinkFormSchema));
+        const form = await superValidate(formData, zod4(sidelinkFormSchema));
         if (!form.valid) {
             return fail(400, { form });
         }

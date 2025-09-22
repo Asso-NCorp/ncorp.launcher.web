@@ -2,7 +2,7 @@
     import * as Alert from "$lib/components/ui/alert";
     import { toast } from "svelte-sonner";
     import SuperDebug, { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
-    import { zodClient } from "sveltekit-superforms/adapters";
+    import { zod4Client } from "sveltekit-superforms/adapters";
     import { goto, invalidateAll } from "$app/navigation";
     import { CircleAlert } from "@lucide/svelte";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
@@ -69,7 +69,7 @@
     // Initialize the form
     const form = superForm(data.addForm, {
         dataType: "json",
-        validators: zodClient(userFormSchema),
+        validators: zod4Client(userFormSchema),
         onResult: async (result) => {
             const outcome = result.result;
             if (outcome.type === "success") {

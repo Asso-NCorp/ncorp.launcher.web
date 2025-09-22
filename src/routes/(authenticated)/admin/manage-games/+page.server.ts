@@ -1,5 +1,5 @@
 import { message, setError, superValidate } from "sveltekit-superforms";
-import { zod } from "sveltekit-superforms/adapters";
+import { zod4 } from "sveltekit-superforms/adapters";
 import { APIError } from "better-auth/api";
 import { error, type Cookies } from "@sveltejs/kit";
 import { logger } from "$src/lib/stores/loggerStore";
@@ -25,7 +25,7 @@ export const load: PageServerLoad = (async ({ cookies }: { cookies: Cookies }) =
     }
 
     return {
-        form: await superValidate(zod(addGameFormSchema)),
+        form: await superValidate(zod4(addGameFormSchema)),
         folders,
     };
 }) satisfies PageServerLoad;
@@ -33,7 +33,7 @@ export const load: PageServerLoad = (async ({ cookies }: { cookies: Cookies }) =
 export const actions: Actions = {
     default: async (event) => {
         const formData = await event.request.formData();
-        const form = await superValidate(formData, zod(addGameFormSchema));
+        const form = await superValidate(formData, zod4(addGameFormSchema));
         if (!form.valid) {
             logger.error(form.errors);
             logger.error(form.data);

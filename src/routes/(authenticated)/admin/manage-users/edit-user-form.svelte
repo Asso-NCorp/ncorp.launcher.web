@@ -1,6 +1,6 @@
 <script lang="ts">
     import { superForm, type SuperValidated } from "sveltekit-superforms";
-    import { zodClient } from "sveltekit-superforms/adapters";
+    import { zod4Client } from "sveltekit-superforms/adapters";
     import { browser } from "$app/environment";
     import { goto, invalidateAll } from "$app/navigation";
     import { toast } from "svelte-sonner";
@@ -42,7 +42,7 @@
     // Initialize the form with the user data
     const editForm = superForm(data.editForm, {
         dataType: "json",
-        validators: zodClient(editUserFormSchema),
+        validators: zod4Client(editUserFormSchema),
         clearOnSubmit: "none",
         onResult: async (result) => {
             const outcome = result.result;

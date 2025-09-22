@@ -2,7 +2,7 @@
     import * as Alert from "$lib/components/ui/alert";
     import { toast } from "svelte-sonner";
     import SuperDebug, { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
-    import { zodClient } from "sveltekit-superforms/adapters";
+    import { zod4Client } from "sveltekit-superforms/adapters";
     import { goto } from "$app/navigation";
     import { CircleAlert } from "@lucide/svelte";
     import { addGameFormSchema, type AddGameFormSchema } from "./schemas";
@@ -33,7 +33,7 @@
 
     const form = superForm(data.form, {
         dataType: "json",
-        validators: zodClient(addGameFormSchema),
+        validators: zod4Client(addGameFormSchema),
         onResult: async (result) => {
             if (result.result.type === "success") {
                 toast.success("Jeu ajouté avec succès", { class: "bg-green-500" });
