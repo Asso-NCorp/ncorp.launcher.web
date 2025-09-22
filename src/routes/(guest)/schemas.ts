@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const loginFormSchema = z.object({
     username: z.string().min(2).max(50),
@@ -9,7 +9,7 @@ export const signupFormSchema = z.object({
     username: z.string().min(2).max(50),
     password: z.string().min(8).max(50),
     name: z.string(),
-    email: z.string().email(),
+    email: z.email(),
 });
 
 export type LoginFormSchema = typeof loginFormSchema;

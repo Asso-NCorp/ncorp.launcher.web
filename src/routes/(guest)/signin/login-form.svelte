@@ -11,7 +11,7 @@
     import { CircleAlert, CloudDownload, DownloadCloud } from "@lucide/svelte";
     import { toast } from "svelte-sonner";
     import { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
-    import { zodClient } from "sveltekit-superforms/adapters";
+    import { zod4Client } from "sveltekit-superforms/adapters";
     import LazyImage from "$src/lib/components/custom/LazyImage.svelte";
     import { t } from "$src/lib/translations";
     import Loader from "$src/lib/components/custom/Loader.svelte";
@@ -19,7 +19,7 @@
 
     const { data }: { data: SuperValidated<Infer<LoginFormSchema>> } = $props();
     const form = superForm(data, {
-        validators: zodClient(loginFormSchema),
+        validators: zod4Client(loginFormSchema),
         onResult: async (result) => {
             if (result.result.type === "success") {
                 toast.success("Connexion réussie", {
