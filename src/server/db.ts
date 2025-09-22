@@ -1,12 +1,11 @@
-import { PrismaClient } from "@prisma/client";
-
+import pkg from "@prisma/client";
+const { PrismaClient } = pkg;
 
 const createPrismaClient = () =>
     new PrismaClient({
-        log:
-            import.meta.env.MODE === "development" ? ["error", "warn"] : ["error"],
+        log: import.meta.env.MODE === "development" ? ["error", "warn"] : ["error"],
         transactionOptions: {
-            maxWait: import.meta.env.MODE === "development" ? 30_000 : 5000
+            maxWait: import.meta.env.MODE === "development" ? 30_000 : 5000,
         },
     });
 
