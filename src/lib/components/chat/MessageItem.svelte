@@ -116,10 +116,10 @@
 {/if}
 
 <div class="group hover:bg-muted/80" onmouseenter={() => (hovering = true)} onmouseleave={() => (hovering = false)}>
-    <div class={cn("relative flex px-4 py-[1px]")} id={`msg-${msg.id}`}>
+    <div class={cn("relative flex px-4 py-px")} id={`msg-${msg.id}`}>
         <!-- Quick reactions + picker -->
         <div
-            class="pointer-events-none absolute right-2 top-2 flex gap-1 rounded-[0.25rem] border bg-background/80 p-[2px] opacity-0 drop-shadow transition group-hover:opacity-100">
+            class="pointer-events-none absolute right-2 top-2 flex gap-1 rounded-sm border bg-background/80 p-[2px] opacity-0 drop-shadow transition group-hover:opacity-100">
             {#each quickEmojis as e}
                 <Button
                     variant="ghost"
@@ -236,7 +236,7 @@
                         variant="outline"
                         onclick={() => toggleReaction(r.emoji)}
                         class={cn(
-                            "flex h-6 items-center gap-1 rounded-[0.5rem] px-2 text-xs transition hover:bg-muted/50",
+                            "flex h-6 items-center gap-1 rounded-lg px-2 text-xs transition hover:bg-muted/50",
                             r.me ? "bg-blue-500/20 text-primary-foreground" : "",
                         )}
                         aria-pressed={r.me}

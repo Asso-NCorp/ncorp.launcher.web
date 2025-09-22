@@ -58,6 +58,6 @@
             height={20}
             strokeDashArray="4 2"
             fillColor="rgb(156 163 175 / 0.1)"
-            class={cn("[mask-image:radial-gradient(1200px_circle_at_center,white,transparent)]")} />
+            class={cn("mask-[radial-gradient(1200px_circle_at_center,white,transparent)]")} />
     </div>
 </header>

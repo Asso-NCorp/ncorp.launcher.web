@@ -8,13 +8,15 @@
     import { signupFormSchema, type SignupFormSchema } from "$src/routes/(guest)/schemas";
     import GlowBar from "../../../lib/components/custom/GlowBar.svelte";
     import NcorpGlitch from "../../../lib/components/custom/NcorpGlitch.svelte";
-    import { CircleAlert } from "@lucide/svelte";
+    import { CircleAlert, CloudDownload } from "@lucide/svelte";
     import { toast } from "svelte-sonner";
     import { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
     import { zodClient } from "sveltekit-superforms/adapters";
     import LazyImage from "$src/lib/components/custom/LazyImage.svelte";
     import { t } from "$src/lib/translations";
     import Loader from "$src/lib/components/custom/Loader.svelte";
+    import { PUBLIC_SIGNIN_PATH } from "$env/static/public";
+    import Separator from "$src/lib/components/ui/separator/separator.svelte";
 
     const { data }: { data: SuperValidated<Infer<SignupFormSchema>> } = $props();
     const form = superForm(data, {
@@ -37,7 +39,7 @@
     const { form: formData, enhance, submitting, delayed, allErrors } = form;
 </script>
 
-<div class="mx-auto w-96 scale-110">
+<div class="mx-auto w-96 scale-110 p-6">
     <Card.Header>
         <Card.Title class="text-center text-2xl">
             <div class="flex items-center justify-center gap-3">
@@ -49,7 +51,7 @@
                     src="/logo_small.png"
                     alt="NCORP LOGO" />
                 <!-- Barre verticale -->
-                <div class="h-[58px] w-[1px] bg-[hsl(var(--border))]"></div>
+                <div class="h-[58px] w-px bg-[hsl(var(--border))]"></div>
                 <div class="inline-flex items-center justify-center py-2 text-2xl font-bold">
                     <div>
                         {$t("welcome_to_the")}
@@ -59,14 +61,14 @@
             </div>
             <GlowBar animate={true} class="hidden w-2/3 dark:block" />
         </Card.Title>
-        <Card.Description class="text-center">{$t("signup_to_access_content")}</Card.Description>
+        <Card.Description class="text-center py-4">{$t("signup_to_access_content")}</Card.Description>
     </Card.Header>
     <Card.Content>
         <form method="POST" class="grid gap-4" use:enhance>
             {#if $allErrors.length > 0}
                 <Alert.Root variant="destructive">
                     <CircleAlert class="size-4" />
-                    <Alert.Title>Erreur{$allErrors.length > 0 && "s"}</Alert.Title>
+                    <Alert.Title>Erreur{$allErrors.length > 1 ? "s" : ""}</Alert.Title>
                     <Alert.Description>
                         <ul>
                             {#each $allErrors as error}
@@ -123,7 +125,7 @@
                 <Form.Control>
                     {#snippet children({ props })}
                         <Label for="email">{$t("email")}</Label>
-                        <span class="text-xs text-muted-foreground">
+                        <span class="block text-xs text-muted-foreground sm:inline">
                             ({$t("we_dont_like_spams_either")} 🤖)
                         </span>
                         <Input
@@ -148,7 +150,16 @@
         </form>
         <div class="m-4 text-center text-sm">
             {$t("already_have_account")} ?
-            <a href="/login" class="underline">{$t("log_in")}</a>
+            <a href={PUBLIC_SIGNIN_PATH} class="underline">{$t("log_in")}</a>
+        </div>
+        <Separator class="my-4" />
+        <div class="px-4 pb-2 text-center">
+            <a
+                href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
+                class="mx-auto w-full text-center text-sm text-primary underline">
+                <CloudDownload class="mr-1 inline-block" />
+                Télécharger l'agent
+            </a>
         </div>
     </Card.Content>
 </div>

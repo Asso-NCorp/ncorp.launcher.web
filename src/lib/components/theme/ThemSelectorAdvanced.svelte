@@ -38,7 +38,7 @@
     let currentThemeName = $derived(themes[$currentThemeId as keyof typeof themes]?.name || "Thème inconnu");
 </script>
 
-<div class={cn("w-[calc(var(--userlist-width)_-_1rem)]  relative flex-shrink-0 border-l hover:bg-subtle", klazz)}>
+<div class={cn("w-[calc(var(--userlist-width)-1rem)]  relative shrink-0 border-l hover:bg-subtle", klazz)}>
     <Popover.Root onOpenChange={(e) => handleOpenChange(e)}>
         <Popover.Trigger class="h-full w-full ">
             <div class="flex h-full items-center justify-center border-0 px-2 text-center">

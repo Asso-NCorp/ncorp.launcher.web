@@ -1,6 +1,7 @@
 import type { Actions, ServerLoad, RequestEvent } from "@sveltejs/kit";
 import { db } from "$srv/db";
 import { fail, redirect } from "@sveltejs/kit";
+import { PUBLIC_SIGNIN_PATH } from "$env/static/public";
 
 export const load: ServerLoad = async () => {
     const faqs = await db.faq.findMany({
@@ -22,7 +23,7 @@ export const actions = {
 
         const userId = locals.user?.id;
         if (!userId) {
-            throw redirect(302, "/login");
+            throw redirect(302, PUBLIC_SIGNIN_PATH);
         }
 
         await db.faq.create({

@@ -8,7 +8,7 @@
     import { loginFormSchema, type LoginFormSchema } from "$src/routes/(guest)/schemas";
     import GlowBar from "../../../lib/components/custom/GlowBar.svelte";
     import NcorpGlitch from "../../../lib/components/custom/NcorpGlitch.svelte";
-    import { CircleAlert, DownloadCloud } from "@lucide/svelte";
+    import { CircleAlert, CloudDownload, DownloadCloud } from "@lucide/svelte";
     import { toast } from "svelte-sonner";
     import { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
     import { zodClient } from "sveltekit-superforms/adapters";
@@ -38,7 +38,7 @@
     const { form: formData, enhance, submitting, delayed, allErrors } = form;
 </script>
 
-<div class="mx-auto w-96 scale-110">
+<div class="mx-auto w-96 scale-110 p-6">
     <Card.Header>
         <Card.Title class="text-center text-2xl">
             <div class="flex items-center justify-center gap-3">
@@ -50,7 +50,7 @@
                     src="/logo_small.png"
                     alt="NCORP LOGO" />
                 <!-- Barre verticale -->
-                <div class="h-[58px] w-[1px] bg-[hsl(var(--border))]"></div>
+                <div class="h-[58px] w-px bg-[hsl(var(--border))]"></div>
                 <div class="inline-flex items-center justify-center py-2 text-2xl font-bold">
                     <div>
                         {$t("welcome_to_the")}
@@ -60,7 +60,7 @@
             </div>
             <GlowBar animate={true} class="hidden w-2/3 dark:block" />
         </Card.Title>
-        <Card.Description class="text-center">{$t("login_to_access_content")}</Card.Description>
+        <Card.Description class="text-center py-4">{$t("login_to_access_content")}</Card.Description>
     </Card.Header>
     <Card.Content>
         <form method="POST" class="grid gap-4" use:enhance>
@@ -120,7 +120,7 @@
             <a
                 href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
                 class="mx-auto w-full text-center text-sm text-primary underline">
-                <DownloadCloud class="mr-1 inline-block" />
+                <CloudDownload class="mr-1 inline-block" />
                 Télécharger l'agent
             </a>
         </div>

@@ -43,7 +43,6 @@
 
     onMount(async () => {
         await detectSWUpdate();
-        (window as any).__hideBoot?.()
     });
 </script>
 
@@ -51,13 +50,13 @@
 
 <!-- Contenu centré -->
 <ThemeProvider>
-    <div class="relative z-0 mx-auto flex min-h-screen max-w-7xl items-center justify-center">
-        <LampEffect class="translate-y-1/5 absolute inset-auto h-96 w-[30rem]" />
+    <div class="relative z-0 mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4 sm:px-6 lg:px-8">
+        <LampEffect class="translate-y-1/5 absolute inset-auto h-96 w-120" />
         <!-- Contenu principal centré -->
         {#if browser}
             <FluidSimulation />
         {/if}
-        <div class="relative z-10 flex max-w-md flex-col items-center justify-center">
+        <div class="relative z-10 flex w-full max-w-md flex-col items-center justify-center sm:max-w-lg md:max-w-xl lg:max-w-2xl">
             {#if loginPageMessage}
                 <Alert.Root variant="destructive" class="relative overflow-hidden">
                     <CircleAlertIcon class="size-4" />

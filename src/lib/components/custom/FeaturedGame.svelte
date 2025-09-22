@@ -99,7 +99,7 @@
 <div
     class={cn(
         // Added box-border (prevents padding increasing width) and overflow-x-clip (guards subpixel overflow)
-        "group relative box-border aspect-[16/9] w-full max-w-full overflow-hidden overflow-x-clip bg-card ring-1 ring-border",
+        "group relative box-border aspect-video w-full max-w-full overflow-hidden overflow-x-clip bg-card ring-1 ring-border",
         klass,
     )}
     style={`min-height:${minHeight}px;`}
@@ -108,7 +108,7 @@
     onfocus={() => (paused = true)}
     onblur={() => (paused = false)}>
     {#if loading}
-        <div class="absolute inset-0 animate-pulse bg-gradient-to-br from-background via-muted to-background" />
+        <div class="absolute inset-0 animate-pulse bg-linear-to-br from-background via-muted to-background" />
     {:else if !games.length}
         <div class="absolute inset-0 flex items-center justify-center text-sm opacity-70">No featured games</div>
     {:else}
@@ -136,7 +136,7 @@
 
                 <!-- REPLACED top shadow: was subtle inline style, now stronger & tailwind-based -->
                 <div
-                    class="pointer-events-none absolute inset-x-0 top-0 h-[60%] bg-gradient-to-b from-black/70 via-black/40 to-transparent">
+                    class="pointer-events-none absolute inset-x-0 top-0 h-[60%] bg-linear-to-b from-black/70 via-black/40 to-transparent">
                 </div>
 
                 <!-- THEME GRADIENTS (vertical & horizontal) -->
@@ -210,7 +210,7 @@
                     class="group relative min-w-0 overflow-hidden rounded p-0 ring-1 ring-border focus:outline-none {i ===
                     current
                         ? 'ring-2 ring-primary'
-                        : ''} {g.cover ? 'aspect-[2/3] h-16 w-12' : 'aspect-[16/9] h-12 w-20'}"
+                        : ''} {g.cover ? 'aspect-2/3 h-16 w-12' : 'aspect-video h-12 w-20'}"
                     onclick={() => goto(i)}
                     onmouseenter={() => goto(i)}>
                     {#if thumbImage(g)}

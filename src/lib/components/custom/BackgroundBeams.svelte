@@ -61,7 +61,7 @@
 
 <div
     class={cn(
-        "pointer-events-none  absolute inset-0  flex h-full w-full items-center justify-center [mask-repeat:no-repeat]",
+        "pointer-events-none  absolute inset-0  flex h-full w-full items-center justify-center mask-no-repeat",
         klazz,
     )}>
     <svg

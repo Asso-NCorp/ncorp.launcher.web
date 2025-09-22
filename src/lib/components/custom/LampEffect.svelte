@@ -19,7 +19,7 @@
     <div
         in:fade={{ duration, easing: cubicIn, delay }}
         class={cn(
-            "pointer-events-none absolute inset-auto h-36 w-[30rem] translate-y-full rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 opacity-50 blur-3xl",
+            "pointer-events-none absolute inset-auto h-36 w-120 translate-y-full rounded-full bg-linear-to-r from-cyan-500 to-purple-600 opacity-50 blur-3xl",
             clazz,
         )}>
     </div>

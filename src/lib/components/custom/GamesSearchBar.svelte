@@ -159,7 +159,7 @@
         </Tooltip.Root>
         <!-- Recent games buttons -->
         {#if recentGames && recentGames.length > 0}
-            <Card class="flex items-center gap-2 border-l-0">
+            <Card class="flex flex-row rounded-[var(--radius)] items-center gap-2 border-l-0 py-0">
                 <div class="ml-2 flex items-center gap-1 text-sm text-muted-foreground">
                     <Clock class="h-4 w-4" />
                     <span>Récemment joués:</span>
@@ -177,7 +177,7 @@
                                     <img
                                         src={GamesStore.getGameCover(game.game_slug)}
                                         alt="Cover for {formatGameName(game.game_slug)}"
-                                        class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 [mask-image:linear-gradient(to_right,transparent_0%,transparent_20%,black_100%)]" />
+                                        class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 mask-[linear-gradient(to_right,transparent_0%,transparent_20%,black_100%)]" />
                                     <!-- Game name overlay -->
                                     <span class="relative z-10">{formatGameName(game.game_slug)}</span>
                                 </Button>

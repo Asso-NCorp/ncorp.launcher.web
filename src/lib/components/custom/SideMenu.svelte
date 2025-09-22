@@ -4,12 +4,11 @@
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import {
-        CloudLightning,
-        DownloadCloud,
+    CircleQuestionMark,
+        CloudDownload,
         FolderOpen,
         Gamepad2,
         MessageCircle,
-        MessageCircleQuestion,
         MicVocal,
         PackageOpen,
         PackagePlus,
@@ -68,8 +67,8 @@
     };
 </script>
 
-<aside class="h-full min-w-0">
-    <Card class={cn("relative flex h-full w-auto min-w-0 flex-col border-y-0", klazz)}>
+<aside class="h-full min-w-0 overflow-y-auto" aria-label="Sidebar">
+    <Card class={cn("relative flex h-full w-auto min-w-0 flex-col border-none", klazz)}>
         <ScrollArea class="min-w-0 flex-1">
             <div class={cn("min-w-0 p-4", global.sidebarCollapsed && "p-2")}>
                 <!-- Added padding for content within ScrollArea -->
@@ -114,7 +113,7 @@
                         label="Lancer TeamSpeak"
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
-                        icon={DownloadCloud}
+                        icon={CloudDownload}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
                         label="Télécharger l'agent"
@@ -130,7 +129,7 @@
                     {/if}
 
                     <!-- <SideMenuSubItem
-                        icon={MessageCircleQuestion}
+                        icon={CircleQuestionMark}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/faq"
                         label="FAQ"
@@ -185,7 +184,7 @@
             </div>
         </ScrollArea>
         {#if children}
-            <hr />
+            <hr class="mt-auto" />
             <div class={cn("p-2", global.sidebarCollapsed && "px-1")}>
                 {@render children?.()}
             </div>
@@ -195,7 +194,7 @@
             height={20}
             strokeDashArray="4 2"
             fillColor="rgb(156 163 175 / 0.1)"
-            class={cn("absolute top-0", "[mask-image:radial-gradient(150px_circle_at_center,white,transparent)]")} />
+            class={cn("absolute top-0", "mask-[radial-gradient(150px_circle_at_center,white,transparent)]")} />
     </Card>
 </aside>
 

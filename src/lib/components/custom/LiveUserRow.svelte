@@ -112,9 +112,9 @@
     onmouseenter={handleMouseEnter}
     onmouseleave={handleMouseLeave}
     class:opacity-50={user.status === "Disconnected"}
-    class="group ml-2 h-10 w-full max-w-[calc(var(--userlist-width)_-_1rem)] cursor-pointer py-[1px]">
+    class="group ml-2 h-10 w-full max-w-[calc(var(--userlist-width)-1rem)] cursor-pointer py-px">
     <div
-        class="relative flex h-full items-center justify-start gap-2 overflow-hidden rounded-[0.5rem] px-2 group-hover:bg-secondary/50">
+        class="relative flex h-full items-center justify-start gap-2 overflow-hidden rounded-lg px-2 group-hover:bg-secondary/50">
         <!-- Replaced avatar + status dot block with reusable component -->
         <AvatarWithStatus
             {user}

@@ -1,4 +1,5 @@
 import { sveltekit } from "@sveltejs/kit/vite";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, loadEnv } from "vite";
 import fs from "fs";
 
@@ -27,7 +28,7 @@ export default defineConfig(({ mode }) => {
                 cert: fs.readFileSync(`./.cert/wildcard.n-lan.com.pem`),
             },
         },
-        plugins: [sveltekit()],
+        plugins: [tailwindcss(), sveltekit()],
         build: {
             commonjsOptions: {
                 ignoreDynamicRequires: true,

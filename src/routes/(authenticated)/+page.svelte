@@ -101,7 +101,7 @@
     }
 </script>
 
-<div class="container mx-auto space-y-6 p-6">
+<div class="mx-auto space-y-6 p-6">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold">Tableau de bord</h1>
@@ -176,11 +176,11 @@
                             <div
                                 class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-transform duration-200 group-hover:scale-110
                                 {index === 0
-                                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg shadow-yellow-400/25'
+                                    ? 'bg-linear-to-r from-yellow-400 to-yellow-600 text-white shadow-lg shadow-yellow-400/25'
                                     : index === 1
-                                      ? 'bg-gradient-to-r from-gray-300 to-gray-500 text-white shadow-lg shadow-gray-400/25'
+                                      ? 'bg-linear-to-r from-gray-300 to-gray-500 text-white shadow-lg shadow-gray-400/25'
                                       : index === 2
-                                        ? 'bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-lg shadow-amber-600/25'
+                                        ? 'bg-linear-to-r from-amber-600 to-amber-800 text-white shadow-lg shadow-amber-600/25'
                                         : 'bg-primary/10 text-primary'}">
                                 {index + 1}
                             </div>
@@ -237,7 +237,7 @@
                                                                 src={`/api/avatars/${player.id}`}
                                                                 alt={player.name} />
                                                             <AvatarFallback
-                                                                class="bg-gradient-to-br from-primary/20 to-primary/40 text-xs">
+                                                                class="bg-linear-to-br from-primary/20 to-primary/40 text-xs">
                                                                 {player.name.charAt(0).toUpperCase()}
                                                             </AvatarFallback>
                                                         </Avatar>

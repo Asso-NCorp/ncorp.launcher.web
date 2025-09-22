@@ -1,15 +1,11 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
-    import SideMenuItem from "./SideMenuItem.svelte";
-    import { cn, getLocalApi, getServerApi } from "$src/lib/utils";
+    import { cn, getServerApi } from "$src/lib/utils";
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
     import {
+    CircleQuestionMark,
         FerrisWheel,
-        FolderOpen,
         Link,
-        List,
-        MessageCircleQuestion,
-        PlusIcon,
         RefreshCcwDot,
         Settings2,
         Star,
@@ -74,7 +70,7 @@
         href="/admin/faq"
         label="FAQ"
         class={global.sidebarCollapsed ? "p-2" : ""}
-        icon={MessageCircleQuestion}
+        icon={CircleQuestionMark}
         iconOnly={global.sidebarCollapsed} /> -->
 
     <!-- Actions section - always visible but adapts to collapsed state -->
@@ -96,7 +92,7 @@
             <Tooltip.Root>
                 <Tooltip.Trigger>
                     <div class="flex w-full">
-                        <Card class="flex items-center justify-center bg-secondary text-primary shadow-sm">
+                        <Card class="flex items-center justify-center bg-secondary text-primary shadow-sm py-0">
                             <span class="block origin-center -rotate-90 transform text-xs">ADM</span>
                         </Card>
 

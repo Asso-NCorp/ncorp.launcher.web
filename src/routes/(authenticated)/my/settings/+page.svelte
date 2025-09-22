@@ -134,7 +134,7 @@
                         <AlertDialog.Footer>
                             <AlertDialog.Cancel>Annuler</AlertDialog.Cancel>
                             <AlertDialog.Action
-                                class="border-primary bg-background text-danger"
+                                class="bg-danger text-white hover:bg-danger/90"
                                 onclick={handleUninstallAllGames}
                                 disabled={GamesStore.isLoading}>
                                 Tout supprimer

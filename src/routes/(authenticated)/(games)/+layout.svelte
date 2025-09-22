@@ -26,8 +26,8 @@
 </script>
 
 <!-- Root fills available space; inner scroller hosts title + sticky bar + children -->
-<div class="flex h-full w-full flex-col">
-    <div class="flex-1 overflow-y-auto">
+<div class="flex flex-col">
+    <div>
         {#if slots.title}
             {@render slots.title()}
         {/if}

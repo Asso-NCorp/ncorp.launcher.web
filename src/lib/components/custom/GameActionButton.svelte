@@ -1,10 +1,9 @@
 <script lang="ts">
     import { Button } from "../ui/icon-button";
-    import { ArrowBigDownDash, ArrowBigUpDash, Play, Server, StopCircle, TrashIcon, ZapIcon } from "@lucide/svelte";
+    import { ArrowBigDownDash, ArrowBigUpDash, CircleStop, Play, Server, Trash2Icon, ZapIcon } from "@lucide/svelte";
     import { t } from "$src/lib/translations";
     import { cn, getLocalApi } from "$src/lib/utils";
     import { GamesStore } from "$src/lib/states/games.svelte";
-    import { type InstallableGame } from "$src/lib/shared-models";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
     import type { InstallableGameExtended } from "$src/lib/types";
@@ -102,7 +101,7 @@
                         isLoading={isGameQuitting}
                         disabled={isGameQuitting}
                         onclick={handleExitClick}
-                        icon={StopCircle}>
+                        icon={CircleStop}>
                         {$t("exit")}
                     </Button>
                 {:else}
@@ -134,8 +133,8 @@
                     disabled={game.isInstalling || game.isLoading || game.isPlaying}
                     variant="secondary"
                     title={$t("uninstall")}
-                    class={cn("w-auto", klazz)}
-                    icon={TrashIcon}
+                    class={cn("w-auto text-danger", klazz)}
+                    icon={Trash2Icon}
                     onclick={handleUninstallClick}>
                 </Button>
             </div>

@@ -7,7 +7,7 @@
 </script>
 
 <div class={cn("flex items-center", klazz)}>
-    <Badge class="mt-px rounded-[var(--radius)] bg-success" variant="default">
+    <Badge class="mt-px rounded-(--radius) bg-success py-1" variant="default">
         <CheckCheckIcon class="h-4 w-4" />
     </Badge>
 </div>

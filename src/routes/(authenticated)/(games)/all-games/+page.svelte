@@ -33,8 +33,8 @@
         <!-- Featured slider placed before search bar (which lives outside this file) -->
         <div class="mb-6 flex flex-col gap-2">
             <BlurFade delay={0.3} class="text-3xl font-bold">Jeux en vedette</BlurFade>
-            <div class="px-1">
-                <FeaturedGame games={featuredGames} loading={GamesStore.isLoading} interval={5000} class="h-[30rem]" />
+            <div class="px-1 overflow-hidden">
+                <FeaturedGame games={featuredGames} loading={GamesStore.isLoading} interval={5000} class="h-120" />
             </div>
         </div>
     {/if}
@@ -79,3 +79,10 @@
         {/if}
     </div>
 {/if}
+
+<style>
+	/* Prevent transient horizontal overflow while this route is active */
+	:global(body) {
+		overflow-x: hidden;
+	}
+</style>

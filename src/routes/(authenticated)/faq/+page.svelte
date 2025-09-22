@@ -10,7 +10,6 @@
     async function loadViewer() {
         if (!ReadonlyMarkdown) {
             const mod = await import("$src/lib/components/ReadonlyMarkdown.svelte");
-            console.log("ReadonlyMarkdown importé :", mod);
             ReadonlyMarkdown = mod.default;
         }
     }

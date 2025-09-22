@@ -96,6 +96,7 @@
                 <Button
                     variant="secondary"
                     disabled={!reactiveGame.isInstalled}
+                    class="h-auto"
                     onclick={handleOpenGameFolder}
                     title="Ouvrir le dossier du jeu">
                     <FolderOpen />

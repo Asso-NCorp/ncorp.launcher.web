@@ -136,30 +136,6 @@
 
     let heartbeatInterval: ReturnType<typeof setInterval> | undefined;
 
-    const detectSWUpdate = async () => {
-        const registration = await navigator.serviceWorker.ready;
-
-        registration.addEventListener("updatefound", () => {
-            const newSW = registration.installing;
-            newSW?.addEventListener("statechange", () => {
-                if (newSW.state === "installed") {
-                    toast.info(
-                        "Une nouvelle version de l'application est disponible. Veuillez recharger la page pour l'appliquer.",
-                        {
-                            action: {
-                                label: "Recharger",
-                                onClick: () => {
-                                    newSW.postMessage({ type: "SKIP_WAITING" });
-                                    window.location.reload();
-                                },
-                            },
-                        },
-                    );
-                }
-            });
-        });
-    };
-
     let winnerOverlay: WinnerOverlay;
 
     onMount(async () => {
@@ -199,10 +175,6 @@
             if (!global.localGamesFolder) {
                 showConfigGamesDirDialog = true;
             }
-
-            //await detectSWUpdate();
-
-            (window as any).__hideBoot?.();
         }
     });
 
@@ -221,27 +193,7 @@
     });
 
     let headerEl: HTMLElement | null = null;
-
-    function applyHeaderHeight() {
-        if (!headerEl) return;
-        const h = headerEl.offsetHeight;
-        document.documentElement.style.setProperty("--header-height", `${h}px`);
-    }
-
-    onMount(() => {
-        applyHeaderHeight();
-        const ro = new ResizeObserver(applyHeaderHeight);
-        if (headerEl) ro.observe(headerEl);
-        window.addEventListener("resize", applyHeaderHeight);
-        return () => {
-            window.removeEventListener("resize", applyHeaderHeight);
-            ro.disconnect();
-        };
-    });
 </script>
-
-<Lights direction="top" class="absolute top-0 h-56 dark:hidden" />
-<WinnerOverlay bind:this={winnerOverlay} />
 
 <AlertDialog.Root open={showConfigGamesDirDialog}>
     <AlertDialog.Content>
@@ -249,9 +201,9 @@
             <AlertDialog.Title>Configurer le répertoire des jeux</AlertDialog.Title>
             <AlertDialog.Description>
                 <div class="flex w-full items-center justify-between gap-2">
-                    <Gamepad2 class="size-20 p-4 text-primary" />
+                    <Gamepad2 class="text-primary size-20 p-4" />
                     <MoveRight class="size-20 p-4 text-yellow-600" />
-                    <Folder class="size-20 p-4 text-primary" />
+                    <Folder class="text-primary size-20 p-4" />
                 </div>
                 Avant de continuer vous devez configurer le répertoire où seront installés les jeux.
             </AlertDialog.Description>
@@ -274,37 +226,20 @@
         <LazyImage
             src={global.mainBackgroundImage}
             alt="Background"
-            class="pointer-events-none absolute top-0 -z-10 h-1/4 w-full object-cover opacity-50 [mask-image:linear-gradient(hsl(var(--background)),transparent)]" />
+            class="pointer-events-none absolute top-0 -z-10 h-1/4 w-full mask-[linear-gradient(hsl(var(--background)),transparent)] object-cover opacity-50" />
     </div>
 {/if}
 <ThemeProvider>
     <TooltipProvider delayDuration={100}>
-        <div class="flex h-screen flex-col overflow-hidden">
-            {#if liveServerConnection.connectionState === "Reconnecting" || liveAgentConnection.connectionState === "Reconnecting"}
-                <div
-                    transition:fly={{ y: -20, duration: 200 }}
-                    class="absolute left-1/2 top-0 z-50 mx-auto flex h-auto w-auto -translate-x-1/2 items-center justify-center gap-2 bg-warning px-2 py-1 text-center text-xl shadow-md drop-shadow-md">
-                    <TriangleAlert />
-                    <span>
-                        CONNEXION
-                        {#if liveServerConnection.connectionState === "Reconnecting"}
-                            [SERVEUR]
-                        {:else}
-                            [AGENT]
-                        {/if}
-                        PERDUE. TENTATIVE DE RECONNEXION EN COURS...
-                    </span>
-                    <Loader size={24} class="!text-white" />
-                </div>
-            {/if}
+        <div class="flex h-screen flex-col">
             <!-- Header with Logo Grid -->
             <div
                 id="header"
                 bind:this={headerEl}
-                class="header-container z-[100] flex h-12 flex-shrink-0 bg-card shadow-sm backdrop-blur dark:shadow-none">
+                class="header-container bg-card z-100 flex h-12 shrink-0 shadow-sm backdrop-blur dark:shadow-none">
                 <!-- Logo Section - aligned with sidebar -->
                 <div
-                    class="flex items-center justify-center gap-2 border-r border-border bg-card transition-all duration-300 ease-in-out"
+                    class="border-border bg-card flex items-center justify-center gap-2 border-r border-b transition-all duration-300 ease-in-out"
                     style:width={global.sidebarCollapsed ? "80px" : "250px"}>
                     <img
                         src="/logo_small.png"
@@ -315,19 +250,19 @@
 
                     {#if !global.sidebarCollapsed}
                         <!-- Vertical divided -->
-                        <div class="h-8 w-[1px] bg-border" />
+                        <div class="bg-border h-8 w-px" />
                         <NcorpGlitch
-                            class="inline-block font-clash text-lg font-semibold tracking-widest"
+                            class="font-clash inline-block text-lg font-semibold tracking-widest"
                             text="LAUNCHER"
                             glitchEnabled={false} />
-                        <span class="text-xs text-muted-foreground">v{version}</span>
+                        <span class="text-muted-foreground text-xs">v{version}</span>
                     {/if}
                 </div>
                 <!-- Header Content - spans remaining width -->
                 <div class="flex flex-1 items-center border-b px-1">
                     <button
                         onclick={toggleSidebar}
-                        class="mr-2 rounded-md p-2 transition-colors hover:bg-muted"
+                        class="hover:bg-muted mr-2 rounded-md p-2 transition-colors"
                         title={global.sidebarCollapsed ? "Agrandir le menu" : "Réduire le menu"}>
                         {#if global.sidebarCollapsed}
                             <Menu size={18} />
@@ -356,7 +291,7 @@
                                                         <span class="text-sm font-medium">
                                                             {firstEvent.name}
                                                         </span>
-                                                        <span class="text-xs text-muted-foreground">
+                                                        <span class="text-muted-foreground text-xs">
                                                             {formatRelativeTime(firstEvent.start_time)}
                                                         </span>
                                                         <Progress
@@ -368,7 +303,7 @@
                                                                 dayjsUtc(firstEvent.start_time),
                                                                 "minute",
                                                             )}
-                                                            class="h-1 w-full text-primary-foreground" />
+                                                            class="text-primary-foreground h-1 w-full" />
                                                     </div>
                                                     {#if firstEvent.image_url}
                                                         <img
@@ -384,10 +319,10 @@
                                                 </Tooltip.Content>
                                             </Tooltip.Root>
                                         {:else}
-                                            <span class="text-sm text-muted-foreground">Aucun événement</span>
+                                            <span class="text-muted-foreground text-sm">Aucun événement</span>
                                         {/if}
                                     </DropdownMenu.Trigger>
-                                    <DropdownMenu.Content class="z-[110] w-80">
+                                    <DropdownMenu.Content class="z-110 w-80">
                                         <DropdownMenu.Group>
                                             <DropdownMenu.GroupHeading>Événements à venir</DropdownMenu.GroupHeading>
                                             {#if upcomingEvents().length > 0}
@@ -399,7 +334,7 @@
                                                             <div class="flex w-full flex-col gap-1">
                                                                 <div class="flex items-center justify-between">
                                                                     <span class="font-medium">{event.name}</span>
-                                                                    <span class="text-xs text-muted-foreground">
+                                                                    <span class="text-muted-foreground text-xs">
                                                                         {formatRelativeTime(event.start_time)}
                                                                     </span>
                                                                     {#if event.image_url}
@@ -411,11 +346,11 @@
                                                                 </div>
                                                                 {#if event.description}
                                                                     <span
-                                                                        class="line-clamp-2 text-xs text-muted-foreground">
+                                                                        class="text-muted-foreground line-clamp-2 text-xs">
                                                                         {event.description}
                                                                     </span>
                                                                 {/if}
-                                                                <span class="text-xs text-muted-foreground">
+                                                                <span class="text-muted-foreground text-xs">
                                                                     {formatDateTime(event.start_time)} - {formatDateTime(
                                                                         event.end_time,
                                                                     )}
@@ -437,11 +372,11 @@
                         </div>
 
                         <div
-                            class="flex h-full w-auto flex-col items-start justify-center border-l pl-2 text-xs text-muted-foreground">
+                            class="text-muted-foreground flex h-full w-auto flex-col items-start justify-center border-l pl-2 text-xs">
                             <div class="flex w-full items-center justify-between gap-2">
                                 <span>Agent</span>
                                 <StatusDot
-                                    class="static left-0 top-0 m-0 p-0"
+                                    class="static top-0 left-0 m-0 p-0"
                                     status={liveAgentConnection.connectionState} />
                                 {#if liveAgentConnection.isConnected}
                                     <span>{liveAgentConnection.agentVersion}</span>
@@ -451,7 +386,7 @@
                             <div class="flex w-full items-center justify-between gap-2">
                                 <span>Serveur</span>
                                 <StatusDot
-                                    class="static left-0 top-0 m-0 p-0"
+                                    class="static top-0 left-0 m-0 p-0"
                                     status={liveServerConnection.connectionState} />
                             </div>
                         </div>
@@ -460,7 +395,7 @@
 
                 <!-- Right Header Section - aligned with right sidebar -->
                 <div
-                    class="flex items-center justify-center border-b bg-card px-4 transition-all duration-300 ease-in-out"
+                    class="bg-card flex items-center justify-center border-b px-4 transition-all duration-300 ease-in-out"
                     class:hidden={rightSidebarHidden}>
                     <ThemSelectorAdvanced />
                 </div>
@@ -469,23 +404,24 @@
             <div class="flex min-h-[calc(100vh-var(--header-height))] flex-1 overflow-hidden">
                 <!-- Collapsible Left Sidebar -->
                 <aside
-                    class="z-[100] flex-shrink-0 overflow-hidden border-border bg-card transition-all duration-300 ease-in-out"
-                    style:width={global.sidebarCollapsed ? "80px" : "250px"}>
-                    <SideMenu class="h-full">
-                        <div class="mt-auto flex w-full">
+                    style:width={global.sidebarCollapsed ? "80px" : "250px"}
+                    class="left-sidebar bg-card h-full border-r shrink-0">
+                    <div class="flex h-full flex-col">
+                        <SideMenu class="h-full" />
+                        <div class="mt-auto flex items-center justify-center gap-2 py-2 border-t">
                             <ProfileDropdown user={liveUsers.getUser(user?.id!)} />
                         </div>
-                    </SideMenu>
+                    </div>
                 </aside>
 
                 <!-- Main Content -->
-                <main class="min-h-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-2">
+                <main class="min-h-full min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-2">
                     {@render children?.()}
                 </main>
 
                 <!-- Right Sidebar - LiveUsers -->
                 <aside
-                    class="right-sidebar h-full w-68 flex-shrink-0 border-l border-border bg-card transition-all duration-300 ease-in-out"
+                    class="right-sidebar border-border bg-card h-full w-68 shrink-0 border-l transition-all duration-300 ease-in-out"
                     class:hidden={rightSidebarHidden}>
                     <div class="flex h-full flex-col">
                         <LiveUsers class="h-full" />
@@ -496,7 +432,7 @@
                                 rel="noopener noreferrer"
                                 class="flex items-center gap-2">
                                 <img src="/img/kofi.webp" alt="Ko-Fi" class="h-4 w-4" />
-                                <span class="text-xs text-muted-foreground">Offrir un kawa au dev ☕</span>
+                                <span class="text-muted-foreground text-xs">Offrir un kawa au dev ☕</span>
                             </a>
                         </div>
                     </div>
@@ -504,7 +440,7 @@
             </div>
 
             <!-- Footer (placeholder for future use) -->
-            <!-- <footer class="bg-card border-t border-border p-2 flex-shrink-0">
+            <!-- <footer class="bg-card border-t border-border p-2 shrink-0">
                 Footer content here
             </footer> -->
         </div>
@@ -557,5 +493,9 @@
 
     .right-sidebar {
         view-transition-name: right-sidebar;
+    }
+
+    .left-sidebar {
+        view-transition-name: left-sidebar;
     }
 </style>

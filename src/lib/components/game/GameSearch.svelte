@@ -153,7 +153,7 @@
                                         <button
                                             class="flex w-full items-center gap-3 rounded-sm p-2 text-left hover:bg-accent"
                                             onclick={() => handleGameSelection(game)}>
-                                            <div class="h-20 flex-shrink-0 overflow-hidden rounded">
+                                            <div class="h-20 shrink-0 overflow-hidden rounded">
                                                 <img
                                                     src={getImageUrl(game.cover?.value?.imageId || "")}
                                                     alt={game.name || ""}

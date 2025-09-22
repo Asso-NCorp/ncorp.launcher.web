@@ -61,7 +61,7 @@
                         )}
                         title={collapsed ? label : undefined}>
                         <div
-                            class="h-1/3 w-1 flex-shrink-0 rounded-lg transition-all group-hover:h-2/3 dark:bg-subtle/50 dark:group-hover:bg-primary dark:group-hover:text-white">
+                            class="h-1/3 w-1 shrink-0 rounded-lg transition-all group-hover:h-2/3 dark:bg-subtle/50 dark:group-hover:bg-primary dark:group-hover:text-white">
                         </div>
                         {#if children}
                             {@render children()}
@@ -75,7 +75,7 @@
                             </span>
                         {/if}
                         {#if badge && !collapsed}
-                            <span class="flex-shrink-0 rounded-[var(--radius)] py-1 text-2xs uppercase text-primary">
+                            <span class="shrink-0 rounded-(--radius) py-1 text-2xs uppercase text-primary">
                                 {badge}
                             </span>
                         {/if}
@@ -105,7 +105,7 @@
             })}
             title={collapsed ? label : undefined}>
             <div
-                class="h-1/3 w-1 flex-shrink-0 rounded-lg transition-all group-hover:h-2/3 dark:bg-subtle/50 dark:group-hover:bg-primary dark:group-hover:text-white">
+                class="h-1/3 w-1 shrink-0 rounded-lg transition-all group-hover:h-2/3 dark:bg-subtle/50 dark:group-hover:bg-primary dark:group-hover:text-white">
             </div>
             {#if children}
                 {@render children()}
@@ -119,7 +119,7 @@
                 </span>
             {/if}
             {#if badge && !collapsed}
-                <span class="flex-shrink-0 rounded-[var(--radius)] py-1 text-2xs uppercase text-primary">{badge}</span>
+                <span class="shrink-0 rounded-(--radius) py-1 text-2xs uppercase text-primary">{badge}</span>
             {/if}
         </a>
     {/if}

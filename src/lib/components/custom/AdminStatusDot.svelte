@@ -17,20 +17,20 @@
             class:bg-blue-500={user.status === "AgentOnly"}
             class:hidden={user.status == "Disconnected"}
             class={cn(
-                "h-3 w-3 scale-90 rounded-full ring-[2.5px] ring-[hsl(var(--background)_/_var(--tw-bg-opacity,1))]",
+                "h-3 w-3 scale-90 rounded-full ring-[2.5px] ring-[hsl(var(--background)/var(--tw-bg-opacity,1))]",
                 klazz,
             )}>
             <!-- Center dot for disconnected state -->
             <div
                 class:hidden={user.status === "Full"}
-                class="absolute inset-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-[hsl(var(--background)_/_var(--tw-bg-opacity,1))]">
+                class="absolute inset-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-[hsl(var(--background)/var(--tw-bg-opacity,1))]">
             </div>
         </div>
     </Tooltip.Trigger>
     <Tooltip.Content>
         <Root
             variant="ghost"
-            class="z-[9999] cursor-default rounded-md px-3 py-1.5 text-sm font-medium text-[hsl(var(--foreground)_/_var(--tw-text-opacity,1))] shadow-md">
+            class="z-9999 cursor-default rounded-md px-3 py-1.5 text-sm font-medium text-[hsl(var(--foreground)/var(--tw-text-opacity,1))] shadow-md">
             {#if user.status === "LauncherOnly"}
                 <span>Connecté (Launcher uniquement)</span>
             {:else if user.status === "AgentOnly"}

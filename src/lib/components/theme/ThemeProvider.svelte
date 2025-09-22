@@ -1,45 +1,36 @@
 <script>
-    import { run } from "svelte/legacy";
+  import { onMount } from "svelte";
+  import { currentTheme } from "$lib/stores/themeStore";
+  import { browser } from "$app/environment";
 
-    import { onMount } from "svelte";
-    import { currentTheme } from "$lib/stores/themeStore";
-    import { browser } from "$app/environment";
-    /**
-     * @typedef {Object} Props
-     * @property {import('svelte').Snippet} [children]
-     */
+  /**
+   * @typedef {Object} Props
+   * @property {import('svelte').Snippet} [children]
+   */
+  let { children } = $props();
 
-    /** @type {Props} */
-    let { children } = $props();
+  // applique les variables CSS dans :root (html)
+  function applyTheme() {
+    if (!$currentTheme) return;
 
-    let style = $state("");
+    const root = document.documentElement;
 
-    // Créer la chaîne CSS avec les variables du thème actuel
-    $effect.pre(() => {
-        if ($currentTheme) {
-            const cssVars = Object.entries($currentTheme.cssVars)
-                .map(([key, value]) => `--${key}: ${value}`)
-                .join(";");
-            style = cssVars;
-        }
-    });
-
-    onMount(() => {
-        if (browser) {
-            applyTheme();
-        }
-    });
-
-    $effect(() => {
-        if (browser) {
-            applyTheme();
-        }
-    });
-
-    function applyTheme() {
-        // Appliquer les variables CSS directement au niveau de :root
-        document.documentElement.setAttribute("style", style);
+    // injecter toutes les variables CSS avec hsl()
+    for (const [key, value] of Object.entries($currentTheme.cssVars)) {
+      root.style.setProperty(`--${key}`, `hsl(${value})`);
     }
+
+    // ajouter la classe css du thème
+    root.className = $currentTheme.cssClass;
+  }
+
+  onMount(() => {
+    if (browser) applyTheme();
+  });
+
+  $effect(() => {
+    if (browser) applyTheme();
+  });
 </script>
 
 {@render children?.()}

@@ -79,19 +79,9 @@ export const load: PageServerLoad = (async (event) => {
         headers: new Headers({ cookie: event.request.headers.get("cookie") ?? "" }),
     });
     if (session) {
+        logger.info({ userId: session.user?.id }, "User already authenticated, redirecting from /signin");
         throw redirect(302, "/");
     }
-
-    // Otherwise clear all the cookies
-    event.cookies.delete("__Secure-better-auth.session_token", {
-        path: "/",
-        // Only include domain if resolved
-        ...(apexDomain && { domain: apexDomain }),
-    });
-    event.cookies.delete("token", {
-        path: "/",
-        ...(apexDomain && { domain: apexDomain }),
-    });
 
     return {
         form: await superValidate(zod(loginFormSchema)),

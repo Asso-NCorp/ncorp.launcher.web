@@ -38,7 +38,7 @@
 
 {#if globalSettings}
     {#if shouldShowMessage}
-        <Alert.Root class="pointer-events-none w-[32rem] max-w-lg border-0 border-l bg-secondary p-2">
+        <Alert.Root class="pointer-events-none w-lg max-w-lg border-0 border-l bg-secondary p-2">
             <CircleAlertIcon class="size-4" />
             <Alert.Description class="text-pretty text-justify text-xs text-muted-foreground">
                 <Typewriter interval={5} cursor={false}>

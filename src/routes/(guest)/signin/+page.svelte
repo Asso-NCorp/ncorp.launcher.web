@@ -7,7 +7,7 @@
     let { data }: { data: PageData } = $props();
 </script>
 
-<SquareCard class="flex h-auto w-full items-center justify-center px-4">
-    <BackgroundBeams class="bg-card/80" />
+<SquareCard class="flex h-auto w-auto justify-center px-4">
+    <BackgroundBeams class="hidden sm:block sm:bg-card/80" />
     <LoginForm data={data.form} />
 </SquareCard>

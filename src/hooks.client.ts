@@ -1,22 +1,51 @@
 import { browser, dev } from "$app/environment";
 import type { ClientInit } from "@sveltejs/kit";
+import { logger } from "better-auth";
 
 if (browser && !dev && "serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));
-    caches?.keys?.().then((keys) => keys.forEach((k) => caches.delete(k)));
+    navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+        for (const r of registrations) await r.unregister();
+        for (const k of await caches.keys()) await caches.delete(k);
+
+        navigator.serviceWorker.register("/service-worker.js", { type: "module" });
+    });
 }
 
-if (browser && !dev && "serviceWorker" in navigator) {
-    console.log("Registering service worker");
-    navigator.serviceWorker.register("/service-worker.js", { type: "module" });
-}
+export const init: ClientInit = async () => {
+    // Fonction utilitaire pour attendre toutes les images
+    async function waitForImages() {
+        const images = Array.from(document.images);
 
-export const init: ClientInit = () => {
-    if (browser) {
-        if ((window as any).__hideBoot) {
-            (window as any).__hideBoot();
-            delete (window as any).__hideBoot;
-        }
+        await Promise.all(
+            images.map((img) => {
+                if (img.complete) {
+                    // déjà chargée + décodée
+                    return img.decode().catch(() => null);
+                }
+                return new Promise<void>((resolve) => {
+                    img.addEventListener("load", () => {
+                        img.decode()
+                            .catch(() => null)
+                            .finally(() => resolve());
+                    });
+                    img.addEventListener("error", () => resolve()); // ignorer erreurs
+                });
+            }),
+        );
     }
-    return;
+
+    // Attendre que le DOM + images soient ok
+    if (document.readyState === "complete") {
+        await waitForImages();
+        window.__hideBoot?.();
+    } else {
+        window.addEventListener(
+            "load",
+            async () => {
+                await waitForImages();
+                window.__hideBoot?.();
+            },
+            { once: true },
+        );
+    }
 };

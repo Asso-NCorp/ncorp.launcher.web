@@ -1,6 +1,7 @@
 import { db } from "$srv/db";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { PUBLIC_SIGNIN_PATH } from "$env/static/public";
 
 // Types for better code organization
 type UserInfo = {
@@ -285,7 +286,7 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
 export const load: PageServerLoad = async ({ locals }) => {
     const user = locals.user;
     if (!user) {
-        throw redirect(302, "/login");
+        throw redirect(302, PUBLIC_SIGNIN_PATH);
     }
 
     // Fetch data from database

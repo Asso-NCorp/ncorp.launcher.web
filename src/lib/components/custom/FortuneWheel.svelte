@@ -379,7 +379,7 @@
 
 <div
     bind:this={wheelContainerEl}
-    class="wheel-container relative flex w-full max-w-md flex-col items-center justify-center lg:h-auto lg:flex-grow">
+    class="wheel-container relative flex w-full max-w-md flex-col items-center justify-center lg:h-auto lg:grow">
     <canvas bind:this={canvasEl} class="rounded-full"></canvas>
 </div>
 

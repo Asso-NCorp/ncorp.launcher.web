@@ -12,19 +12,19 @@
 
 <div class={cn("relative mx-auto w-full", clazz)}>
     <div
-        class="absolute inset-x-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-blue-600 to-transparent blur-sm">
+        class="absolute inset-x-0 top-0 h-[2px] w-full bg-linear-to-r from-transparent via-blue-600 to-transparent blur-sm">
     </div>
     <div
-        class="absolute inset-x-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-fuchsia-600/50 to-transparent">
+        class="absolute inset-x-0 top-0 h-px w-full bg-linear-to-r from-transparent via-fuchsia-600/50 to-transparent">
     </div>
     <div
         class={cn(
-            "absolute top-0 h-[3px] w-2/4 bg-gradient-to-r from-transparent via-sky-500/50 to-transparent blur-sm",
+            "absolute top-0 h-[3px] w-2/4 bg-linear-to-r from-transparent via-sky-500/50 to-transparent blur-sm",
             { "animate-move": animate },
         )}>
     </div>
     <div
-        class={cn("absolute top-0 h-px w-2/4 bg-gradient-to-r from-transparent via-violet-500 to-transparent", {
+        class={cn("absolute top-0 h-px w-2/4 bg-linear-to-r from-transparent via-violet-500 to-transparent", {
             "animate-move": animate,
         })}>
     </div>

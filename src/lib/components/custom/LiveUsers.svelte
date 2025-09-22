@@ -1,6 +1,5 @@
 <script lang="ts">
     import { liveUsers } from "$src/lib/states/live-users.svelte";
-    import { cn } from "$src/lib/utils";
     import Loader from "./Loader.svelte";
     import ScrollArea from "$src/lib/components/custom/ScrollArea.svelte";
     import { t } from "$src/lib/translations";

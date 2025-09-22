@@ -22,7 +22,6 @@
     const handleDisconnect = async () => {
         try {
             await authClient.signOut();
-            cookieStore.delete("token");
             
             if (liveAgentConnection?.connection) {
                 liveAgentConnection.connection.stop();
@@ -32,13 +31,12 @@
                 liveServerConnection.connection.stop();
             }
 
-            cookieStore.delete("token");
             await fetch(`${PUBLIC_AGENT_URL}/Logout`, { method: "POST", credentials: "include" });
             
         } catch (error) {
             console.error("Error during sign out:", error);
         }finally {
-            goto("/login");
+            goto("/signin");
         }
     };
 </script>
@@ -66,7 +64,7 @@
             {/if}
         </SideMenuItem>
     </DropdownMenu.Trigger>
-    <DropdownMenu.Content class="z-[110] w-56">
+    <DropdownMenu.Content class="z-110 w-56">
         <DropdownMenu.Group>
             <DropdownMenu.GroupHeading>Mon compte</DropdownMenu.GroupHeading>
             <DropdownMenu.Group>

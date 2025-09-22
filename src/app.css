@@ -1,104 +1,149 @@
+/* --- Imports doivent être en tout premier --- */
+@import "tailwindcss";
+@import "tw-animate-css";
 @import "@fontsource/rubik";
-@import url("/css/clash-display.css");
-@import url("/css/gg-sans.css");
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@plugin '@tailwindcss/typography';
 
-iconify-icon {
+@custom-variant dark (&:is(.dark *));
+
+/* --- Composants custom --- */
+@layer components {
+  iconify-icon {
     display: inline-block;
     width: 1em;
     height: 1em;
+  }
 }
 
-@font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-    src: url("/fonts/InterVariable.woff2") format("woff2");
+/* --- Variables globales --- */
+:root {
+  --background: hsl(260 40% 9%);
+  --foreground: hsl(250 25% 95%);
+  --card: hsl(260 40% 7%);
+  --card-foreground: hsl(250 25% 95%);
+  --popover: hsl(260 40% 11%);
+  --popover-foreground: hsl(250 25% 95%);
+  --primary: hsl(270 85% 65%);
+  --primary-foreground: hsl(270 15% 98%);
+  --secondary: hsl(260 40% 15%);
+  --secondary-foreground: hsl(250 25% 95%);
+  --muted: hsl(260 40% 13%);
+  --muted-foreground: hsl(250 25% 70%);
+  --accent: hsl(290 70% 60%);
+  --accent-foreground: hsl(290 15% 98%);
+  --destructive: hsl(0 85% 52%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(260 40% 17%);
+  --input: hsl(260 40% 17%);
+  --ring: hsl(270 85% 65%);
+  --success: hsl(145 80% 45%);
+  --info: hsl(210 90% 60%);
+  --warning: hsl(40 90% 52%);
+  --danger: hsl(0 85% 52%);
+  --background-subtle: hsl(260 40% 6%);
+  --radius: 0px;
+  --font-rubik: "Rubik", sans-serif;
+
+  --sidebar: hsl(260 40% 11%);
+  --sidebar-foreground: hsl(250 25% 95%);
+  --sidebar-primary: hsl(270 85% 65%);
+  --sidebar-primary-foreground: hsl(270 15% 98%);
+  --sidebar-accent: hsl(290 70% 60%);
+  --sidebar-accent-foreground: hsl(290 15% 98%);
+  --sidebar-border: hsl(260 40% 17%);
+  --sidebar-ring: hsl(270 85% 65%);
 }
 
+/* --- Mapping Tailwind v4 --- */
+@theme inline {
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+  --color-radius: var(--radius);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-background-subtle: var(--background-subtle);
+  --color-background-subtle-foreground: var(--muted-foreground);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Font */
+  --font-sans: var(--font-rubik);
+}
+
+/* --- Styles globaux & scrollbars --- */
 @layer base {
-    :root {
-        --background: 30 30% 10%;
-        --foreground: 35 25% 95%;
-        --card: 30 30% 8%;
-        --card-foreground: 35 25% 95%;
-        --popover: 30 30% 12%;
-        --popover-foreground: 35 25% 95%;
-        --primary: 25 85% 50%;
-        --primary-foreground: 25 15% 98%;
-        --secondary: 30 30% 16%;
-        --secondary-foreground: 35 25% 95%;
-        --muted: 30 30% 14%;
-        --muted-foreground: 24 6% 63%;
-        --accent: 45 65% 45%;
-        --accent-foreground: 45 15% 98%;
-        --destructive: 0 85% 52%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 30 30% 18%;
-        --input: 30 30% 18%;
-        --ring: 25 85% 50%;
-        --success: 145 80% 45%;
-        --info: 210 90% 60%;
-        --warning: 40 90% 52%;
-        --danger: 0 85% 52%;
-        --background-subtle: 30 30% 7%;
-        --radius: 0rem;
-        --userlist-width: 16.5rem;
-    }
-}
+  * {
+    @apply border-border;
+  }
 
-@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  
+
+  /* Scrollbars cross-browser */
+  @supports (scrollbar-color: red blue) {
     * {
-        @apply border-border;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) var(--background-subtle);
     }
-    body {
-        @apply bg-background text-foreground;
-    }
+  }
 
-    /* Styles pour les barres de défilement */
-
-    /* Barre de défilement principale (la piste) */
-    ::-webkit-scrollbar {
-        width: 10px; /* Largeur de la barre de défilement verticale */
-        height: 10px; /* Hauteur de la barre de défilement horizontale */
-    }
-
-    /* Piste (arrière-plan) de la barre de défilement */
-    ::-webkit-scrollbar-track {
-        background: hsl(var(--border) / 0.12);
-        /* subtle visible track */
-        border-radius: var(--radius);
-    }
-
-    /* Poignée (thumb) de la barre de défilement */
-    ::-webkit-scrollbar-thumb {
-        background-color: hsl(var(--border) / var(--tw-border-opacity, 1));
-        border-radius: var(--radius);
-        border: none;
-    }
-
-    /* Poignée au survol */
-    ::-webkit-scrollbar-thumb:hover,
-    ::-webkit-scrollbar-thumb:active {
-        background-color: hsl(var(--border) / var(--tw-border-opacity, 1));
-    }
-
-    /* Boutons de la barre de défilement (flèches aux extrémités) */
-    ::-webkit-scrollbar-button {
-        display: none; /* Cacher les boutons de défilement */
-    }
-
-    /* Coin où se croisent les barres de défilement */
-    ::-webkit-scrollbar-corner {
-        background: transparent;
-    }
-
-    /* Pour Firefox */
-    * {
-        scrollbar-width: thin;
-        scrollbar-color: hsl(var(--border) / var(--tw-border-opacity, 1)) hsl(var(--border) / 0.12);
-    }
+  /* Fallback WebKit (si overlay scrollbars désactivés) */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background-subtle);
+    border-radius: var(--radius);
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: var(--radius);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent);
+  }
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }

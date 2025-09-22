@@ -121,14 +121,14 @@
             <Button
                 onclick={spinWheel}
                 disabled={isWheelSpinning || usernames.length === 0 || !prizeToWin.trim()}
-                class="flex-grow sm:flex-grow-0">
+                class="grow sm:grow-0">
                 Tourner la Roue
             </Button>
             <Button
                 variant="destructive"
                 onclick={resetLottery}
                 disabled={isWheelSpinning}
-                class="flex-grow sm:flex-grow-0">
+                class="grow sm:grow-0">
                 Réinitialiser la loterie
             </Button>
         </div>
@@ -146,7 +146,7 @@
                     bind:value={newUsername}
                     onkeypress={(e) => e.key === "Enter" && !isWheelSpinning && addUsername()}
                     disabled={isWheelSpinning}
-                    class="flex-grow" />
+                    class="grow" />
                 <Button variant="outline" onclick={addUsername} disabled={isAddButtonDisabled}>Ajouter</Button>
             </div>
         </div>

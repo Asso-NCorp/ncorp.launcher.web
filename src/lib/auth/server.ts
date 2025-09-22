@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, logger } from "better-auth";
 import { username, jwt, bearer, admin, organization, openAPI, createAuthMiddleware } from "better-auth/plugins";
 import { createPool } from "mysql2/promise";
 import {
@@ -31,7 +31,7 @@ export const auth = betterAuth({
         },
         defaultCookieAttributes: {
             secure: PUBLIC_BETTER_AUTH_URL.startsWith("https://"),
-            sameSite: "none",
+            sameSite: "none", // obligatoire pour partager entre sous-domaines
             httpOnly: true,
             partitioned: true,
         },
@@ -92,7 +92,7 @@ export const auth = betterAuth({
     hooks: {
         after: createAuthMiddleware(async (ctx) => {
             if (ctx.path === "/sign-out") {
-                console.log("Signout!", ctx.path);
+                logger.info("Sign-out detected, clearing cookies");
                 ctx.setCookie("token", "", {
                     httpOnly: true,
                     maxAge: 0,
@@ -130,7 +130,7 @@ export const auth = betterAuth({
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
-                            maxAge: 60 * 60, // 1h
+                            maxAge: 60 * 60 * 24 * 30, // 30 jours
                         });
                     }
                 }

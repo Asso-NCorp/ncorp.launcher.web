@@ -7,14 +7,16 @@
         base: "ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
         variants: {
             variant: {
-                default: "bg-primary text-primary-foreground hover:bg-primary/90",
-                destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-                outline: "border-input bg-background hover:bg-accent hover:text-accent-foreground border",
-                secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                ghost: "hover:bg-accent hover:text-accent-foreground",
-                link: "text-primary underline-offset-4 hover:underline",
-                success: "bg-success text-white hover:bg-success/90",
-                info: "bg-info text-white hover:bg-info/90",
+                default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+				destructive:
+					"bg-red-500 shadow-xs hover:bg-red-600 focus-visible:ring-red-500/20 dark:focus-visible:ring-red-500/40 dark:bg-red-500/60 text-white",
+				outline:
+					"bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border",
+				secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+				ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+				link: "text-primary underline-offset-4 hover:underline",
+                success: "bg-green-500 text-white hover:bg-green-600",
+                info: "bg-sky-500 text-white hover:bg-sky-600",
             },
             size: {
                 default: "h-10 px-4 py-2",
@@ -72,9 +74,9 @@
         {...restProps}>
         <div class="flex items-center gap-2">
             {#if isLoading}
-                <Loader size={16} class="!text-white" />
+                <Loader size={16}/>
             {:else if Icon}
-                <Icon class="!text-white" />
+                <Icon />
             {/if}
             {@render children?.()}
         </div>

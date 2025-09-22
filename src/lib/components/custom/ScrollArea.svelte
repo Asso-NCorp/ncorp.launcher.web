@@ -95,12 +95,12 @@
                 height:2.5rem;
                 pointer-events:none;
                 z-index:2147483646;
-                background:
-                    linear-gradient(
-                        to top,
-                        hsl(var(--background) / 0.75) 0%,
-                        hsl(var(--background) / 0.0) 100%
-                    );
+                background: linear-gradient(
+                    to top,
+                    var(--background) / 0.75 0%,
+                    var(--background) / 0.0 100%
+                );
+
             " />
     {/if}
     <!-- Track + Thumb only visible on hover -->
@@ -150,15 +150,15 @@
         top: 0;
         right: 0;
         border-radius: 10px;
-        background-color: hsl(var(--muted) / 0.5);
-        border: 2px solid hsl(var(--border) / var(--tw-border-opacity, 1));
+        background-color: var(--muted) / 0.5;
+        border: 2px solid var(--border) / var(--tw-border-opacity, 1);
         transition: background-color 120ms;
     }
     .wrap:hover .thumb {
-        background-color: hsl(var(--muted-foreground) / 0.7);
+        background-color: var(--muted-foreground) / 0.7;
     }
     .thumb:active,
     .wrap:active .thumb {
-        background-color: hsl(var(--muted-foreground) / 0.9);
+        background-color: var(--muted-foreground) / 0.9;
     }
 </style>

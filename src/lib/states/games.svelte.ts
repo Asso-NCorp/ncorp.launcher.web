@@ -1,6 +1,6 @@
 import { toast } from "svelte-sonner";
 import { FetchError } from "../shared-models";
-import type { InstallableGameExtended as InstallableGame, InstallableGameExtended } from "../types";
+import type { InstallableGameExtended } from "../types";
 import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi, syncArrayInPlace } from "../utils";
