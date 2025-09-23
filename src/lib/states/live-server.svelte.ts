@@ -41,8 +41,8 @@ class SignalRAgent {
             this.isConnected = true;
             this.connectionState = this.connection.state;
             const currentUser = await authClient.getSession();
-            if (currentUser) {
-                GamesStore.resetGamePlayingState(currentUser.data!.user!.id!);
+            if (currentUser && currentUser.data?.user) {
+                GamesStore.resetGamePlayingState(currentUser.data.user.id);
             }
 
             await GamesStore.getAvailableGames();
