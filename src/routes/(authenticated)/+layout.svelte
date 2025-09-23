@@ -1,16 +1,13 @@
 <script lang="ts">
     import "$src/app.css";
     import Header from "$src/lib/components/custom/Header.svelte";
-    import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
-    import { Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar } from "@lucide/svelte";
-    import { version } from "$lib/version";
+    import { ChevronLeft, ChevronRight, Menu } from "@lucide/svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
-    import { cn } from "$src/lib/utils";
     import { onDestroy, onMount } from "svelte";
     import * as Tooltip from "$lib/components/ui/tooltip/index.js";
     import "@fontsource-variable/rubik";
-    import { fade, fly } from "svelte/transition";
-    import { afterNavigate, beforeNavigate, goto, onNavigate } from "$app/navigation";
+    import { fade } from "svelte/transition";
+    import { afterNavigate, beforeNavigate, onNavigate } from "$app/navigation";
     import { browser } from "$app/environment";
     import LazyImage from "$src/lib/components/custom/LazyImage.svelte";
     import { Toaster } from "$lib/components/ui/sonner/index.js";
@@ -18,31 +15,35 @@
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
     import { liveUsers } from "$src/lib/states/live-users.svelte";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
-    import LiveUsers from "$src/lib/components/custom/LiveUsers.svelte";
     import ThemeProvider from "$src/lib/components/theme/ThemeProvider.svelte";
     import ThemSelectorAdvanced from "$src/lib/components/theme/ThemSelectorAdvanced.svelte";
-    import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
-    import ProfileDropdown from "$src/lib/components/custom/dropdowns/ProfileDropdown.svelte";
+    import ConfigGamesDirDialog from "$src/lib/components/layout/ConfigGamesDirDialog.svelte";
     import { SignalREventBinder } from "$src/lib/signalr-events";
     import { GamesStore } from "$src/lib/states/games.svelte";
-    import NcorpGlitch from "$src/lib/components/custom/NcorpGlitch.svelte";
     import { global } from "$src/lib/states/global.svelte";
-    import * as DropdownMenu from "$src/lib/components/ui/dropdown-menu/index.js";
-    import { buttonVariants } from "$src/lib/components/ui/button";
+    import HeaderBrand from "$src/lib/components/layout/HeaderBrand.svelte";
+    import HeaderEventsDropdown from "$src/lib/components/layout/HeaderEventsDropdown.svelte";
+    import HeaderInlineStatus from "$src/lib/components/layout/HeaderInlineStatus.svelte";
+    import LeftSidebar from "$src/lib/components/layout/LeftSidebar.svelte";
+    import RightSidebar from "$src/lib/components/layout/RightSidebar.svelte";
     import dayjs from "dayjs";
     import relativeTime from "dayjs/plugin/relativeTime";
     import utc from "dayjs/plugin/utc";
     import customParseFormat from "dayjs/plugin/customParseFormat";
     import "dayjs/locale/fr";
     import type { LayoutProps } from "./$types";
-    import { Progress } from "$src/lib/components/ui/progress";
-    import Separator from "$src/lib/components/ui/separator/separator.svelte";
-    import { toast } from "svelte-sonner";
-    import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
-    import StatusDot from "$src/lib/components/custom/StatusDot.svelte";
+    import { ScrollArea } from "$src/lib/components/ui/scroll-area";
+    import { logger } from "better-auth";
+    
     let loading = $state(false);
-    let rightSidebarHidden = $state(false);
+    // Sidebar visibility handling
+    // Right sidebar: preference + responsive override
+    let rightSidebarHidden = $state(false); // actual visibility (includes responsive forcing)
+    let rightSidebarCollapsedPref = $state(false); // user preference (persisted)
+    let isSmallScreen = $state(false); // responsive state (true when < lg)
+    // Left sidebar: add user preference (persisted)
+    let leftSidebarCollapsedPref = $state(false);
     let { data, children }: LayoutProps = $props(); // Configure dayjs
 
     dayjs.extend(relativeTime);
@@ -53,22 +54,26 @@
     // Create UTC-first dayjs instance
     const dayjsUtc = (date?: dayjs.ConfigType) => dayjs.utc(date);
 
-    // Auto-collapse sidebar on smaller screens
+    // Auto-collapse sidebars on smaller screens and honor persisted preferences on large screens
     $effect(() => {
         if (typeof window !== "undefined") {
             const handleResize = () => {
+                // Breakpoints: md=768, lg=1024
                 if (window.innerWidth < 768) {
-                    // md breakpoint
+                    // Always collapse left on small screens
                     global.sidebarCollapsed = true;
-                    rightSidebarHidden = true;
                 } else if (window.innerWidth >= 1024) {
-                    // lg breakpoint
-                    global.sidebarCollapsed = false;
-                    rightSidebarHidden = false;
-                } else if (window.innerWidth >= 768) {
-                    // md to lg
-                    rightSidebarHidden = true;
+                    // On large screens, use user preference
+                    global.sidebarCollapsed = leftSidebarCollapsedPref;
+                } else {
+                    // md to lg: keep left sidebar collapsed to save space
+                    global.sidebarCollapsed = true;
                 }
+
+                // Track small screen for right sidebar logic
+                isSmallScreen = window.innerWidth < 1024;
+                // On small screens, always hide right sidebar; on large, use user preference
+                rightSidebarHidden = isSmallScreen ? true : rightSidebarCollapsedPref;
             };
 
             handleResize(); // Initial check
@@ -104,7 +109,19 @@
     };
 
     const toggleSidebar = () => {
-        global.sidebarCollapsed = !global.sidebarCollapsed;
+        // Toggle preference and persist; apply immediately when not forced by small screens
+        leftSidebarCollapsedPref = !leftSidebarCollapsedPref;
+        if (browser) localStorage.setItem("leftSidebarCollapsed", String(leftSidebarCollapsedPref));
+        global.sidebarCollapsed = leftSidebarCollapsedPref;
+    };
+
+    const toggleRightSidebar = () => {
+        // Toggle preference and persist; actual visibility depends on responsive state
+        rightSidebarCollapsedPref = !rightSidebarCollapsedPref;
+        if (browser) localStorage.setItem("rightSidebarCollapsed", String(rightSidebarCollapsedPref));
+        if (!isSmallScreen) {
+            rightSidebarHidden = rightSidebarCollapsedPref;
+        }
     };
 
     onNavigate((navigation) => {
@@ -134,13 +151,33 @@
 
     let heartbeatInterval: ReturnType<typeof setInterval> | undefined;
 
-    let winnerOverlay: WinnerOverlay;
-
     onMount(async () => {
 
         if (browser) {
             if (localStorage.getItem("gamesSortOrder")) {
                 global.gamesSortOrder = localStorage.getItem("gamesSortOrder") as "asc" | "desc";
+            }
+
+            // Load persisted right sidebar preference
+            const persistedRight = localStorage.getItem("rightSidebarCollapsed");
+            if (persistedRight !== null) {
+                rightSidebarCollapsedPref = persistedRight === "true";
+            }
+            // Load persisted left sidebar preference
+            const persistedLeft = localStorage.getItem("leftSidebarCollapsed");
+            if (persistedLeft !== null) {
+                leftSidebarCollapsedPref = persistedLeft === "true";
+            }
+            // Apply immediately based on current viewport
+            const width = window.innerWidth;
+            isSmallScreen = width < 1024;
+            rightSidebarHidden = isSmallScreen ? true : rightSidebarCollapsedPref;
+            if (width < 768) {
+                global.sidebarCollapsed = true;
+            } else if (width >= 1024) {
+                global.sidebarCollapsed = leftSidebarCollapsedPref;
+            } else {
+                global.sidebarCollapsed = true;
             }
 
             SignalREventBinder.bindAllEvents(liveServerConnection, liveAgentConnection, {
@@ -188,30 +225,7 @@
     let headerEl: HTMLElement | null = null;
 </script>
 
-<AlertDialog.Root open={showConfigGamesDirDialog}>
-    <AlertDialog.Content>
-        <AlertDialog.Header>
-            <AlertDialog.Title>Configurer le répertoire des jeux</AlertDialog.Title>
-            <AlertDialog.Description>
-                <div class="flex w-full items-center justify-between gap-2">
-                    <Gamepad2 class="text-primary size-20 p-4" />
-                    <MoveRight class="size-20 p-4 text-yellow-600" />
-                    <Folder class="text-primary size-20 p-4" />
-                </div>
-                Avant de continuer vous devez configurer le répertoire où seront installés les jeux.
-            </AlertDialog.Description>
-        </AlertDialog.Header>
-        <AlertDialog.Footer>
-            <AlertDialog.Action
-                onclick={() => {
-                    goto("/my/settings");
-                    showConfigGamesDirDialog = false;
-                }}>
-                Continuer
-            </AlertDialog.Action>
-        </AlertDialog.Footer>
-    </AlertDialog.Content>
-</AlertDialog.Root>
+<ConfigGamesDirDialog open={showConfigGamesDirDialog} />
 
 <Toaster richColors position="top-center" />
 {#if global.mainBackgroundImage}
@@ -231,26 +245,7 @@
                 bind:this={headerEl}
                 class="header-container bg-card z-100 flex h-12 shrink-0 shadow-sm backdrop-blur dark:shadow-none">
                 <!-- Logo Section - aligned with sidebar -->
-                <div
-                    class="border-border bg-card flex items-center justify-center gap-2 border-r border-b transition-all duration-300 ease-in-out"
-                    style:width={global.sidebarCollapsed ? "80px" : "250px"}>
-                    <img
-                        src="/logo_small.png"
-                        alt="Logo"
-                        class={cn("h-10 w-auto transition-all duration-300", {
-                            "h-8": global.sidebarCollapsed,
-                        })} />
-
-                    {#if !global.sidebarCollapsed}
-                        <!-- Vertical divided -->
-                        <div class="bg-border h-8 w-px" />
-                        <NcorpGlitch
-                            class="font-clash inline-block text-lg font-semibold tracking-widest"
-                            text="LAUNCHER"
-                            glitchEnabled={false} />
-                        <span class="text-muted-foreground text-xs">v{version}</span>
-                    {/if}
-                </div>
+                <HeaderBrand />
                 <!-- Header Content - spans remaining width -->
                 <div class="flex flex-1 items-center border-b px-1">
                     <button
@@ -271,124 +266,49 @@
                         <!-- Header message -->
                         <HeaderMessage globalSettings={data.globalSettings} />
 
-                        <div class="flex h-full w-auto gap-1 border-l">
-                            <div class="flex flex-1 flex-col items-start justify-center">
-                                <DropdownMenu.Root>
-                                    <DropdownMenu.Trigger class={buttonVariants({ variant: "ghost" })}>
-                                        {#if upcomingEvents().length > 0}
-                                            {@const firstEvent = upcomingEvents()[0]}
-                                            <Tooltip.Root>
-                                                <Tooltip.Trigger class="flex items-center gap-2">
-                                                    <Calendar class="text-muted-foreground" />
-                                                    <div class="flex flex-col items-start">
-                                                        <span class="text-sm font-medium">
-                                                            {firstEvent.name}
-                                                        </span>
-                                                        <span class="text-muted-foreground text-xs">
-                                                            {formatRelativeTime(firstEvent.start_time)}
-                                                        </span>
-                                                        <Progress
-                                                            value={dayjsUtc(firstEvent.start_time).diff(
-                                                                dayjsUtc(),
-                                                                "minute",
-                                                            )}
-                                                            max={dayjsUtc(firstEvent.end_time).diff(
-                                                                dayjsUtc(firstEvent.start_time),
-                                                                "minute",
-                                                            )}
-                                                            class="text-primary-foreground h-1 w-full" />
-                                                    </div>
-                                                    {#if firstEvent.image_url}
-                                                        <img
-                                                            src={firstEvent.image_url}
-                                                            alt={firstEvent.name}
-                                                            class="h-10 w-auto object-cover" />
-                                                    {/if}
-                                                </Tooltip.Trigger>
-                                                <Tooltip.Content>
-                                                    <p>
-                                                        {dayjsUtc(firstEvent.start_time).format("DD/MM/YYYY HH:mm")}
-                                                    </p>
-                                                </Tooltip.Content>
-                                            </Tooltip.Root>
+                        <HeaderEventsDropdown
+                            events={upcomingEvents().map((e) => ({
+                                name: e.name,
+                                start_time: e.start_time,
+                                end_time: e.end_time,
+                                description: e.description ?? undefined,
+                                image_url: e.image_url ?? undefined,
+                                url: e.url ?? undefined,
+                            }))}
+                        />
+
+                        <HeaderInlineStatus
+                            agentState={liveAgentConnection.connectionState}
+                            agentVersion={liveAgentConnection.isConnected ? liveAgentConnection.agentVersion : undefined}
+                            serverState={liveServerConnection.connectionState}
+                        />
+
+                        <!-- Toggle Right Sidebar (always visible, even when sidebar is collapsed) -->
+                        <div class="hidden h-full items-center border-l pl-1 lg:flex">
+                            <Tooltip.Root>
+                                <Tooltip.Trigger>
+                                    <button
+                                        onclick={toggleRightSidebar}
+                                        class="hover:bg-muted rounded-md p-2 transition-colors"
+                                        title={rightSidebarHidden ? "Afficher la liste des membres" : "Masquer la liste des membres"}>
+                                        {#if rightSidebarHidden}
+                                            <ChevronLeft size={18} />
                                         {:else}
-                                            <span class="text-muted-foreground text-sm">Aucun événement</span>
+                                            <ChevronRight size={18} />
                                         {/if}
-                                    </DropdownMenu.Trigger>
-                                    <DropdownMenu.Content class="z-110 w-80">
-                                        <DropdownMenu.Group>
-                                            <DropdownMenu.GroupHeading>Événements à venir</DropdownMenu.GroupHeading>
-                                            {#if upcomingEvents().length > 0}
-                                                {#each upcomingEvents() as event, i}
-                                                    <div in:fly|global={{ x: -20, duration: 200, delay: i * 50 }}>
-                                                        <DropdownMenu.Item
-                                                            class="cursor-pointer"
-                                                            onclick={async () => event.url && (await goto(event.url))}>
-                                                            <div class="flex w-full flex-col gap-1">
-                                                                <div class="flex items-center justify-between">
-                                                                    <span class="font-medium">{event.name}</span>
-                                                                    <span class="text-muted-foreground text-xs">
-                                                                        {formatRelativeTime(event.start_time)}
-                                                                    </span>
-                                                                    {#if event.image_url}
-                                                                        <img
-                                                                            src={event.image_url}
-                                                                            alt={event.name}
-                                                                            class="h-10 w-auto object-cover" />
-                                                                    {/if}
-                                                                </div>
-                                                                {#if event.description}
-                                                                    <span
-                                                                        class="text-muted-foreground line-clamp-2 text-xs">
-                                                                        {event.description}
-                                                                    </span>
-                                                                {/if}
-                                                                <span class="text-muted-foreground text-xs">
-                                                                    {formatDateTime(event.start_time)} - {formatDateTime(
-                                                                        event.end_time,
-                                                                    )}
-                                                                </span>
-                                                                <Separator class="my-1" />
-                                                            </div>
-                                                        </DropdownMenu.Item>
-                                                    </div>
-                                                {/each}
-                                            {:else}
-                                                <DropdownMenu.Item disabled>
-                                                    <span class="text-muted-foreground">Aucun événement programmé</span>
-                                                </DropdownMenu.Item>
-                                            {/if}
-                                        </DropdownMenu.Group>
-                                    </DropdownMenu.Content>
-                                </DropdownMenu.Root>
-                            </div>
-                        </div>
-
-                        <div
-                            class="text-muted-foreground flex h-full w-auto flex-col items-start justify-center border-l pl-2 text-xs">
-                            <div class="flex w-full items-center justify-between gap-2">
-                                <span>Agent</span>
-                                <StatusDot
-                                    class="static top-0 left-0 m-0 p-0"
-                                    status={liveAgentConnection.connectionState} />
-                                {#if liveAgentConnection.isConnected}
-                                    <span>{liveAgentConnection.agentVersion}</span>
-                                {/if}
-                            </div>
-
-                            <div class="flex w-full items-center justify-between gap-2">
-                                <span>Serveur</span>
-                                <StatusDot
-                                    class="static top-0 left-0 m-0 p-0"
-                                    status={liveServerConnection.connectionState} />
-                            </div>
+                                    </button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>
+                                    {rightSidebarHidden ? "Afficher les membres" : "Masquer les membres"}
+                                </Tooltip.Content>
+                            </Tooltip.Root>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right Header Section - aligned with right sidebar -->
                 <div
-                    class="bg-card flex items-center justify-center border-b px-4 transition-all duration-300 ease-in-out"
+                    class="bg-card flex items-center justify-center border-b transition-all duration-300 ease-in-out"
                     class:hidden={rightSidebarHidden}>
                     <ThemSelectorAdvanced />
                 </div>
@@ -396,40 +316,17 @@
             <!-- Main Content Area -->
             <div class="flex flex-1 min-h-0 overflow-hidden">
                 <!-- Collapsible Left Sidebar -->
-                <aside
-                    style:width={global.sidebarCollapsed ? "80px" : "250px"}
-                    class="left-sidebar bg-card h-full min-h-0 border-r shrink-0">
-                    <div class="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto] overflow-hidden">
-                        <SideMenu class="min-h-0 flex-1" />
-                        <div class="h-auto flex items-center justify-center gap-2 border-t bg-card py-2 relative z-10">
-                            <ProfileDropdown user={liveUsers.getUser(user?.id!)} />
-                        </div>
-                    </div>
-                </aside>
+                <LeftSidebar userId={user?.id} />
 
                 <!-- Main Content -->
-                <main class="min-h-full min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-2">
+                <ScrollArea class="min-h-full min-w-0 flex-1 p-2">
                     {@render children?.()}
-                </main>
+                </ScrollArea>
 
                 <!-- Right Sidebar - LiveUsers -->
-                <aside
-                    class="right-sidebar border-border bg-card h-full min-h-0 w-68 shrink-0 border-l transition-all duration-300 ease-in-out"
-                    class:hidden={rightSidebarHidden}>
-                    <div class="flex h-full min-h-0 flex-col">
-                        <LiveUsers class="h-full" />
-                        <div class="mt-auto flex items-center justify-center gap-2 border-t py-2">
-                            <a
-                                href="https://ko-fi.com/keytrap"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="flex items-center gap-2">
-                                <img src="/img/kofi.webp" alt="Ko-Fi" class="h-4 w-4" />
-                                <span class="text-muted-foreground text-xs">Offrir un kawa au dev ☕</span>
-                            </a>
-                        </div>
-                    </div>
-                </aside>
+                {#if !rightSidebarHidden}
+                    <RightSidebar />
+                {/if}
             </div>
 
             <!-- Footer (placeholder for future use) -->

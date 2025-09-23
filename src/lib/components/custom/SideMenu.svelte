@@ -68,9 +68,9 @@
 </script>
 
 <aside class={cn("h-full min-w-0 min-h-0", klazz)} aria-label="Sidebar">
-    <Card class="relative flex h-full min-h-0 w-auto min-w-0 flex-col gap-0 overflow-hidden border-none">
+    <Card class="relative flex h-full min-h-0 w-auto min-w-0 flex-col py-0 gap-0 overflow-hidden border-none">
     <ScrollArea class="min-w-0 min-h-0 flex-1">
-            <div class={cn("min-w-0 p-4", global.sidebarCollapsed && "p-2")}>
+            <div class={cn("min-w-0 px-4", global.sidebarCollapsed && "px-2")}>
                 <!-- Added padding for content within ScrollArea -->
                 <SideMenuItem
                     showSquareCard={!global.sidebarCollapsed}
@@ -128,12 +128,12 @@
                             iconOnly={global.sidebarCollapsed} />
                     {/if}
 
-                    <!-- <SideMenuSubItem
+                    <SideMenuSubItem
                         icon={CircleQuestionMark}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/faq"
                         label="FAQ"
-                        iconOnly={global.sidebarCollapsed} /> -->
+                        iconOnly={global.sidebarCollapsed} />
                 </div>
 
                 <!-- Side Links and Admin Menu - always visible but adapt to collapsed state -->
@@ -155,7 +155,7 @@
                         </div>
                     {/if}
 
-                    <SideMenuItem label="Actions rapides" class={global.sidebarCollapsed ? "text-xss" : ""} />
+                    <SideMenuItem label="Actions rapides" class={global.sidebarCollapsed ? "text-xs truncate text-ellipsis text-wrap" : ""} />
 
                     <div
                         class={cn(

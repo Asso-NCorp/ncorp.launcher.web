@@ -13,6 +13,7 @@
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import FeaturedGame from "$src/lib/components/custom/FeaturedGame.svelte";
     import { browser } from "$app/environment";
+    import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
     // Sort all games by title asc
     const sortedGames = $derived([...GamesStore.games].sort((a, b) => a.title.localeCompare(b.title)));
     const filteredGames = $derived(sortedGames.filter((game) => game.isSelected && !game.isInstalled));
@@ -79,10 +80,3 @@
         {/if}
     </div>
 {/if}
-
-<style>
-	/* Prevent transient horizontal overflow while this route is active */
-	:global(body) {
-		overflow-x: hidden;
-	}
-</style>

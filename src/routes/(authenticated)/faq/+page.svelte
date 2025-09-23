@@ -15,7 +15,7 @@
     }
 </script>
 
-<section class="mx-auto max-w-3xl space-y-6 p-4">
+<section class="mx-auto max-w-6xl space-y-6 p-4">
     <h1 class="text-2xl font-bold">FAQ</h1>
 
     {#if data.faqs.length === 0}

@@ -18,15 +18,16 @@
 
     // Event handler for popover open state changes
     async function handleOpenChange(isOpen: boolean) {
-        open = !open;
+        // Track the actual open state from the popover
+        open = isOpen;
 
         if (isOpen) {
             // Wait for the popover content to render
             await tick();
-            // Scroll to the selected theme
+            // Scroll to the selected theme (center it), using a valid behavior value
             const selectedTheme = themesContainerRef?.querySelector("[data-active='true']");
-            if (selectedTheme) {
-                selectedTheme.scrollIntoView({ behavior: "instant", block: "center" });
+            if (selectedTheme instanceof HTMLElement) {
+                selectedTheme.scrollIntoView({ behavior: "auto", block: "center" });
             }
         }
     }
@@ -38,7 +39,7 @@
     let currentThemeName = $derived(themes[$currentThemeId as keyof typeof themes]?.name || "Thème inconnu");
 </script>
 
-<div class={cn("w-[calc(var(--userlist-width)-1rem)]  relative shrink-0 border-l hover:bg-subtle", klazz)}>
+<div class={cn("w-[calc(var(--userlist-width)-1rem)]  relative shrink-0 border-l hover:bg-subtle px-4", klazz)}>
     <Popover.Root onOpenChange={(e) => handleOpenChange(e)}>
         <Popover.Trigger class="h-full w-full ">
             <div class="flex h-full items-center justify-center border-0 px-2 text-center">

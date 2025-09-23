@@ -25,11 +25,17 @@
     let selectedId = $state<string | undefined>(undefined);
     const currentFaq = $derived(editId ? data.faqs.find((f) => f.id === editId) ?? null : null);
 
-    // Fonction d’upload
+    // Fonction d’upload vers l'API interne
     async function uploadToBackend(file: File): Promise<string> {
-        console.log("Uploading file:", file.name);
-        // ⚠️ test: placeholder URL
-        return "https://placehold.co/400";
+        const body = new FormData();
+        body.set("file", file);
+        const res = await fetch("/api/resources/uploads", {
+            method: "POST",
+            body,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = (await res.json()) as { url: string };
+        return data.url;
     }
 
     // import dynamique

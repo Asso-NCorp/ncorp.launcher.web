@@ -3,6 +3,7 @@
 	import { chatStore } from "$src/lib/chat/chat.svelte";
 	import type { MessageDto } from "$src/lib/shared-models";
 	import MessageItem from "./MessageItem.svelte";
+	import ScrollArea from "../ui/scroll-area/scroll-area.svelte";
 
 	const {
 		roomId,
@@ -21,7 +22,7 @@
 	}>();
 
 	// Refs (runes)
-	let scroller = $state<HTMLDivElement | null>(null);
+	let viewport = $state<HTMLElement | null>(null);
 	let topEl = $state<HTMLDivElement | null>(null);
 	let bottomEl = $state<HTMLDivElement | null>(null);
 
@@ -36,8 +37,8 @@
 
 	// utils scroll
 	function m() {
-		if (!scroller) return { top: 0, client: 0, height: 0, max: 0 };
-		const top = scroller.scrollTop, client = scroller.clientHeight, height = scroller.scrollHeight;
+		if (!viewport) return { top: 0, client: 0, height: 0, max: 0 };
+		const top = viewport.scrollTop, client = viewport.clientHeight, height = viewport.scrollHeight;
 		return { top, client, height, max: Math.max(0, height - client) };
 	}
 	function atBottomNow(tol = 12) {
@@ -45,28 +46,28 @@
 		return height - client - top <= tol;
 	}
 	function scrollToBottom(smooth = false) {
-		if (!scroller) return;
+		if (!viewport) return;
 		const { max } = m();
-		smooth ? scroller.scrollTo({ top: max, behavior: "smooth" }) : (scroller.scrollTop = max);
+		smooth ? viewport.scrollTo({ top: max, behavior: "smooth" }) : (viewport.scrollTop = max);
 	}
 
 	// mount: descendre en bas une seule fois
 	$effect(() => {
-		if (mounted || !scroller) return;
+		if (mounted || !viewport) return;
 		mounted = true;
 		queueMicrotask(() => scrollToBottom(false));
 	});
 
 	// PREPEND via IO haut (≥ 50%) + conservation position
 	async function handleTopIntersect(e: CustomEvent<IntersectionObserverEntry>) {
-		if (!scroller || !hasMore) return;
+		if (!viewport || !hasMore) return;
 		const entry = e.detail;
 		if (!entry.isIntersecting || entry.intersectionRatio < 0.5) return;
 
 		const before = m();
 		await loadMore(roomId);
 		const after = m();
-		scroller.scrollTop = before.top + (after.height - before.height);
+		viewport.scrollTop = before.top + (after.height - before.height);
 	}
 
 	// données triées
@@ -93,7 +94,7 @@
 	// 1) AVANT DOM : armer le scroll si append & (en bas OU c’est mon message)
 	$effect.pre(() => {
 		void display.length; // dépendance unique
-		if (!mounted || !scroller) return;
+	if (!mounted || !viewport) return;
 
 		// si déjà armé, ne JAMAIS désarmer ici (évite les courses)
 		if (pendingStick) return;
@@ -113,7 +114,7 @@
 	// 2) APRÈS DOM : si armé → scroll, puis sync des marqueurs
 	$effect(() => {
 		void display.length;
-		if (!mounted || !scroller) return;
+	if (!mounted || !viewport) return;
 
 		if (pendingStick) {
 			scrollToBottom(true);
@@ -126,9 +127,9 @@
 	});
 </script>
 
-<div bind:this={scroller} class="relative min-h-0 flex-1 overflow-auto">
+<ScrollArea bind:viewportRef={viewport} class="relative min-h-0 flex-1">
 	<!-- sentinelle haut -->
-	<IntersectionObserver element={topEl} root={scroller} threshold={0.5} on:intersect={handleTopIntersect}>
+	<IntersectionObserver element={topEl} root={viewport} threshold={0.5} on:intersect={handleTopIntersect}>
 		<div bind:this={topEl} class="h-1 shrink-0" />
 	</IntersectionObserver>
 
@@ -147,7 +148,7 @@
 	</div>
 
 	<!-- sentinelle bas (optionnel state UI) -->
-	<IntersectionObserver element={bottomEl} root={scroller} threshold={0.99} bind:intersecting={bottomIntersecting}>
+	<IntersectionObserver element={bottomEl} root={viewport} threshold={0.99} bind:intersecting={bottomIntersecting}>
 		<div bind:this={bottomEl} class="h-1 shrink-0" />
 	</IntersectionObserver>
-</div>
+</ScrollArea>

@@ -94,12 +94,9 @@
     });
 </script>
 
-<!-- Removed mb-6 (duplicate with parent section) and h-1/2 (was inflating height).
-     Parent can now control spacing via <FeaturedGame class="mb-6" ...> if desired. -->
 <div
     class={cn(
-        // Added box-border (prevents padding increasing width) and overflow-x-clip (guards subpixel overflow)
-        "group relative box-border aspect-video w-full max-w-full overflow-hidden overflow-x-clip bg-card ring-1 ring-border",
+        "group bg-card ring-border relative box-border aspect-video w-full max-w-full overflow-hidden overflow-x-clip ring-1",
         klass,
     )}
     style={`min-height:${minHeight}px;`}
@@ -108,7 +105,7 @@
     onfocus={() => (paused = true)}
     onblur={() => (paused = false)}>
     {#if loading}
-        <div class="absolute inset-0 animate-pulse bg-linear-to-br from-background via-muted to-background" />
+        <div class="from-background via-muted to-background absolute inset-0 animate-pulse bg-linear-to-br" />
     {:else if !games.length}
         <div class="absolute inset-0 flex items-center justify-center text-sm opacity-70">No featured games</div>
     {:else}
@@ -128,7 +125,7 @@
                             <Loader size={32} />
                         </LazyImage>
                     {:else}
-                        <div class="flex h-full w-full items-center justify-center bg-secondary text-xl">
+                        <div class="bg-secondary flex h-full w-full items-center justify-center text-xl">
                             {g.title}
                         </div>
                     {/if}
@@ -155,7 +152,7 @@
                         hsl(var(--background)/0) 100%);">
                 </div>
 
-                <div class="absolute bottom-16 left-0 right-auto z-20 flex max-w-xl flex-col gap-2 p-6 text-foreground">
+                <div class="text-foreground absolute right-auto bottom-16 left-0 z-20 flex max-w-xl flex-col gap-2 p-6">
                     <h2 class="text-2xl font-bold drop-shadow">
                         <a
                             href={"/games/" + g.folderSlug}
@@ -171,7 +168,7 @@
                         </a>
                     </h2>
                     {#if g.description}
-                        <p class="whitespace-pre-line break-words text-sm leading-relaxed opacity-90">
+                        <p class="text-sm leading-relaxed break-words whitespace-pre-line opacity-90">
                             {g.description}
                         </p>
                     {/if}
@@ -183,7 +180,7 @@
         <Button
             type="button"
             variant="ghost"
-            class="pointer-events-none absolute left-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md bg-background/50 text-foreground opacity-0 transition-opacity duration-200 hover:bg-background/70 focus:pointer-events-auto focus:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+            class="bg-background/50 text-foreground hover:bg-background/70 pointer-events-none absolute top-1/2 left-2 z-20 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md opacity-0 transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus:pointer-events-auto focus:opacity-100"
             onclick={prev}
             aria-label="Previous">
             ‹
@@ -191,7 +188,7 @@
         <Button
             type="button"
             variant="ghost"
-            class="pointer-events-none absolute right-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md bg-background/50 text-foreground opacity-0 transition-opacity duration-200 hover:bg-background/70 focus:pointer-events-auto focus:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+            class="bg-background/50 text-foreground hover:bg-background/70 pointer-events-none absolute top-1/2 right-2 z-20 grid h-9 w-9 -translate-y-1/2 place-content-center rounded-md opacity-0 transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus:pointer-events-auto focus:opacity-100"
             onclick={next}
             aria-label="Next">
             ›
@@ -199,7 +196,7 @@
 
         <!-- Thumbnail rail with per-thumbnail progress (replaced native button) -->
         <div
-            class="absolute bottom-0 left-0 right-0 flex justify-center gap-2 px-4 pb-2"
+            class="absolute right-0 bottom-0 left-0 flex justify-center gap-2 px-4 pb-2"
             onmouseenter={() => (paused = true)}
             onmouseleave={() => (paused = false)}>
             {#each games as g, i}
@@ -207,9 +204,9 @@
                     type="button"
                     variant="ghost"
                     aria-label={"Go to slide " + (i + 1)}
-                    class="group relative min-w-0 overflow-hidden rounded p-0 ring-1 ring-border focus:outline-none {i ===
+                    class="group ring-border relative min-w-0 overflow-hidden rounded p-0 ring-1 focus:outline-none {i ===
                     current
-                        ? 'ring-2 ring-primary'
+                        ? 'ring-primary ring-2'
                         : ''} {g.cover ? 'aspect-2/3 h-16 w-12' : 'aspect-video h-12 w-20'}"
                     onclick={() => goto(i)}
                     onmouseenter={() => goto(i)}>
@@ -219,14 +216,14 @@
                             alt={g.title + " thumbnail"}
                             class="block h-full w-full object-cover opacity-70 transition-opacity group-hover:opacity-100" />
                     {:else}
-                        <span class="break-words px-1 text-[10px] text-foreground/80">{g.title}</span>
+                        <span class="text-foreground/80 px-1 text-[10px] break-words">{g.title}</span>
                     {/if}
                     <div
-                        class="absolute inset-0 bg-background/50 {i === current
+                        class="bg-background/50 absolute inset-0 {i === current
                             ? 'opacity-0'
                             : 'opacity-50'} transition-opacity group-hover:opacity-0" />
-                    <div class="absolute inset-x-0 bottom-0 h-1 bg-muted/40">
-                        <div class="h-full bg-primary" style={`width:${i === current ? progress * 100 : 0}%;`}></div>
+                    <div class="bg-muted/40 absolute inset-x-0 bottom-0 h-1">
+                        <div class="bg-primary h-full" style={`width:${i === current ? progress * 100 : 0}%;`}></div>
                     </div>
                 </Button>
             {/each}
@@ -234,7 +231,7 @@
 
         {#if paused}
             <div
-                class="absolute right-2 top-2 rounded bg-background/70 px-2 py-1 font-mono text-[10px] text-foreground">
+                class="bg-background/70 text-foreground absolute top-2 right-2 rounded px-2 py-1 font-mono text-[10px]">
                 {Math.ceil((interval - elapsed) / 1000)}s
             </div>
         {/if}
