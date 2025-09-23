@@ -1,7 +1,7 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.72",
+  "version": "1.5.73",
   "type": "module",
   "scripts": {
     "dev": "cp .env.development .env && dotenv -e .env.development -- cross-env NODE_ENV=development vite dev",
@@ -83,6 +83,7 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/rubik": "^5.2.8",
     "@fontsource/rubik": "^5.2.8",
+    "@friendofsvelte/tipex": "^0.0.9",
     "@iconify/tailwind": "^1.2.0",
     "@lucide/svelte": "^0.544.0",
     "@microsoft/signalr": "^9.0.6",

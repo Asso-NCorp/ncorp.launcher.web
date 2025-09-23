@@ -66,12 +66,12 @@
         icon={FerrisWheel}
         iconOnly={global.sidebarCollapsed} />
 
-    <!-- <SideMenuSubItem
+    <SideMenuSubItem
         href="/admin/faq"
         label="FAQ"
         class={global.sidebarCollapsed ? "p-2" : ""}
         icon={CircleQuestionMark}
-        iconOnly={global.sidebarCollapsed} /> -->
+        iconOnly={global.sidebarCollapsed} />
 
     <!-- Actions section - always visible but adapts to collapsed state -->
     <div class={cn("mt-5 flex flex-col gap-1", global.sidebarCollapsed ? "items-center space-y-2" : "text-base")}>

@@ -2,7 +2,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@fontsource/rubik";
-@plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:is(.dark *));
 

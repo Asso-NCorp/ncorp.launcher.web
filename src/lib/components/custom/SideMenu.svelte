@@ -67,9 +67,9 @@
     };
 </script>
 
-<aside class="h-full min-w-0 overflow-y-auto" aria-label="Sidebar">
-    <Card class={cn("relative flex h-full w-auto min-w-0 flex-col border-none", klazz)}>
-        <ScrollArea class="min-w-0 flex-1">
+<aside class={cn("h-full min-w-0 min-h-0", klazz)} aria-label="Sidebar">
+    <Card class="relative flex h-full min-h-0 w-auto min-w-0 flex-col gap-0 overflow-hidden border-none">
+    <ScrollArea class="min-w-0 min-h-0 flex-1">
             <div class={cn("min-w-0 p-4", global.sidebarCollapsed && "p-2")}>
                 <!-- Added padding for content within ScrollArea -->
                 <SideMenuItem
@@ -194,7 +194,10 @@
             height={20}
             strokeDashArray="4 2"
             fillColor="rgb(156 163 175 / 0.1)"
-            class={cn("absolute top-0", "mask-[radial-gradient(150px_circle_at_center,white,transparent)]")} />
+            class={cn(
+                "pointer-events-none absolute inset-0",
+                "mask-[radial-gradient(150px_circle_at_center,white,transparent)]",
+            )} />
     </Card>
 </aside>
 

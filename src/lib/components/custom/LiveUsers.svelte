@@ -1,10 +1,10 @@
 <script lang="ts">
     import { liveUsers } from "$src/lib/states/live-users.svelte";
     import Loader from "./Loader.svelte";
-    import ScrollArea from "$src/lib/components/custom/ScrollArea.svelte";
     import { t } from "$src/lib/translations";
     import LiveUserRow from "./LiveUserRow.svelte";
     import type { LiveUser } from "$src/lib/shared-models";
+    import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
 
 	
     let { class: klazz }: { class?: string } = $props();
@@ -58,9 +58,7 @@
 
 <div class="flex h-screen min-h-0 flex-col">
 	<!-- Pas besoin d'enveloppe; on donne la hauteur via flex -->
-	<ScrollArea
-		minThumb={20}
-		thickness={3}>
+	<ScrollArea class={klazz}>
 		{#if liveUsers.loading}
 			<div class="flex h-full w-full items-center justify-center"><Loader size={30} /></div>
 		{:else if liveUsers.users.length === 0}

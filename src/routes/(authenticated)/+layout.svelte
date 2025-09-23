@@ -2,11 +2,10 @@
     import "$src/app.css";
     import Header from "$src/lib/components/custom/Header.svelte";
     import SideMenu from "$src/lib/components/custom/SideMenu.svelte";
-    import { TriangleAlert, Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar } from "@lucide/svelte";
+    import { Folder, Gamepad2, MoveRight, ChevronLeft, Menu, Calendar } from "@lucide/svelte";
     import { version } from "$lib/version";
     import Loader from "$src/lib/components/custom/Loader.svelte";
-    import Lights from "$src/lib/components/custom/Lights.svelte";
-    import { getLocalApi, cn } from "$src/lib/utils";
+    import { cn } from "$src/lib/utils";
     import { onDestroy, onMount } from "svelte";
     import * as Tooltip from "$lib/components/ui/tooltip/index.js";
     import "@fontsource-variable/rubik";
@@ -29,7 +28,6 @@
     import NcorpGlitch from "$src/lib/components/custom/NcorpGlitch.svelte";
     import { global } from "$src/lib/states/global.svelte";
     import * as DropdownMenu from "$src/lib/components/ui/dropdown-menu/index.js";
-    import UserStatusDot from "$src/lib/components/custom/UserStatusDot.svelte";
     import { buttonVariants } from "$src/lib/components/ui/button";
     import dayjs from "dayjs";
     import relativeTime from "dayjs/plugin/relativeTime";
@@ -139,11 +137,6 @@
     let winnerOverlay: WinnerOverlay;
 
     onMount(async () => {
-        /* try {
-            await getLocalApi().authenticate({ redirect: false });
-        } catch (error) {
-            console.error(error);
-        } */
 
         if (browser) {
             if (localStorage.getItem("gamesSortOrder")) {
@@ -156,7 +149,7 @@
 
             // MODIFIED: Changed event name to match server-side and added prizeToWinText
             liveServerConnection.connection.off("LotteryWinnerAnnouncement");
-            liveServerConnection.connection.on(
+            /* liveServerConnection.connection.on(
                 "LotteryWinnerAnnouncement",
                 (winningDisplayName: string, prizeText: string, randomGifUrl: string) => {
                     if (winnerOverlay) {
@@ -170,7 +163,7 @@
                         toast.success(message);
                     }
                 },
-            );
+            ); */
 
             if (!global.localGamesFolder) {
                 showConfigGamesDirDialog = true;
@@ -401,14 +394,14 @@
                 </div>
             </div>
             <!-- Main Content Area -->
-            <div class="flex min-h-[calc(100vh-var(--header-height))] flex-1 overflow-hidden">
+            <div class="flex flex-1 min-h-0 overflow-hidden">
                 <!-- Collapsible Left Sidebar -->
                 <aside
                     style:width={global.sidebarCollapsed ? "80px" : "250px"}
-                    class="left-sidebar bg-card h-full border-r shrink-0">
-                    <div class="flex h-full flex-col">
-                        <SideMenu class="h-full" />
-                        <div class="mt-auto flex items-center justify-center gap-2 py-2 border-t">
+                    class="left-sidebar bg-card h-full min-h-0 border-r shrink-0">
+                    <div class="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto] overflow-hidden">
+                        <SideMenu class="min-h-0 flex-1" />
+                        <div class="h-auto flex items-center justify-center gap-2 border-t bg-card py-2 relative z-10">
                             <ProfileDropdown user={liveUsers.getUser(user?.id!)} />
                         </div>
                     </div>
@@ -421,9 +414,9 @@
 
                 <!-- Right Sidebar - LiveUsers -->
                 <aside
-                    class="right-sidebar border-border bg-card h-full w-68 shrink-0 border-l transition-all duration-300 ease-in-out"
+                    class="right-sidebar border-border bg-card h-full min-h-0 w-68 shrink-0 border-l transition-all duration-300 ease-in-out"
                     class:hidden={rightSidebarHidden}>
-                    <div class="flex h-full flex-col">
+                    <div class="flex h-full min-h-0 flex-col">
                         <LiveUsers class="h-full" />
                         <div class="mt-auto flex items-center justify-center gap-2 border-t py-2">
                             <a

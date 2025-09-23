@@ -71,41 +71,37 @@ model session {
 }
 
 model user {
-  id              String         @id @db.VarChar(36)
-  name            String         @db.Text
-  email           String         @unique(map: "email") @db.VarChar(255)
-  emailVerified   Boolean
-  image           String?        @db.Text
-  createdAt       DateTime       @db.DateTime(0)
-  updatedAt       DateTime       @db.DateTime(0)
-  username        String?        @unique(map: "username") @db.VarChar(255)
-  role            String         @default("user") @db.VarChar(100)
-  banned          Boolean?
-  banReason       String?        @db.Text
-  banExpires      DateTime?      @db.DateTime(0)
-  displayUsername String?        @db.Text
-  lastLogin       DateTime?      @db.DateTime(0)
-  user_settings   user_settings?
-  game_session    game_session[]
-  event_created   event[]        @relation("event_created_by")
-  event_updated   event[]        @relation("event_updated_by")
-  gamesCreated    game[]         @relation("GameCreatedBy")
-  gamesUpdated    game[]         @relation("GameUpdatedBy")
-
-  // Relations chat
-  guild_memberships   guild_member[]
-  room_participations room_participant[]
-  messages            message[]
-  message_reads       message_read[]
-  message_reactions   message_reaction[]
+  id                  String             @id @db.VarChar(36)
+  name                String             @db.Text
+  email               String             @unique(map: "email") @db.VarChar(255)
+  emailVerified       Boolean
+  image               String?            @db.Text
+  createdAt           DateTime           @db.DateTime(0)
+  updatedAt           DateTime           @db.DateTime(0)
+  username            String?            @unique(map: "username") @db.VarChar(255)
+  role                String             @default("user") @db.VarChar(100)
+  banned              Boolean?
+  banReason           String?            @db.Text
+  banExpires          DateTime?          @db.DateTime(0)
+  displayUsername     String?            @db.Text
+  lastLogin           DateTime?          @db.DateTime(0)
   channel_memberships channel_member[]
+  event_created       event[]            @relation("event_created_by")
+  event_updated       event[]            @relation("event_updated_by")
+  faq_created         faq[]              @relation("faq_created_by")
+  faq_updated         faq[]              @relation("faq_updated_by")
+  gamesCreated        game[]             @relation("GameCreatedBy")
+  gamesUpdated        game[]             @relation("GameUpdatedBy")
+  game_session        game_session[]
   guild               guild[]
+  guild_memberships   guild_member[]
+  messages            message[]
+  message_reactions   message_reaction[]
+  message_reads       message_read[]
   room                room[]
+  room_participations room_participant[]
   room_view           room_view[]
-
-  // Relations FAQ
-  faq_created faq[] @relation("faq_created_by")
-  faq_updated faq[] @relation("faq_updated_by")
+  user_settings       user_settings?
 }
 
 model verification {
@@ -121,11 +117,11 @@ model sidelink {
   id        Int      @id @default(autoincrement())
   name      String   @db.VarChar(100)
   url       String   @db.VarChar(100)
-  hidden    Boolean  @default(false)
   createdAt DateTime @default(now()) @db.DateTime(0)
   updatedAt DateTime @default(now()) @db.DateTime(0)
   createdBy String   @db.VarChar(36)
   updatedBy String   @db.VarChar(36)
+  hidden    Boolean  @default(false)
 
   @@index([createdBy], map: "sidelink_user_FK")
   @@index([updatedBy], map: "sidelink_user_FK_1")
@@ -134,23 +130,16 @@ model sidelink {
 model username_file_config {
   id          Int     @id @default(autoincrement()) @db.UnsignedInt
   folder_slug String? @db.VarChar(100)
-  config_type String? @db.VarChar(100)
   path        String? @db.VarChar(200)
   variable    String? @db.VarChar(200)
-}
-
-enum chat_private_message_status {
-  sent
-  delivered
-  read
+  config_type String? @db.VarChar(100)
 }
 
 model user_settings {
   id              Int    @id @default(autoincrement())
   user_id         String @unique @db.VarChar(36)
   local_games_dir String @db.Text
-
-  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user            user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model game_session {
@@ -159,27 +148,27 @@ model game_session {
   game_slug     String    @db.VarChar(36)
   start_time    DateTime  @db.DateTime(0)
   end_time      DateTime? @db.DateTime(0)
-  total_seconds Int?      @db.Int
+  total_seconds Int?
+  user          user      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@index([user_id], map: "game_session_user_id_fkey")
 }
 
 model event {
   id          String   @id @default(uuid()) @db.Char(36)
   name        String   @db.VarChar(255)
   description String?  @db.Text
-  location    String?  @db.VarChar(255)
   url         String?  @db.VarChar(500)
-  image_url   String?  @db.Text
   start_time  DateTime @db.DateTime(0)
   end_time    DateTime @db.DateTime(0)
   created_at  DateTime @default(now()) @db.DateTime(0)
   updated_at  DateTime @default(now()) @updatedAt @db.DateTime(0)
   created_by  String   @db.VarChar(36)
   updated_by  String   @db.VarChar(36)
-
-  creator user @relation("event_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  updater user @relation("event_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  location    String?  @db.VarChar(255)
+  image_url   String?  @db.Text
+  creator     user     @relation("event_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updater     user     @relation("event_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([created_by], map: "event_created_by_FK")
   @@index([updated_by], map: "event_updated_by_FK")
@@ -202,7 +191,7 @@ model global_settings {
 
 model game {
   id                String    @id @default(uuid()) @db.Char(36)
-  size_gb           Float     @db.Double
+  size_gb           Float
   title             String    @db.VarChar(255)
   folder_slug       String    @unique @db.VarChar(100)
   version           String?   @db.VarChar(50)
@@ -219,18 +208,14 @@ model game {
   screenshots       String    @db.Text
   description       String?   @db.Text
   start_command     String?   @db.Text
-  max_players       Int       @db.Int
+  max_players       Int
   use_notifications Boolean   @default(true)
   created_at        DateTime  @default(now()) @db.DateTime(0)
   updated_at        DateTime  @default(now()) @updatedAt @db.DateTime(0)
-
-  // FK (obligatoires ici; mets ? si nullable)
-  created_by String @db.VarChar(36)
-  updated_by String @db.VarChar(36)
-
-  // Relations
-  createdBy user @relation("GameCreatedBy", fields: [created_by], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  updatedBy user @relation("GameUpdatedBy", fields: [updated_by], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  created_by        String    @db.VarChar(36)
+  updated_by        String    @db.VarChar(36)
+  createdBy         user      @relation("GameCreatedBy", fields: [created_by], references: [id])
+  updatedBy         user      @relation("GameUpdatedBy", fields: [updated_by], references: [id])
 
   @@index([created_by], map: "game_user_created_FK")
   @@index([updated_by], map: "game_user_updated_FK")
@@ -239,10 +224,10 @@ model game {
 
 model role {
   name                          String  @id @unique @db.VarChar(100)
-  avatar_decoration_static      String? @db.Text
-  avatar_decoration_animated    String? @db.Text
-  nameplate_decoration_static   String? @db.Text
   nameplate_decoration_animated String? @db.Text
+  nameplate_decoration_static   String? @db.Text
+  avatar_decoration_animated    String? @db.Text
+  avatar_decoration_static      String? @db.Text
 }
 
 model user_game {
@@ -262,18 +247,278 @@ model faq {
   question   String   @db.VarChar(500)
   answer     String   @db.Text
   published  Boolean  @default(true)
+  position   Int      @default(0)
   created_at DateTime @default(now()) @db.DateTime(0)
   updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
   created_by String   @db.VarChar(36)
   updated_by String   @db.VarChar(36)
-
-  // relations to user (consistent with event/global_settings)
-  creator user @relation("faq_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  updater user @relation("faq_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  creator    user     @relation("faq_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updater    user     @relation("faq_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([created_by], map: "faq_created_by_FK")
   @@index([updated_by], map: "faq_updated_by_FK")
   @@index([published], map: "faq_published_IDX")
+}
+
+/// ====== GUILDS ======
+model guild {
+  id        String         @id @default(uuid()) @db.Char(36)
+  name      String         @db.VarChar(100)
+  slug      String         @unique @db.VarChar(255)
+  icon      String?        @db.Text
+  ownerId   String         @db.VarChar(36)
+  createdAt DateTime       @default(now()) @db.DateTime(0)
+  updatedAt DateTime       @default(now()) @updatedAt @db.DateTime(0)
+  channels  channel[]
+  owner     user           @relation(fields: [ownerId], references: [id])
+  members   guild_member[]
+  room      room[]
+
+  @@index([ownerId], map: "guild_owner_FK")
+}
+
+/// ====== GUILD MEMBERS ======
+model guild_member {
+  id       String   @id @default(uuid()) @db.Char(36)
+  guildId  String   @db.Char(36)
+  userId   String   @db.VarChar(36)
+  nickname String?  @db.VarChar(100)
+  roles    String?  @db.Text
+  joinedAt DateTime @default(now()) @db.DateTime(0)
+  guild    guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  user     user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([guildId, userId], map: "guild_member_unique")
+  @@index([guildId], map: "guild_member_guild_idx")
+  @@index([userId], map: "guild_member_user_idx")
+}
+
+/// ====== CHANNELS ======
+model channel {
+  id        String           @id @default(uuid()) @db.Char(36)
+  guildId   String           @db.Char(36)
+  name      String           @db.VarChar(100)
+  slug      String           @db.VarChar(255)
+  type      channel_type     @default(TEXT)
+  topic     String?          @db.VarChar(500)
+  position  Int              @default(0)
+  isPrivate Boolean          @default(false)
+  parentId  String?          @db.Char(36)
+  createdAt DateTime         @default(now()) @db.DateTime(0)
+  updatedAt DateTime         @default(now()) @updatedAt @db.DateTime(0)
+  guild     guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  parent    channel?         @relation("ChannelToChildren", fields: [parentId], references: [id])
+  children  channel[]        @relation("ChannelToChildren")
+  members   channel_member[]
+  room      room?
+
+  @@unique([guildId, slug], map: "channel_slug_per_guild")
+  @@index([guildId], map: "channel_guild_idx")
+  @@index([parentId], map: "channel_parent_idx")
+}
+
+/// Membres autorisés d’un channel privé
+model channel_member {
+  channelId String   @db.Char(36)
+  userId    String   @db.VarChar(36)
+  addedAt   DateTime @default(now()) @db.DateTime(0)
+  channel   channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([channelId, userId])
+  @@index([userId], map: "channel_member_user_idx")
+}
+
+/// ====== ROOMS ======
+model room {
+  id             String             @id @default(uuid()) @db.Char(36)
+  type           room_type
+  name           String?            @db.VarChar(255)
+  ownerId        String?            @db.VarChar(36)
+  guildId        String?            @db.Char(36)
+  channelId      String?            @unique(map: "room_unique_channel") @db.Char(36)
+  lastMessageAt  DateTime?          @db.DateTime(0)
+  createdAt      DateTime           @default(now()) @db.DateTime(0)
+  updatedAt      DateTime           @default(now()) @updatedAt @db.DateTime(0)
+  dm_pair_unique dm_pair_unique[]
+  messages       message[]
+  channel        channel?           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  guild          guild?             @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  owner          user?              @relation(fields: [ownerId], references: [id])
+  participants   room_participant[]
+  room_view      room_view[]
+
+  @@index([type])
+  @@index([guildId], map: "room_guild_idx")
+  @@index([lastMessageAt])
+  @@index([ownerId], map: "room_ownerId_fkey")
+}
+
+/// Participants
+model room_participant {
+  roomId   String   @db.Char(36)
+  userId   String   @db.VarChar(36)
+  joinedAt DateTime @default(now()) @db.DateTime(0)
+  isMuted  Boolean  @default(false)
+  isPinned Boolean  @default(false)
+  room     room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, userId])
+  @@index([userId], map: "room_participant_user_idx")
+}
+
+/// DMs (paire unique)
+model dm_pair_unique {
+  id     String @id @default(uuid()) @db.Char(36)
+  userA  String @db.VarChar(36)
+  userB  String @db.VarChar(36)
+  roomId String @db.Char(36)
+  room   room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([userA, userB], map: "dm_pair_users_unique")
+  @@index([roomId], map: "dm_pair_room_idx")
+}
+
+/// ====== MESSAGES ======
+model message {
+  id          String             @id @default(uuid()) @db.Char(36)
+  roomId      String             @db.Char(36)
+  authorId    String             @db.VarChar(36)
+  type        message_type       @default(TEXT)
+  content     String?            @db.Text
+  attachments String?            @db.Text
+  createdAt   DateTime           @default(now()) @db.DateTime(0)
+  editedAt    DateTime?          @db.DateTime(0)
+  deletedAt   DateTime?          @db.DateTime(0)
+  author      user               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  room        room               @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  reactions   message_reaction[]
+  reads       message_read[]
+
+  @@index([roomId, createdAt, id], map: "message_room_created_id_idx")
+  @@index([authorId, createdAt], map: "message_author_created_idx")
+}
+
+/// Accusés de lecture
+model message_read {
+  messageId String   @db.Char(36)
+  userId    String   @db.VarChar(36)
+  readAt    DateTime @default(now()) @db.DateTime(0)
+  message   message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+  @@index([userId, readAt], map: "message_read_user_idx")
+}
+
+/// Réactions
+model message_reaction {
+  messageId String   @db.Char(36)
+  userId    String   @db.VarChar(36)
+  emoji     String   @db.VarChar(64)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  message   message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId, emoji])
+  @@index([userId], map: "message_reaction_user_idx")
+  @@index([messageId, emoji], map: "IX_message_emoji")
+}
+
+/// Vues de salon
+model room_view {
+  roomId     String   @db.Char(36)
+  userId     String   @db.VarChar(36)
+  lastSeenAt DateTime @default(now()) @db.DateTime(0)
+  room       room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user       user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, userId])
+  @@index([userId, lastSeenAt], map: "room_view_user_idx")
+}
+
+model OpenIddictApplications {
+  Id                       String                     @id @db.VarChar(255)
+  ApplicationType          String?                    @db.VarChar(50)
+  ClientId                 String                     @unique(map: "IX_OpenIddictApplications_ClientId")
+  ClientSecret             String?                    @db.LongText
+  ClientType               String?                    @db.VarChar(50)
+  ConcurrencyToken         String?                    @db.VarChar(50)
+  ConsentType              String?                    @db.VarChar(50)
+  DisplayName              String?                    @db.LongText
+  DisplayNames             String?                    @db.LongText
+  JsonWebKeySet            String?                    @db.LongText
+  Permissions              String?                    @db.LongText
+  PostLogoutRedirectUris   String?                    @db.LongText
+  Properties               String?                    @db.LongText
+  RedirectUris             String?                    @db.LongText
+  Requirements             String?                    @db.LongText
+  Settings                 String?                    @db.LongText
+  OpenIddictAuthorizations OpenIddictAuthorizations[]
+  OpenIddictTokens         OpenIddictTokens[]
+
+  @@ignore
+}
+
+model OpenIddictAuthorizations {
+  Id                     String                  @id @db.VarChar(255)
+  ApplicationId          String?                 @db.VarChar(255)
+  ConcurrencyToken       String?                 @db.VarChar(50)
+  CreationDate           DateTime?               @db.DateTime(6)
+  Properties             String?                 @db.LongText
+  Scopes                 String?                 @db.LongText
+  Status                 String?                 @db.VarChar(50)
+  Subject                String?
+  Type                   String?                 @db.VarChar(50)
+  OpenIddictApplications OpenIddictApplications? @relation(fields: [ApplicationId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OpenIddictAuthorizations_OpenIddictApplications_ApplicationId")
+  OpenIddictTokens       OpenIddictTokens[]
+
+  @@index([ApplicationId, Status, Subject, Type], map: "IX_OpenIddictAuthorizations_ApplicationId_Status_Subject_Type")
+  @@ignore
+}
+
+model OpenIddictScopes {
+  Id               String  @id @db.VarChar(255)
+  ConcurrencyToken String? @db.VarChar(50)
+  Description      String? @db.LongText
+  Descriptions     String? @db.LongText
+  DisplayName      String? @db.LongText
+  DisplayNames     String? @db.LongText
+  Name             String  @unique(map: "IX_OpenIddictScopes_Name")
+  Properties       String? @db.LongText
+  Resources        String? @db.LongText
+
+  @@ignore
+}
+
+model OpenIddictTokens {
+  Id                       String                    @id @db.VarChar(255)
+  ApplicationId            String?                   @db.VarChar(255)
+  AuthorizationId          String?                   @db.VarChar(255)
+  ConcurrencyToken         String?                   @db.VarChar(50)
+  CreationDate             DateTime?                 @db.DateTime(6)
+  ExpirationDate           DateTime?                 @db.DateTime(6)
+  Payload                  String?                   @db.LongText
+  Properties               String?                   @db.LongText
+  RedemptionDate           DateTime?                 @db.DateTime(6)
+  ReferenceId              String?                   @unique(map: "IX_OpenIddictTokens_ReferenceId") @db.VarChar(100)
+  Status                   String?                   @db.VarChar(100)
+  Subject                  String?
+  Type                     String?                   @db.VarChar(100)
+  OpenIddictApplications   OpenIddictApplications?   @relation(fields: [ApplicationId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OpenIddictTokens_OpenIddictApplications_ApplicationId")
+  OpenIddictAuthorizations OpenIddictAuthorizations? @relation(fields: [AuthorizationId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OpenIddictTokens_OpenIddictAuthorizations_AuthorizationId")
+
+  @@index([ApplicationId, Status, Subject, Type], map: "IX_OpenIddictTokens_ApplicationId_Status_Subject_Type")
+  @@index([AuthorizationId], map: "IX_OpenIddictTokens_AuthorizationId")
+  @@ignore
+}
+
+model EFMigrationsHistory {
+  MigrationId    String @id @db.VarChar(150)
+  ProductVersion String @db.VarChar(32)
+
+  @@map("__EFMigrationsHistory")
 }
 
 /// ====== ENAMS ======
@@ -292,207 +537,5 @@ enum channel_type {
 enum message_type {
   TEXT
   SYSTEM
-  EVENT // join/leave/rename, etc.
+  EVENT
 }
-
-/// ====== GUILDS ======
-model guild {
-  id        String   @id @default(uuid()) @db.Char(36)
-  name      String   @db.VarChar(100)
-  slug      String   @unique @db.VarChar(255)
-  icon      String?  @db.Text
-  ownerId   String   @db.VarChar(36) // user id -> pas de default
-  createdAt DateTime @default(now()) @db.DateTime(0)
-  updatedAt DateTime @default(now()) @updatedAt @db.DateTime(0)
-
-  owner    user           @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  members  guild_member[]
-  channels channel[]
-  room     room[]
-
-  @@index([ownerId], map: "guild_owner_FK")
-}
-
-/// ====== GUILD MEMBERS ======
-model guild_member {
-  id       String   @id @default(uuid()) @db.Char(36)
-  guildId  String   @db.Char(36)
-  userId   String   @db.VarChar(36) // user id
-  nickname String?  @db.VarChar(100)
-  roles    String?  @db.Text
-  joinedAt DateTime @default(now()) @db.DateTime(0)
-
-  guild guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user  user  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@unique([guildId, userId], map: "guild_member_unique")
-  @@index([guildId], map: "guild_member_guild_idx")
-  @@index([userId], map: "guild_member_user_idx")
-}
-
-/// ====== CHANNELS ======
-model channel {
-  id        String       @id @default(uuid()) @db.Char(36)
-  guildId   String       @db.Char(36)
-  name      String       @db.VarChar(100)
-  slug      String       @db.VarChar(255)
-  type      channel_type @default(TEXT)
-  topic     String?      @db.VarChar(500)
-  position  Int          @default(0)
-  isPrivate Boolean      @default(false)
-  parentId  String?      @db.Char(36)
-  createdAt DateTime     @default(now()) @db.DateTime(0)
-  updatedAt DateTime     @default(now()) @updatedAt @db.DateTime(0)
-
-  guild    guild            @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  parent   channel?         @relation("ChannelToChildren", fields: [parentId], references: [id])
-  children channel[]        @relation("ChannelToChildren")
-  room     room?
-  members  channel_member[]
-
-  @@unique([guildId, slug], map: "channel_slug_per_guild")
-  @@index([guildId], map: "channel_guild_idx")
-  @@index([parentId], map: "channel_parent_idx")
-}
-
-/// Membres autorisés d’un channel privé
-model channel_member {
-  channelId String   @db.Char(36)
-  userId    String   @db.VarChar(36) // user id
-  addedAt   DateTime @default(now()) @db.DateTime(0)
-
-  channel channel @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user    user    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@id([channelId, userId])
-  @@index([userId], map: "channel_member_user_idx")
-}
-
-/// ====== ROOMS ======
-model room {
-  id            String    @id @default(uuid()) @db.Char(36)
-  type          room_type
-  name          String?   @db.VarChar(255)
-  ownerId       String?   @db.VarChar(36) // user id
-  guildId       String?   @db.Char(36)
-  channelId     String?   @db.Char(36)
-  lastMessageAt DateTime? @db.DateTime(0)
-  createdAt     DateTime  @default(now()) @db.DateTime(0)
-  updatedAt     DateTime  @default(now()) @updatedAt @db.DateTime(0)
-
-  owner          user?              @relation(fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  guild          guild?             @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  channel        channel?           @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  participants   room_participant[]
-  messages       message[]
-  dm_pair_unique dm_pair_unique[]
-  room_view      room_view[]
-
-  @@unique([channelId], map: "room_unique_channel")
-  @@index([type], map: "room_type_idx")
-  @@index([guildId], map: "room_guild_idx")
-  @@index([lastMessageAt], map: "room_lastMessageAt_idx")
-}
-
-/// Participants
-model room_participant {
-  roomId   String   @db.Char(36)
-  userId   String   @db.VarChar(36) // user id
-  joinedAt DateTime @default(now()) @db.DateTime(0)
-  isMuted  Boolean  @default(false)
-  isPinned Boolean  @default(false)
-
-  room room @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@id([roomId, userId])
-  @@index([userId], map: "room_participant_user_idx")
-}
-
-/// DMs (paire unique)
-model dm_pair_unique {
-  id     String @id @default(uuid()) @db.Char(36)
-  userA  String @db.VarChar(36) // user id
-  userB  String @db.VarChar(36) // user id
-  roomId String @db.Char(36)
-
-  room room @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@unique([userA, userB], map: "dm_pair_users_unique")
-  @@index([roomId], map: "dm_pair_room_idx")
-}
-
-/// ====== MESSAGES ======
-model message {
-  id          String       @id @default(uuid()) @db.Char(36)
-  roomId      String       @db.Char(36)
-  authorId    String       @db.VarChar(36) // user id
-  type        message_type @default(TEXT)
-  content     String?      @db.Text
-  attachments String?      @db.Text
-  createdAt   DateTime     @default(now()) @db.DateTime(0)
-  editedAt    DateTime?    @db.DateTime(0)
-  deletedAt   DateTime?    @db.DateTime(0)
-
-  room      room               @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  author    user               @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  reads     message_read[]
-  reactions message_reaction[]
-
-  @@index([roomId, createdAt, id], map: "message_room_created_id_idx")
-  @@index([authorId, createdAt], map: "message_author_created_idx")
-}
-
-/// Accusés de lecture
-model message_read {
-  messageId String   @db.Char(36)
-  userId    String   @db.VarChar(36) // user id
-  readAt    DateTime @default(now()) @db.DateTime(0)
-
-  message message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user    user    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@id([messageId, userId])
-  @@index([userId, readAt], map: "message_read_user_idx")
-}
-
-/// Réactions
-model message_reaction {
-  messageId String   @db.Char(36)
-  userId    String   @db.VarChar(36) // user id
-  emoji     String   @db.VarChar(64)
-  createdAt DateTime @default(now()) @db.DateTime(0)
-
-  message message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user    user    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@id([messageId, userId, emoji])
-  @@index([userId], map: "message_reaction_user_idx")
-  @@index([messageId, emoji], map: "IX_message_emoji")
-}
-
-/// Vues de salon
-model room_view {
-  roomId     String   @db.Char(36)
-  userId     String   @db.VarChar(36) // user id
-  lastSeenAt DateTime @default(now()) @db.DateTime(0)
-
-  room room @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@id([roomId, userId])
-  @@index([userId, lastSeenAt], map: "room_view_user_idx")
-}
-
-
-/**
- * Rappels psq j'ai pas de mémoire :
- * - Tu modifies schema.prisma
- * - Tu fais npx prisma migrate dev --name ajout_model
- * - Prisma applique la migration + met à jour _prisma_migrations
- * - Tu fais npx prisma generate si tu veux rafraîchir le client TypeScript (en général migrate dev le fait déjà automatiquement).
- * Une fois en prod : transférer les nouvelles migrations .sql dans le dossier prisma/migrations sur le serveur
- * Appliquer les migrations : npx prisma migrate deploy
- * Regénérer le client : npx prisma generate
- * Mais tout ça se fait automatiquement via le CI/CD .github/workflows/main.yml
- */

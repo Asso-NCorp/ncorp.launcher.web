@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `faq` ADD COLUMN `position` INTEGER NOT NULL DEFAULT 0;
