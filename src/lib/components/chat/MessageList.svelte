@@ -89,6 +89,40 @@
 		return g.previousAuthorId && g.previousAuthorId !== g.msg.authorId ? "pt-3" : "mt-0";
 	}
 
+	// --- Day separator helpers ---
+	function isSameDay(a?: string | Date | null, b?: string | Date | null) {
+		if (!a || !b) return false;
+		const da = new Date(a as any), db = new Date(b as any);
+		return (
+			da.getFullYear() === db.getFullYear() &&
+			da.getMonth() === db.getMonth() &&
+			da.getDate() === db.getDate()
+		);
+	}
+	function isYesterday(d: Date) {
+		const y = new Date();
+		y.setHours(0, 0, 0, 0);
+		y.setDate(y.getDate() - 1);
+		return d.getFullYear() === y.getFullYear() && d.getMonth() === y.getMonth() && d.getDate() === y.getDate();
+	}
+	function dayLabelOf(iso?: string | Date | null) {
+		if (!iso) return "";
+		const d = new Date(iso as any);
+		const now = new Date();
+		if (
+			d.getFullYear() === now.getFullYear() &&
+			d.getMonth() === now.getMonth() &&
+			d.getDate() === now.getDate()
+		)
+			return "Aujourd’hui";
+		if (isYesterday(d)) return "Hier";
+		return d.toLocaleDateString(undefined, { day: "2-digit", month: "long", year: "numeric" });
+	}
+	function isDayChange(prevIso?: string | Date | null, curIso?: string | Date | null) {
+		if (!curIso) return false;
+		return !isSameDay(prevIso ?? null, curIso);
+	}
+
 	// -------- pipeline sans boucles --------
 
 	// 1) AVANT DOM : armer le scroll si append & (en bas OU c’est mon message)
@@ -142,6 +176,8 @@
 					authorName={authorNameOf(g.msg.authorId)}
 					previousAuthorId={g.previousAuthorId}
 					previousCreatedAt={g.previousCreatedAt}
+					showDaySeparator={isDayChange(g.previousCreatedAt, g.msg.createdAt)}
+					dayLabel={dayLabelOf(g.msg.createdAt)}
 					onReact={({ messageId, emoji }) => chatStore.react(messageId, emoji)} />
 			</div>
 		{/each}
