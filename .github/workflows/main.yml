@@ -63,6 +63,10 @@ jobs:
             export PATH=/home/lan/.nvm/versions/node/v22.14.0/bin:$PATH
 
             /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 stop ecosystem.config.json || true
+            
+            # Clean up old directories
+            rm -rf server client node_modules
+            
             7z x ncorp.launcher.7z -y
 
             # Installer uniquement les deps de prod
