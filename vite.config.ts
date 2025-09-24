@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
             external: ["sharp", "@img/sharp-linux-x64", "@img/sharp-wasm32"],
         },
         server: {
-            host: process.env.PUBLIC_SERVER_HOST,
+            host: process.env.PUBLIC_FRONTEND_HOST,
             port: 443,
             https: {
                 key: fs.readFileSync(`./.cert/wildcard.n-lan.com.key`),

@@ -5,9 +5,10 @@ import { logger } from "better-auth";
 if (browser && !dev && "serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then(async (registrations) => {
         for (const r of registrations) await r.unregister();
+
         for (const k of await caches.keys()) await caches.delete(k);
 
-        navigator.serviceWorker.register("/service-worker.js", { type: "module" });
+        //navigator.serviceWorker.register("/service-worker.js", { type: "module" });
     });
 }
 
