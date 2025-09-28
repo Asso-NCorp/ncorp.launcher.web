@@ -35,7 +35,7 @@
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
     import { ScrollArea } from "$src/lib/components/ui/scroll-area";
     import { logger } from "better-auth";
-    
+
     let loading = $state(false);
     // Sidebar visibility handling
     // Right sidebar: preference + responsive override
@@ -152,7 +152,6 @@
     let heartbeatInterval: ReturnType<typeof setInterval> | undefined;
 
     onMount(async () => {
-
         if (browser) {
             if (localStorage.getItem("gamesSortOrder")) {
                 global.gamesSortOrder = localStorage.getItem("gamesSortOrder") as "asc" | "desc";
@@ -201,10 +200,14 @@
                     }
                 },
             ); */
+        }
+    });
 
-            if (!global.localGamesFolder) {
-                showConfigGamesDirDialog = true;
-            }
+    afterNavigate(() => {
+        if (!global.localGamesFolder && location.pathname !== "/my/settings") {
+            showConfigGamesDirDialog = true;
+        } else {
+            showConfigGamesDirDialog = false;
         }
     });
 
@@ -274,14 +277,14 @@
                                 description: e.description ?? undefined,
                                 image_url: e.image_url ?? undefined,
                                 url: e.url ?? undefined,
-                            }))}
-                        />
+                            }))} />
 
                         <HeaderInlineStatus
                             agentState={liveAgentConnection.connectionState}
-                            agentVersion={liveAgentConnection.isConnected ? liveAgentConnection.agentVersion : undefined}
-                            serverState={liveServerConnection.connectionState}
-                        />
+                            agentVersion={liveAgentConnection.isConnected
+                                ? liveAgentConnection.agentVersion
+                                : undefined}
+                            serverState={liveServerConnection.connectionState} />
 
                         <!-- Toggle Right Sidebar (always visible, even when sidebar is collapsed) -->
                         <div class="hidden h-full items-center border-l pl-1 lg:flex">
@@ -290,7 +293,9 @@
                                     <button
                                         onclick={toggleRightSidebar}
                                         class="hover:bg-muted rounded-md p-2 transition-colors"
-                                        title={rightSidebarHidden ? "Afficher la liste des membres" : "Masquer la liste des membres"}>
+                                        title={rightSidebarHidden
+                                            ? "Afficher la liste des membres"
+                                            : "Masquer la liste des membres"}>
                                         {#if rightSidebarHidden}
                                             <ChevronLeft size={18} />
                                         {:else}
@@ -314,7 +319,7 @@
                 </div>
             </div>
             <!-- Main Content Area -->
-            <div class="flex flex-1 min-h-0 overflow-hidden">
+            <div class="flex min-h-0 flex-1 overflow-hidden">
                 <!-- Collapsible Left Sidebar -->
                 <LeftSidebar userId={user?.id} />
 

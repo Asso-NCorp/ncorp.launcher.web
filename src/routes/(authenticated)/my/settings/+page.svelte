@@ -1,10 +1,8 @@
 <script lang="ts">
     import { Input } from "$src/lib/components/ui/input";
     import { Button } from "$src/lib/components/ui/button";
-    import { Switch } from "$lib/components/ui/switch/index.js";
     import * as Dialog from "$lib/components/ui/dialog/index.js";
     import * as Settings from "$src/lib/components/ui/settings";
-    import * as Card from "$src/lib/components/ui/card/index.js";
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
     import { t } from "$src/lib/translations";
     import Separator from "$src/lib/components/ui/separator/separator.svelte";
@@ -14,7 +12,6 @@
     import { global } from "$src/lib/states/global.svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { onMount } from "svelte";
-    import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { Trash } from "@lucide/svelte";
 
     const localApi = getLocalApi();
