@@ -18,7 +18,12 @@ export function setHeadMenu(head: Snippet, title?: Snippet) {
 }
 
 export function cleanHeadMenu() {
-    const context = getContext<SlotContext>(key);
-    if (context)
-        Object.assign(context, { head: undefined, title: undefined });
+    try {
+        const context = getContext<SlotContext>(key);
+        if (context)
+            Object.assign(context, { head: undefined, title: undefined });
+    } catch (error) {
+        // Context may not be available during component cleanup
+        // This is safe to ignore as the component is being destroyed anyway
+    }
 }
