@@ -35,8 +35,11 @@
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
     import { ScrollArea } from "$src/lib/components/ui/scroll-area";
     import { logger } from "better-auth";
+    import HeaderAdminControls from "$src/lib/components/layout/HeaderAdminControls.svelte";
+    import AdminControlsModal from "$src/lib/components/layout/AdminControlsModal.svelte";
 
     let loading = $state(false);
+    let showAdminModal = $state(false);
     // Sidebar visibility handling
     // Right sidebar: preference + responsive override
     let rightSidebarHidden = $state(false); // actual visibility (includes responsive forcing)
@@ -269,6 +272,11 @@
                         <!-- Header message -->
                         <HeaderMessage globalSettings={data.globalSettings} />
 
+                        <!-- Admin Controls -->
+                        {#if user?.role === "admin"}
+                            <HeaderAdminControls onclick={() => showAdminModal = true} />
+                        {/if}
+
                         <HeaderEventsDropdown
                             events={upcomingEvents().map((e) => ({
                                 name: e.name,
@@ -341,6 +349,11 @@
         </div>
     </TooltipProvider>
 </ThemeProvider>
+
+<!-- Admin Controls Modal -->
+{#if user?.role === "admin"}
+    <AdminControlsModal bind:open={showAdminModal} />
+{/if}
 
 <style>
     :root {

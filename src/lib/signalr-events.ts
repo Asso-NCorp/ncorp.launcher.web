@@ -106,6 +106,14 @@ export class SignalREventBinder {
             await GamesStore.getAvailableGames();
         });
 
+        this.offAndOn(liveServerConnection, "DesktopNotification", async (title: string, message: string) => {
+            toast.info(title, {
+                richColors: false,
+                description: message,
+                duration: 10000,
+            })
+        });
+
         this.offAndOn(liveServerConnection, "UserFinishedInstalling", (userId: string, gameSlug: string) => {
             if (userId === global.currentUser?.id) {
                 let game = GamesStore.get(gameSlug);
