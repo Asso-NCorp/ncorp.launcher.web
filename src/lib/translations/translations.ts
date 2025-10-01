@@ -50,7 +50,7 @@ export default {
         genres: "Genres",
         install_error: "Erreur lors de l'installation",
         uninstall_success: "Désinstallation réussie",
-        recently_added_games: "Jeux récemment ajoutés",
+        recently_added_games: "Jeux récents",
         game_not_found: "Jeu non trouvé",
         no_connection_to_agent: "Pas de connexion à l'agent",
         failed_to_connect_to_agent: "Échec de connexion à l'agent",
