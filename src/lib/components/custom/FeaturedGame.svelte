@@ -6,6 +6,7 @@
 	import Button from "../ui/button/button.svelte";
 	import { cn, getGameResourceUrl } from "$src/lib/utils";
 	import { getGameTrailer } from "$src/lib/backend";
+    import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
 
 	let {
 		games = [],
@@ -47,6 +48,7 @@
 
 		try {
 			const trailer = await getGameTrailer({
+                baseUrl: PUBLIC_BACKEND_API_URL,
 				query: { steamAppId: game.steamAppId },
 			});
 			trailers[game.steamAppId] = trailer?.data || null;
