@@ -108,6 +108,7 @@ export default {
         total_installs_count: "Nombre total d'installations",
         chat: "Chat",
         start_server: "Lancer le serveur",
+        steam_app_id: "ID de l'application Steam",
     },
     en: {
         lang,
@@ -216,5 +217,6 @@ export default {
         total_installs_count: "Total Installs Count",
         chat: "Chat",
         start_server: "Start server",
+        steam_app_id: "Steam App ID",
     },
 };

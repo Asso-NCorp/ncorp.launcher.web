@@ -151,6 +151,17 @@
     <Form.FieldErrors />
 </Form.Field>
 
+
+<Form.Field {form} name="steamAppId">
+    <Form.Control>
+        {#snippet children({ props })}
+            <Label for="steamAppId">{$t("steam_app_id")}</Label>
+            <Input {...props} type="number" bind:value={$formData.steamAppId} />
+        {/snippet}
+    </Form.Control>
+    <Form.FieldErrors />
+</Form.Field>
+
 <Form.Field {form} name="maxPlayers">
     <Form.Control>
         {#snippet children({ props })}

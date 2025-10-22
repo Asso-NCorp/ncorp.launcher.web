@@ -1,0 +1,11 @@
+[2025-10-22T19:50:48.816Z] Error: Request failed with status 200: 
+Stack:
+Error: Request failed with status 200: 
+    at h (D:\DEV\keytrap-x86\ncorp.launcher\node_modules\.pnpm\@hey-api+openapi-ts@0.86.1_typescript@5.9.3\node_modules\@hey-api\openapi-ts\dist\index.cjs:4:13407)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Promise.all (index 0)
+    at async P (D:\DEV\keytrap-x86\ncorp.launcher\node_modules\.pnpm\@hey-api+openapi-ts@0.86.1_typescript@5.9.3\node_modules\@hey-api\openapi-ts\dist\index.cjs:4:13514)
+    at async D:\DEV\keytrap-x86\ncorp.launcher\node_modules\.pnpm\@hey-api+openapi-ts@0.86.1_typescript@5.9.3\node_modules\@hey-api\openapi-ts\dist\index.cjs:1317:5992
+    at async Promise.all (index 0)
+    at async Ge (D:\DEV\keytrap-x86\ncorp.launcher\node_modules\.pnpm\@hey-api+openapi-ts@0.86.1_typescript@5.9.3\node_modules\@hey-api\openapi-ts\dist\index.cjs:1317:5939)
+    at async start (D:\DEV\keytrap-x86\ncorp.launcher\node_modules\.pnpm\@hey-api+openapi-ts@0.86.1_typescript@5.9.3\node_modules\@hey-api\openapi-ts\bin\index.cjs:132:21)

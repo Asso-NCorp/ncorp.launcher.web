@@ -40,6 +40,8 @@ export const actions: Actions = {
             return message(form, "Invalid form");
         }
 
+        
+
         try {
             const model: AddGameModel = {
                 title: form.data.title,
@@ -58,6 +60,7 @@ export const actions: Actions = {
                 isFeatured: form.data.isFeatured,
                 dateUpdated: new Date(),
                 dateAdded: form.data.dateAdded,
+                steamAppId: form.data.steamAppId ?? null,
             };
 
             const result = await getServerApi(event.cookies.get("token")).addGame({

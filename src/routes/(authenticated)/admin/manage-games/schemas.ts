@@ -18,6 +18,7 @@ export const addGameFormSchema = z.object({
     dateUpdated: z.coerce.date().optional(),
     dateAdded: z.coerce.date().optional(),
     isFeatured: z.boolean().default(false),
+    steamAppId: z.number().nullable().optional(),
 });
 
-export type AddGameFormSchema = z.infer<typeof addGameFormSchema>;
+export type AddGameFormSchema = typeof addGameFormSchema;

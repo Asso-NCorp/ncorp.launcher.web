@@ -20,7 +20,6 @@
     const featuredGames = 
         sortedGames
             .filter((game) => game.isFeatured)
-            .sort((a, b) => Number(b.dateUpdated ?? 0) - Number(a.dateUpdated ?? 0))
             .slice(0, 10);
             
     $effect(() => {

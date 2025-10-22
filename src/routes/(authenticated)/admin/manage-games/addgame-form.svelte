@@ -1,13 +1,12 @@
 <script lang="ts">
     import * as Alert from "$lib/components/ui/alert";
     import { toast } from "svelte-sonner";
-    import SuperDebug, { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
+    import { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
     import { zod4Client } from "sveltekit-superforms/adapters";
     import { goto } from "$app/navigation";
     import { CircleAlert } from "@lucide/svelte";
     import { addGameFormSchema, type AddGameFormSchema } from "./schemas";
     import { page } from "$app/state";
-    import { browser } from "$app/environment";
     import type { Game, InstallableGame } from "$lib/shared-models";
     import * as Form from "$lib/components/ui/form/index.js";
 
@@ -21,11 +20,9 @@
     import { GamesStore } from "$src/lib/states/games.svelte";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import GameModesSelection from "$src/lib/components/game/GameModesSelection.svelte";
-    import { onMount } from "svelte";
     import LogoImageUpload from "$lib/components/game/LogoImageUpload.svelte";
     import { getServerApi } from "$src/lib/utils";
-    import { logger } from "$src/lib/stores/loggerStore";
-
+    
     // Provide available logos (adjust data source as needed)
     let logos = $state<string[]>([]);
     const folders = page.data["folders"] as string[];
@@ -195,6 +192,7 @@
         // UPDATED: only set if provided, otherwise keep cleared (null)
         $formData.dateAdded = game.dateAdded ? fmtDate(new Date(game.dateAdded)) : null;
         $formData.dateUpdated = game.dateUpdated ? fmtDate(new Date(game.dateUpdated)) : null;
+        $formData.steamAppId = game.steamAppId || null;
 
         // Normalize and restrict game modes to the allowed literal types
         {
@@ -348,6 +346,7 @@
         $formData.cover = {};
         $formData.logo = {};
         $formData.screenshots = {};
+        $formData.steamAppId = null;
         // Optionally clear other derived arrays if desired
         // $formData.genres = [];
         // $formData.gameModes = [];
