@@ -78,13 +78,17 @@
 
         <div class="relative">
             <!-- Reordered: image first, overlay second so no z-index needed -->
-            <LazyImage
-                placeholderHeight="220px"
-                placeholderWidth="320px"
-                class="h-30 max-h-30 w-full overflow-hidden object-cover object-center"
-                src={`${PUBLIC_BACKEND_API_URL}/resources/${currentScreenshot}`}>
-                <Loader size={20} />
-            </LazyImage>
+            {#if showDetails}
+                <LazyImage
+                    placeholderHeight="220px"
+                    placeholderWidth="320px"
+                    class="h-30 max-h-30 w-full overflow-hidden object-cover object-center"
+                    src={`${PUBLIC_BACKEND_API_URL}/resources/${currentScreenshot}`}>
+                    <Loader size={20} />
+                </LazyImage>
+            {:else}
+                <div class="h-30 max-h-30 w-full overflow-hidden bg-subtle/20"></div>
+            {/if}
             {#if showDetails}
                 <div
                     onclick={() => goto(`/games/${game.folderSlug}`)}
@@ -146,7 +150,7 @@
             {#if isRecentlyAdded(game) && !game.isPlaying && !showDetails}
                 <Badge
                     variant="secondary"
-                    class="rounded-(--radius) bg-info text-center text-xs font-bold uppercase text-white">
+                    class="rounded-lg bg-info text-center text-xs font-bold uppercase text-white">
                     <div>{$t?.("new") || "NEW"}</div>
                 </Badge>
             {/if}
@@ -155,7 +159,7 @@
             {/if}
             {#if !showDetails}
                 <div class="flex" transition:fly={{ y: -30, duration: 200 }}>
-                    <Badge variant="secondary" class=" flex items-center text-nowrap rounded-(--radius) px-1">
+                    <Badge variant="secondary" class=" flex items-center text-nowrap rounded-lg px-1">
                         {#if game.sizeGb}
                             {#if game.sizeGb < 1}
                                 {Math.round(game.sizeGb * 1024)} {$t("MB")}

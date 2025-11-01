@@ -70,11 +70,11 @@ jobs:
             7z x ncorp.launcher.7z -y
 
             # Installer uniquement les deps de prod
-            npm ci --omit=dev
+            pnpm install
 
             # Prisma : appliquer migrations + regénérer client
-            npx prisma migrate deploy
-            npx prisma generate
+            pnpx prisma migrate deploy
+            pnpx prisma generate
 
             /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
             rm ncorp.launcher.7z

@@ -1,0 +1,4 @@
+{
+    "sarif-viewer.connectToGithubCodeScanning": "off",
+    "codeQL.createQuery.qlPackLocation": "d:\\DEV\\keytrap-x86\\ncorp.launcher"
+}
