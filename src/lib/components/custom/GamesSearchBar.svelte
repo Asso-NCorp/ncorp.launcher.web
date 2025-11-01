@@ -11,6 +11,7 @@
     import { toast } from "svelte-sonner";
     import { goto } from "$app/navigation";
     import Card from "../ui/card/card.svelte";
+    import { PUBLIC_MEDIAS_URL } from "$env/static/public";
 
     // Accept recentGames prop
     let { recentGames }: { recentGames?: Array<{ game_slug: string; lastPlayedTime: Date; totalPlayTime: number }> } =
@@ -223,7 +224,7 @@
         </Tooltip.Root>
         <!-- Recent games buttons -->
         {#if recentGames && recentGames.length > 0}
-            <Card class="flex flex-row rounded-[var(--radius)] items-center gap-2 border-l-0 py-0">
+            <Card class="flex flex-row rounded-lg items-center gap-2 border-l-0 py-0">
                 <div class="ml-2 flex items-center gap-1 text-sm text-muted-foreground">
                     <Clock class="h-4 w-4" />
                     <span>Récemment joués:</span>
@@ -239,7 +240,7 @@
                                     onclick={() => handleRecentGameClick(game.game_slug)}>
                                     <!-- Masked transparent game cover background -->
                                     <img
-                                        src={GamesStore.getGameCover(game.game_slug)}
+                                        src={`${PUBLIC_MEDIAS_URL}/games/${game.game_slug}/poster_small.webp`}
                                         alt="Cover for {formatGameName(game.game_slug)}"
                                         class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 mask-[linear-gradient(to_right,transparent_0%,transparent_20%,black_100%)]" />
                                     <!-- Game name overlay -->

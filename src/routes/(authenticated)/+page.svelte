@@ -16,6 +16,12 @@
     import { fly } from "svelte/transition";
     import type { role } from "@prisma/client";
     import { PUBLIC_MEDIAS_URL } from "$env/static/public";
+    import Achievements from "$lib/components/dashboard/Achievements.svelte";
+    import AdvancedStats from "$lib/components/dashboard/AdvancedStats.svelte";
+    import FavoriteGames from "$lib/components/dashboard/FavoriteGames.svelte";
+    import ActivityHeatmap from "$lib/components/dashboard/ActivityHeatmap.svelte";
+    import Leaderboard from "$lib/components/dashboard/Leaderboard.svelte";
+    import OnlineFriends from "$lib/components/dashboard/OnlineFriends.svelte";
 
     // Configure dayjs
     dayjs.extend(duration);
@@ -120,8 +126,8 @@
         </div>
     </div>
 
+    <!-- Statistiques personnelles -->
     <div class="grid gap-6 lg:grid-cols-3">
-        <!-- Statistiques personnelles -->
         {#if data.gameSessions && data.gameSessions.length > 0}
             {@const relevantSessions = data.gameSessions.filter((s: any) => s.total_seconds && s.total_seconds > 0)}
 
@@ -167,7 +173,29 @@
         {/if}
     </div>
 
-    <!-- Trending Games -->
+    <!-- Mes jeux favoris -->
+    <!-- <FavoriteGames favoriteGames={data.favoriteGames} /> -->
+
+    
+
+    <!-- Statistiques avancées -->
+    <!-- <AdvancedStats streak={data.streak} peakHours={data.peakHours} /> -->
+
+    <div class="grid grid-cols-2 gap-6">
+
+    <!-- Succès et badges -->
+    <Achievements achievements={data.achievements} />
+
+    <!-- Leaderboard mensuel -->
+    {#if data.leaderboardData && data.leaderboardData.length > 0}
+        <Leaderboard leaderboardData={data.leaderboardData} currentUserId={data.user?.id} rank={data.userRank} />
+    {/if}
+
+    <!-- Calendrier d'activité -->
+    <ActivityHeatmap activityHeatmap={data.activityHeatmap} />
+    </div>
+
+    <!-- Jeux tendance -->
     {#if data.trendingGames && data.trendingGames.length > 0}
         <Card>
             <CardHeader class="pb-4">

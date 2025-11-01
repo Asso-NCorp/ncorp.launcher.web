@@ -15,6 +15,7 @@
     import "bigger-picture/css";
     import { onMount } from "svelte";
     import { toast } from "svelte-sonner";
+    import { PUBLIC_MEDIAS_URL } from "$env/static/public";
 
     let { data }: { data: PageData } = $props();
     const game = data.game;
@@ -22,9 +23,9 @@
     let reactiveGame = $derived(GamesStore.get(game.folderSlug!) || game);
 
     if (game?.screenshots) {
-        var randomScreenshot = getRandomScreenshot(game);
+        var randomScreenshot = Math.floor(Math.random() * game.screenshots.length);
         if (randomScreenshot) {
-            global.mainBackgroundImage = getGameResourceUrl(game, randomScreenshot);
+            global.mainBackgroundImage = `${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/screenshot_full_${randomScreenshot}.webp`;  
         }
     }
 
@@ -118,10 +119,10 @@
                 {#each game.screenshots as screenshot, i}
                     <a in:fly|global={{ y: -40, duration: 300, delay: 100 * i }} class="h-full w-full">
                         <LazyImage
-                            data-img={getGameResourceUrl(game, screenshot)}
-                            data-thumb={getGameResourceUrl(game, screenshot)}
+                            data-img={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/screenshot_full_${i + 1}.webp`}
+                            data-thumb={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/screenshot_full_${i + 1}.webp`}
                             data-alt={`Screenshot ${i + 1}`}
-                            src={getGameResourceUrl(game, screenshot)}
+                            src={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/screenshot_full_${i + 1}.webp`}
                             alt={`Screenshot ${i + 1}`}
                             class="h-full w-full object-cover hover:outline-none hover:ring-2 hover:ring-ring hover:ring-offset-2 dark:hover:ring-offset-0" />
                     </a>

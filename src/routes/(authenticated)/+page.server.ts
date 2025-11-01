@@ -293,6 +293,172 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
     return result;
 }
 
+/**
+ * Calculate user achievements/badges
+ */
+function calculateAchievements(sessions: GameSession[], allUsers: any[]) {
+    const achievements = [];
+    const totalSeconds = sessions.reduce((sum, s) => sum + (s.total_seconds || 0), 0);
+    const totalHours = totalSeconds / 3600;
+    const uniqueGames = new Set(sessions.map((s) => s.game_slug)).size;
+
+    if (totalHours >= 100) achievements.push({ id: "100h", title: "Centième heure", icon: "🎮", color: "gold" });
+    if (totalHours >= 50) achievements.push({ id: "50h", title: "50 heures", icon: "⏰", color: "silver" });
+    if (totalHours >= 10) achievements.push({ id: "10h", title: "Apprenti", icon: "📚", color: "bronze" });
+    if (uniqueGames >= 5) achievements.push({ id: "5games", title: "Polyglotte", icon: "🎯", color: "purple" });
+    if (uniqueGames >= 10) achievements.push({ id: "10games", title: "Explorateur", icon: "🗺️", color: "cyan" });
+    if (sessions.length >= 20) achievements.push({ id: "20sessions", title: "Asidu", icon: "⚡", color: "orange" });
+
+    return achievements;
+}
+
+/**
+ * Calculate current streak (consecutive days of play)
+ */
+function calculateStreak(sessions: GameSession[]): { current: number; longest: number } {
+    if (sessions.length === 0) return { current: 0, longest: 0 };
+
+    const sessionsByDay = new Map<string, number>();
+    sessions.forEach((s) => {
+        const day = new Date(s.start_time).toISOString().split("T")[0];
+        sessionsByDay.set(day, (sessionsByDay.get(day) || 0) + 1);
+    });
+
+    const sortedDays = Array.from(sessionsByDay.keys()).sort().reverse();
+    let current = 0;
+    let longest = 0;
+    let streak = 0;
+
+    const today = new Date().toISOString().split("T")[0];
+    let currentDay = today;
+
+    for (const day of sortedDays) {
+        const dayDate = new Date(day);
+        const currentDate = new Date(currentDay);
+        const diffDays = Math.floor((currentDate.getTime() - dayDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+            streak++;
+        } else if (diffDays === 1) {
+            streak++;
+            currentDay = day;
+        } else {
+            break;
+        }
+    }
+
+    current = streak;
+    longest = Math.max(current, sortedDays.length);
+
+    return { current, longest };
+}
+
+/**
+ * Calculate peak playing hours
+ */
+function calculatePeakHours(sessions: GameSession[]): Array<{ hour: number; sessions: number; minutes: string }> {
+    const hourStats = new Map<number, { count: number; minutes: number }>();
+
+    sessions.forEach((s) => {
+        const hour = new Date(s.start_time).getHours();
+        const current = hourStats.get(hour) || { count: 0, minutes: 0 };
+        current.count += 1;
+        current.minutes += Math.ceil((s.total_seconds || 0) / 60);
+        hourStats.set(hour, current);
+    });
+
+    return Array.from(hourStats.entries())
+        .map(([hour, data]) => ({
+            hour,
+            sessions: data.count,
+            minutes: `${Math.round(data.minutes / 60)}h`,
+        }))
+        .sort((a, b) => b.sessions - a.sessions)
+        .slice(0, 5);
+}
+
+/**
+ * Calculate activity heatmap data (last 12 weeks)
+ */
+function calculateActivityHeatmap(sessions: GameSession[]): Map<string, number> {
+    const heatmap = new Map<string, number>();
+    const today = new Date();
+
+    // Initialize last 84 days (12 weeks)
+    for (let i = 0; i < 84; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dayKey = date.toISOString().split("T")[0];
+        heatmap.set(dayKey, 0);
+    }
+
+    // Count sessions per day
+    sessions.forEach((s) => {
+        const dayKey = new Date(s.start_time).toISOString().split("T")[0];
+        if (heatmap.has(dayKey)) {
+            heatmap.set(dayKey, (heatmap.get(dayKey) || 0) + 1);
+        }
+    });
+
+    return heatmap;
+}
+
+/**
+ * Calculate leaderboard for the current month
+ */
+function calculateMonthlyLeaderboard(
+    allSessions: GameSession[],
+    currentUserId: string,
+): { leaderboardData: any[]; userRank: number } {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Filter sessions from this month
+    const monthSessions = allSessions.filter((s) => new Date(s.start_time) >= firstDayOfMonth);
+
+    // Group by user and sum playtime
+    const userStats = new Map<string, { totalPlayTime: number; sessionCount: number }>();
+
+    monthSessions.forEach((session) => {
+        const userId = session.user_id;
+        const current = userStats.get(userId) || { totalPlayTime: 0, sessionCount: 0 };
+        current.totalPlayTime += session.total_seconds || 0;
+        current.sessionCount += 1;
+        userStats.set(userId, current);
+    });
+
+    // Convert to leaderboard format
+    const sessionsByUserId = new Map<string, GameSession[]>();
+    monthSessions.forEach((session) => {
+        if (!sessionsByUserId.has(session.user_id)) {
+            sessionsByUserId.set(session.user_id, []);
+        }
+        sessionsByUserId.get(session.user_id)!.push(session);
+    });
+
+    const leaderboard = Array.from(userStats.entries())
+        .map(([userId, stats]) => {
+            const userSessions = sessionsByUserId.get(userId) || [];
+            const userInfo = userSessions.length > 0 ? userSessions[0].user : null;
+
+            return {
+                id: userId,
+                name: userInfo?.name || "Utilisateur",
+                displayUsername: userInfo?.displayUsername,
+                image: userInfo?.image,
+                totalPlayTime: stats.totalPlayTime,
+                sessionCount: stats.sessionCount,
+                isCurrentUser: userId === currentUserId,
+            };
+        })
+        .sort((a, b) => b.totalPlayTime - a.totalPlayTime)
+        .slice(0, 10);
+
+    const userRank = leaderboard.findIndex((u) => u.isCurrentUser) + 1;
+
+    return { leaderboardData: leaderboard, userRank };
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
     const user = locals.user;
     if (!user) {
@@ -300,10 +466,11 @@ export const load: PageServerLoad = async ({ locals }) => {
     }
 
     // Fetch data from database
-    const [userGameSessions, otherUsersSessions, roles] = await Promise.all([
+    const [userGameSessions, otherUsersSessions, roles, allUsers] = await Promise.all([
         getCurrentUserSessions(user.id),
         getOtherUsersSessions(user.id),
         db.role.findMany(),
+        db.user.findMany({ select: { id: true, name: true, displayUsername: true, image: true } }),
     ]);
 
     // Combine all sessions for trending calculation
@@ -318,14 +485,32 @@ export const load: PageServerLoad = async ({ locals }) => {
     const otherUsersActivitySessions = createOtherUsersActivitySessions(filterValidSessions(otherUsersSessions));
 
     // Combine all individual sessions for the activity feed
-    const allActivities = combineAndSortActivitySessions(currentUserActivitySessions, otherUsersActivitySessions); // Calculate trending games
+    const allActivities = combineAndSortActivitySessions(currentUserActivitySessions, otherUsersActivitySessions);
+
+    // Calculate trending games
     const trendingGames = calculateTrendingGames(allSessions);
 
+    // Calculate additional stats
+    const achievements = calculateAchievements(validUserSessions, allUsers);
+    const streak = calculateStreak(validUserSessions);
+    const peakHours = calculatePeakHours(validUserSessions);
+    const activityHeatmap = calculateActivityHeatmap(validUserSessions);
+    const favoriteGames = userGameSummaries.slice(0, 4);
+    const { leaderboardData, userRank } = calculateMonthlyLeaderboard(allSessions, user.id);
+
     return {
-        gameSessions: userGameSessions, // Individual sessions for detailed statistics
-        userGameSummaries, // Personal game statistics grouped by game
-        allActivities, // Combined activity feed with individual sessions (not grouped)
-        trendingGames, // Trending games based on recent activity
-        roles, // User roles with decorations
+        gameSessions: userGameSessions,
+        userGameSummaries,
+        allActivities,
+        trendingGames,
+        roles,
+        achievements,
+        streak,
+        peakHours,
+        activityHeatmap: Object.fromEntries(activityHeatmap),
+        favoriteGames,
+        allUsers,
+        leaderboardData,
+        userRank,
     };
 };

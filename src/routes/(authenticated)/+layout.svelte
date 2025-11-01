@@ -242,7 +242,7 @@
         <LazyImage
             src={global.mainBackgroundImage}
             alt="Background"
-            class="pointer-events-none absolute top-0 -z-10 h-1/4 w-full mask-[linear-gradient(hsl(var(--background)),transparent)] object-cover opacity-50" />
+            class="pointer-events-none absolute top-0 -z-10 h-1/4 w-full mask-[linear-gradient(to_bottom,black,transparent)] object-cover opacity-50" />
     </div>
 {/if}
 <ThemeProvider>
