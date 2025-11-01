@@ -37,9 +37,12 @@
     import { logger } from "better-auth";
     import HeaderAdminControls from "$src/lib/components/layout/HeaderAdminControls.svelte";
     import AdminControlsModal from "$src/lib/components/layout/AdminControlsModal.svelte";
+    import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
+    import { toast } from "svelte-sonner";
 
     let loading = $state(false);
     let showAdminModal = $state(false);
+    let winnerOverlay: WinnerOverlay | undefined = $state();
     // Sidebar visibility handling
     // Right sidebar: preference + responsive override
     let rightSidebarHidden = $state(false); // actual visibility (includes responsive forcing)
@@ -188,7 +191,7 @@
 
             // MODIFIED: Changed event name to match server-side and added prizeToWinText
             liveServerConnection.connection.off("LotteryWinnerAnnouncement");
-            /* liveServerConnection.connection.on(
+            liveServerConnection.connection.on(
                 "LotteryWinnerAnnouncement",
                 (winningDisplayName: string, prizeText: string, randomGifUrl: string) => {
                     if (winnerOverlay) {
@@ -202,7 +205,7 @@
                         toast.success(message);
                     }
                 },
-            ); */
+            );
         }
     });
 
@@ -265,7 +268,7 @@
                         {/if}
                     </button>
                     {#if loading || GamesStore.isLoading}
-                        <Loader size={24} class="!text-primary" />
+                        <Loader size={24} class="text-primary!" />
                     {/if}
                     <Header class="flex-1" />
                     <div class="ml-auto flex h-full">
@@ -354,6 +357,8 @@
 {#if user?.role === "admin"}
     <AdminControlsModal bind:open={showAdminModal} />
 {/if}
+
+<WinnerOverlay bind:this={winnerOverlay} />
 
 <style>
     :root {

@@ -9,6 +9,7 @@ type UserInfo = {
     name: string;
     displayUsername: string | null;
     image: string | null;
+    role: string | null;
 };
 
 type GameSession = {
@@ -53,6 +54,7 @@ async function getCurrentUserSessions(userId: string): Promise<GameSession[]> {
                     name: true,
                     displayUsername: true,
                     image: true,
+                    role: true,
                 },
             },
         },
@@ -76,6 +78,7 @@ async function getOtherUsersSessions(currentUserId: string): Promise<GameSession
                     name: true,
                     displayUsername: true,
                     image: true,
+                    role: true,
                 },
             },
         },
@@ -182,7 +185,13 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
     uniquePlayers: number;
     lastPlayedTime: Date;
     trendingScore: number;
-    players: Array<{ id: string; name: string; displayUsername: string | null; image: string | null }>;
+    players: Array<{
+        id: string;
+        name: string;
+        displayUsername: string | null;
+        image: string | null;
+        role: string | null;
+    }>;
 }> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -200,8 +209,10 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
             sessionCount: number;
             uniquePlayers: Set<string>;
             lastPlayedTime: Date;
-            recentSessions: number;
-            players: Map<string, { id: string; name: string; displayUsername: string | null; image: string | null }>;
+            players: Map<
+                string,
+                { id: string; name: string; displayUsername: string | null; image: string | null; role: string | null }
+            >;
         }
     >();
 
@@ -216,7 +227,6 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
                 sessionCount: 0,
                 uniquePlayers: new Set(),
                 lastPlayedTime: session.start_time,
-                recentSessions: 0,
                 players: new Map(),
             };
             gameStats.set(gameSlug, stats);
@@ -225,7 +235,6 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
         stats.totalPlayTime += session.total_seconds || 0;
         stats.sessionCount += 1;
         stats.uniquePlayers.add(session.user_id);
-        stats.recentSessions += 1;
 
         // Add player info
         stats.players.set(session.user_id, {
@@ -233,6 +242,7 @@ function calculateTrendingGames(allSessions: GameSession[]): Array<{
             name: session.user.name,
             displayUsername: session.user.displayUsername,
             image: session.user.image,
+            role: session.user.role,
         });
 
         if (session.start_time > stats.lastPlayedTime) {
@@ -290,9 +300,10 @@ export const load: PageServerLoad = async ({ locals }) => {
     }
 
     // Fetch data from database
-    const [userGameSessions, otherUsersSessions] = await Promise.all([
+    const [userGameSessions, otherUsersSessions, roles] = await Promise.all([
         getCurrentUserSessions(user.id),
         getOtherUsersSessions(user.id),
+        db.role.findMany(),
     ]);
 
     // Combine all sessions for trending calculation
@@ -315,5 +326,6 @@ export const load: PageServerLoad = async ({ locals }) => {
         userGameSummaries, // Personal game statistics grouped by game
         allActivities, // Combined activity feed with individual sessions (not grouped)
         trendingGames, // Trending games based on recent activity
+        roles, // User roles with decorations
     };
 };

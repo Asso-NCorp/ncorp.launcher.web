@@ -1,10 +1,10 @@
 <script lang="ts">
     import type { PageData } from "./$types";
     import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
-    import { Avatar, AvatarFallback, AvatarImage } from "$lib/components/ui/avatar";
     import { Separator } from "$lib/components/ui/separator";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import { GamesStore } from "$lib/states/games.svelte";
+    import AvatarDiscord from "$lib/components/custom/AvatarDiscord.svelte";
     import dayjs from "dayjs";
     import duration from "dayjs/plugin/duration";
     import relativeTime from "dayjs/plugin/relativeTime";
@@ -14,6 +14,7 @@
     import { goto } from "$app/navigation";
     import { Button } from "$src/lib/components/ui/button";
     import { fly } from "svelte/transition";
+    import type { role } from "@prisma/client";
 
     // Configure dayjs
     dayjs.extend(duration);
@@ -23,6 +24,8 @@
     dayjs.locale("fr");
 
     let { data }: { data: PageData } = $props();
+
+    var roles = (data["roles"] as role[]) || [];
 
     function formatDuration(totalSeconds: number | null): string {
         if (totalSeconds == null || totalSeconds < 1) return "0s";
@@ -98,6 +101,13 @@
             return "Utilisateur inconnu";
         }
         return user.name || user.displayName || "Utilisateur inconnu";
+    }
+
+    function getAvatarDecoration(userRole: string | null | undefined) {
+        if (!userRole) return undefined;
+        const role_obj = roles.find((r) => r.name === userRole);
+        if (!role_obj) return undefined;
+        return role_obj.avatar_decoration_static || role_obj.avatar_decoration_animated || undefined;
     }
 </script>
 
@@ -227,20 +237,16 @@
                                             {#each visiblePlayers as player, playerIndex}
                                                 <Tooltip.Root>
                                                     <Tooltip.Trigger>
-                                                        <Avatar
-                                                            class="h-6 w-6 border-2 border-background transition-all duration-200 hover:scale-110 hover:border-primary/50"
-                                                            style="z-index: {10 -
-                                                                playerIndex}; margin-left: {playerIndex > 0
-                                                                ? '-4px'
-                                                                : '0'}">
-                                                            <AvatarImage
+                                                        <div
+                                                            style="z-index: {10 - playerIndex}; margin-left: {playerIndex > 0 ? '-4px' : '0'}"
+                                                            class="transition-all duration-200 hover:scale-110">
+                                                            <AvatarDiscord
+                                                                size={24}
+                                                                name={player.name}
                                                                 src={`/api/avatars/${player.id}`}
-                                                                alt={player.name} />
-                                                            <AvatarFallback
-                                                                class="bg-linear-to-br from-primary/20 to-primary/40 text-xs">
-                                                                {player.name.charAt(0).toUpperCase()}
-                                                            </AvatarFallback>
-                                                        </Avatar>
+                                                                alt={player.name}
+                                                                decorationSrc={getAvatarDecoration(player.role)} />
+                                                        </div>
                                                     </Tooltip.Trigger>
                                                     <Tooltip.Content>
                                                         <p>{player.displayUsername || player.name}</p>
@@ -305,14 +311,14 @@
                         {@const game = GamesStore.get(activity.game_slug)}
                         <div
                             class="relative flex items-center gap-4 overflow-hidden p-4 pl-40 transition-colors hover:bg-muted/50">
-                            <Avatar class="h-10 w-10">
-                                <AvatarImage
+                            <div class="relative">
+                                <AvatarDiscord
+                                    size={40}
+                                    name={activity.user.name}
                                     src={`/api/avatars/${activity.user.id}`}
-                                    alt={getUserDisplayName(activity.user)} />
-                                <AvatarFallback class="bg-primary/20 text-primary">
-                                    {getUserDisplayName(activity.user).charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
+                                    alt={activity.user.name}
+                                    decorationSrc={getAvatarDecoration(activity.user.role)} />
+                            </div>
 
                             <div class="z-10 flex-1 space-y-1">
                                 <div class="flex items-center gap-2">

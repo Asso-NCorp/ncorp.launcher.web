@@ -134,7 +134,7 @@
 
         {#if !showDetails}
             <!-- Cover moved BEFORE badges so badges paint above; pointer-events disabled -->
-            <div class="pointer-events-none absolute inset-0" aria-hidden="true" transition:fade={{ duration: 100 }}>
+            <div class="pointer-events-none absolute inset-0 z-10" aria-hidden="true" transition:fade={{ duration: 100 }}>
                 <LazyImage
                     placeholderHeight="220px"
                     placeholderWidth="320px"
@@ -194,36 +194,38 @@
                 </div>
             {/if}
         </div>
-        <div
-            in:fly={{ y: 50 }}
-            class="flex flex-1 flex-col space-y-2 {canScroll ? 'overflow-y-auto' : 'overflow-hidden'}">
-            <div class="text-sm font-medium leading-none tracking-tight">
-                {game.description}
+        {#if showDetails}
+            <div
+                in:fly={{ y: 50 }}
+                class="flex flex-1 flex-col space-y-2 {canScroll ? 'overflow-y-auto' : 'overflow-hidden'}">
+                <div class="text-sm font-medium leading-none tracking-tight">
+                    {game.description}
+                </div>
+                <div class="flex flex-col">
+                    <div class="text-sm text-gray-500">
+                        <span>
+                            {$t("size")}: {game.sizeGb
+                                ? game.sizeGb < 1
+                                    ? Math.round(game.sizeGb * 1024) + " MB"
+                                    : Math.round(game.sizeGb) + " GB"
+                                : "N/A"}
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <span>{$t("genres")}: {game.genresStr}</span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <span>{$t("game_modes")}: {game.gameModes?.join(", ")}</span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <span>{$t("max_players")}: {game.maxPlayers}</span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <span>{$t("total_installs_count")}: {game.totalInstallations}</span>
+                    </div>
+                </div>
             </div>
-            <div class="flex flex-col">
-                <div class="text-sm text-gray-500">
-                    <span>
-                        {$t("size")}: {game.sizeGb
-                            ? game.sizeGb < 1
-                                ? Math.round(game.sizeGb * 1024) + " MB"
-                                : Math.round(game.sizeGb) + " GB"
-                            : "N/A"}
-                    </span>
-                </div>
-                <div class="text-sm text-gray-500">
-                    <span>{$t("genres")}: {game.genresStr}</span>
-                </div>
-                <div class="text-sm text-gray-500">
-                    <span>{$t("game_modes")}: {game.gameModes?.join(", ")}</span>
-                </div>
-                <div class="text-sm text-gray-500">
-                    <span>{$t("max_players")}: {game.maxPlayers}</span>
-                </div>
-                <div class="text-sm text-gray-500">
-                    <span>{$t("total_installs_count")}: {game.totalInstallations}</span>
-                </div>
-            </div>
-        </div>
+        {/if}
     </div>
 
     {#if showDetails}

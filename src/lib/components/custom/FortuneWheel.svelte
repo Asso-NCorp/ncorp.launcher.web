@@ -47,13 +47,8 @@
     let isHighlightBlinkOn = $state(false);
     const POINTER_ANGLE = -Math.PI / 2;
     const segmentColors = ["#60A5FA", "#F87171", "#4ADE80", "#FACC15", "#F472B6", "#818CF8"];
-    const SPIN_DURATION = 6000;
+    const SPIN_DURATION = 10000;
     const EXTRA_ROTATIONS = 6;
-    // const WINNER_ANNOUNCEMENT_DURATION = 5000; // Now managed by WinnerOverlay
-    // const FLICKER_INTERVAL = 150; // Now managed by WinnerOverlay
-    // const FLICKER_DURATION = 2000; // Now managed by WinnerOverlay
-    const WINNER_ANIMATION_BLINKS = 12; // Number of blinks for the winner animation
-    const WINNER_ANIMATION_DURATION = 5000; // Duration of the winner animation in ms
 
     // Easing quintic-out (plus progressif et smooth)
     function easeOutQuint(x: number) {
@@ -384,7 +379,7 @@
 </div>
 
 <div
-    class="results-section mt-6 flex min-h-[80px] w-full max-w-md flex-col items-center justify-center rounded-lg border border-border bg-card p-4 text-center shadow-lg">
+    class="results-section mt-6 flex min-h-20 w-full max-w-md flex-col items-center justify-center rounded-lg border border-border bg-card p-4 text-center shadow-lg">
     {#if spinning || highlightedSegmentIndex !== -1}
         <div class="text-2xl text-muted-foreground">Tirage en cours...</div>
     {:else if winner}

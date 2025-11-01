@@ -114,7 +114,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
             } else {
                 logger.debug("Using cached available games");
             }
-            availableGames = gamesCache.availableGames;
+            availableGames = gamesCache?.availableGames ?? [];
         } catch (e) {
             logger.error(`Error fetching available games: ${e}`);
         }

@@ -120,17 +120,16 @@
             class:opacity-100={displayVisible}
             class:opacity-20={!displayVisible}>
             <img src="/img/cat_vibe.gif" alt="Cat Vibe" class="mx-auto mb-4 h-52 w-auto rounded-full shadow-lg" />
-            <div class="mb-4 text-6xl font-bold text-white drop-shadow-2xl md:text-8xl">🎉 GAGNANT ! 🎉</div>
+            <div class="mb-4 text-6xl font-bold text-white drop-shadow-2xl md:text-8xl">🎉 {displayWinner} 🎉</div>
             <div
-                class="bg-linear-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-4xl font-bold text-transparent text-yellow-400 drop-shadow-xl md:text-6xl">
-                {displayWinner}
+                class="bg-linear-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-4xl font-bold text-transparent drop-shadow-xl md:text-6xl">
+                BRAVO !
             </div>
             {#if displayPrizeText}
                 <div class="mt-4 text-4xl font-semibold text-white drop-shadow-lg md:text-5xl">
-                    GAIN : <span class="text-yellow-300">{displayPrizeText}</span>
+                    TU GAGNES : <span class="text-yellow-300">{displayPrizeText}</span>
                 </div>
             {/if}
-            <div class="mt-8 text-xl text-white/80">Félicitations ! 🎊</div>
             {#if displayGif}
                 <img src={`/img/winners/${displayGif}`} alt="Winner Celebration" class="mx-auto mt-4 h-96 w-auto" />
             {/if}
