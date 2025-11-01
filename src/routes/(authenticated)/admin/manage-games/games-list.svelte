@@ -5,6 +5,7 @@
     import DataTable, { type Api } from "datatables.net";
     import { onMount, onDestroy, mount } from "svelte";
     import DeleteGameButton from "$src/lib/components/custom/DeleteGameButton.svelte";
+    import { PUBLIC_MEDIAS_URL } from "$env/static/public";
 
     let { gameSelected }: { gameSelected: (game: InstallableGame) => void } = $props();
 
@@ -36,7 +37,7 @@
                         if (type === "display") {
                             return `
 								<div class="absolute inset-0 w-2/3 bg-cover bg-center mask-linear mask-dir-to-r mask-point-to-[80%]"
-									style="background-image:url('/api/resources/${row.cover}')"></div>
+									style="background-image:url('${PUBLIC_MEDIAS_URL}/games/${row.folderSlug}/poster_rect.webp')"></div>
 								<div class="absolute inset-y-0 right-0 w-1/2"></div>
 								<span
 									data-folder="${row.folderSlug}"

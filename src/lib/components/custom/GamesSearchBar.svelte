@@ -42,6 +42,30 @@
         multi: false,
     });
 
+    // Genre state - single select
+    let selectedGenre: string | null = $state(null);
+
+    // Get all unique genres from all games
+    function getAllGenres(): string[] {
+        const genresSet = new Set<string>();
+        for (const game of GamesStore.allGames) {
+            const gameGenres = game.genres ?? [];
+            for (const genre of gameGenres) {
+                genresSet.add(genre);
+            }
+        }
+        return Array.from(genresSet).sort();
+    }
+
+    function getSelectedGenresArray() {
+        return selectedGenre ? [selectedGenre] : [];
+    }
+
+    function resetGenreFilter() {
+        selectedGenre = null;
+        handleSearch();
+    }
+
     function getSelectedModesArray() {
         const chosen = gameModeOptions.filter((opt) => selectedModes[opt.key]).map((opt) => opt.value);
         return chosen.length === 0 ? gameModeOptions.map((o) => o.value) : chosen; // empty = all
@@ -52,7 +76,7 @@
     }
 
     const handleSearch = () => {
-        GamesStore.search(global.gamesSearchQuery, getSelectedModesArray());
+        GamesStore.search(global.gamesSearchQuery, getSelectedModesArray(), getSelectedGenresArray());
     };
 
     $effect(() => {
@@ -137,6 +161,46 @@
                         </span>
                     </DropdownMenu.CheckboxItem>
                 {/each}
+            </DropdownMenu.Content>
+        </DropdownMenu.Root>
+
+        <!-- Genre Filter Dropdown -->
+        <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+                <Button variant="outline" class="ml-2">
+                    Genres
+                    {#if selectedGenre}
+                        <div class="ml-2 rounded-sm bg-muted px-1.5 font-mono text-xs">
+                            {selectedGenre}
+                        </div>
+                    {/if}
+                    <ChevronDown class="ml-auto h-4 w-4 pl-2" />
+                </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+                <DropdownMenu.Label>Filtrer par genre</DropdownMenu.Label>
+                <DropdownMenu.Separator />
+                {#each getAllGenres() as genre}
+                    <DropdownMenu.Item
+                        class="genre-item"
+                        onclick={() => {
+                            selectedGenre = genre;
+                            handleSearch();
+                        }}>
+                        {#if selectedGenre === genre}
+                            <span class="mr-2">✓</span>
+                        {/if}
+                        <span>{genre}</span>
+                    </DropdownMenu.Item>
+                {/each}
+                {#if selectedGenre}
+                    <DropdownMenu.Separator />
+                    <DropdownMenu.Item
+                        class="text-muted-foreground"
+                        onclick={resetGenreFilter}>
+                        Réinitialiser
+                    </DropdownMenu.Item>
+                {/if}
             </DropdownMenu.Content>
         </DropdownMenu.Root>
 

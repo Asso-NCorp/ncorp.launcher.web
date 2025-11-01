@@ -25,14 +25,15 @@
                     {
                         title: "Titre",
                         data: "title",
-                        width: "15%",
+                        width: "20%",
                         className: "font-bold text-center relative",
                         render: (data, type, row) => {
                             if (type === "display") {
                                 return `
-                                <div class="absolute inset-0 bg-cover bg-center mask-linear mask-dir-to-r mask-point-to-[80%]"
-                                    style="background-image: url('/api/resources/${row.cover}')">
+                                <div class="absolute inset-0 bg-cover bg-center"
+                                    style="background-image: url('/api/resources/${row.cover}'); mask-image: linear-gradient(to right, black 0%, black 40%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 0%, black 40%, transparent 100%);">
                                 </div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
                                 <div class="absolute right-0 inset-y-0 w-1/2"></div>
                                 <a href="/games/${row.folderSlug}" 
                                     class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-gray-900 
@@ -46,7 +47,7 @@
                             return data;
                         },
                     },
-                    { data: "genres" },
+                    { data: "genres", className: "text-center" },
                     { data: "maxPlayers", className: "text-center" },
                     { data: "sizeGb", render: (data) => `${data} GB`, type: "file-size", className: "text-center" },
                     { data: "totalInstallations", className: "text-center" },

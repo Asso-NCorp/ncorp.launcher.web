@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
+    import { PUBLIC_MEDIAS_URL, PUBLIC_MEDIASOUP_URL } from "$env/static/public";
     import { fade, fly } from "svelte/transition";
     import LazyImage from "./LazyImage.svelte";
     import Loader from "./Loader.svelte";
@@ -17,7 +17,7 @@
     import { liveUsers } from "$src/lib/states/live-users.svelte";
     import { Progress } from "../ui/progress";
     let { game }: { game: InstallableGameExtended } = $props();
-    let currentScreenshot = $state(game.screenshots ? game.screenshots[0] : "");
+    let currentScreenshot = $state(game.screenshots ? `screenshot_small_1.webp` : "");
     let showDetails = $state(false);
     let canScroll = $state(false);
     let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -83,7 +83,7 @@
                     placeholderHeight="220px"
                     placeholderWidth="320px"
                     class="h-30 max-h-30 w-full overflow-hidden object-cover object-center"
-                    src={`${PUBLIC_BACKEND_API_URL}/resources/${currentScreenshot}`}>
+                    src={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/${currentScreenshot}`}>
                     <Loader size={20} />
                 </LazyImage>
             {:else}
@@ -96,7 +96,7 @@
                     title="Sélectionner">
                     {#each game.screenshots! as screen}
                         <div
-                            onmouseenter={() => (currentScreenshot = screen)}
+                            onmouseenter={() => (currentScreenshot = `screenshot_small_${game.screenshots!.indexOf(screen) + 1}.webp`)}
                             class="group/notch flex h-full w-full flex-col px-1">
                             <div class="h-full w-full" />
                             <div class="h-2 w-full rounded-full bg-subtle/50 group-hover/notch:bg-white"></div>
@@ -138,7 +138,7 @@
                 <LazyImage
                     placeholderHeight="220px"
                     placeholderWidth="320px"
-                    src={`${PUBLIC_BACKEND_API_URL}/resources/${game.cover}`}
+                    src={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/poster_small.webp`}
                     class="h-full w-full overflow-hidden object-cover object-center">
                     <Loader size={20} />
                 </LazyImage>

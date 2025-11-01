@@ -15,6 +15,7 @@
     import { Button } from "$src/lib/components/ui/button";
     import { fly } from "svelte/transition";
     import type { role } from "@prisma/client";
+    import { PUBLIC_MEDIAS_URL } from "$env/static/public";
 
     // Configure dayjs
     dayjs.extend(duration);
@@ -197,7 +198,7 @@
 
                             {#if game}
                                 <img
-                                    src={GamesStore.getGameCover(trendingGame.game_slug)}
+                                    src={`${PUBLIC_MEDIAS_URL}/games/${trendingGame.game_slug}/poster_small.webp`}
                                     alt="Cover for {formatGameName(trendingGame.game_slug)}"
                                     class="h-12 w-12 rounded object-cover" />
                             {:else}
@@ -366,7 +367,7 @@
 
                             {#if game}
                                 <img
-                                    src={GamesStore.getGameCover(activity.game_slug)}
+                                    src={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/poster_small.webp`}
                                     alt="Cover for {formatGameName(activity.game_slug)}"
                                     class="pointer-events-none absolute inset-y-0 left-0 h-full w-40 object-cover opacity-20"
                                     style="mask-image: linear-gradient(to left, transparent 5%, black 10%); -webkit-mask-image: linear-gradient(to left, transparent 5%, black 50%);" />

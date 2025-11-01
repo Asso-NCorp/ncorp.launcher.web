@@ -169,7 +169,11 @@ class GameStore {
         this.search(global.gamesSearchQuery, ["SOLO", "COOP", "MULTI"]);
     };
 
-    search = (searchQuery: string = global.gamesSearchQuery, modesSelected: string[] = ["SOLO", "COOP", "MULTI"]) => {
+    search = (
+        searchQuery: string = global.gamesSearchQuery,
+        modesSelected: string[] = ["SOLO", "COOP", "MULTI"],
+        genresSelected: string[] = [],
+    ) => {
         const query = (searchQuery ?? "").toLowerCase();
         if (!Array.isArray(modesSelected)) modesSelected = [];
         if (modesSelected.length === 0) {
@@ -181,6 +185,16 @@ class GameStore {
 
         this.games = this.allGames.filter((g) => {
             const titleMatch = !query || g.title?.toLowerCase().includes(query);
+
+            // Genre filter: if genres are selected, at least one must match
+            if (genresSelected.length > 0) {
+                const gameGenres = g.genres ?? [];
+                const hasMatchingGenre = gameGenres.some((genre) =>
+                    genresSelected.some((selected) => selected.toLowerCase() === genre.toLowerCase()),
+                );
+                if (!hasMatchingGenre) return false;
+            }
+
             if (allModesChecked) return titleMatch;
             const gameModes = g.gameModes ?? [];
             if (gameModes.length === 0) return false;

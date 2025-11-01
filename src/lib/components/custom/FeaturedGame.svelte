@@ -6,7 +6,7 @@
 	import Button from "../ui/button/button.svelte";
 	import { cn, getGameResourceUrl } from "$src/lib/utils";
 	import { getGameTrailer } from "$src/lib/backend";
-    import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
+    import { PUBLIC_BACKEND_API_URL, PUBLIC_MEDIAS_URL } from "$env/static/public";
 
 	let {
 		games = [],
@@ -153,14 +153,12 @@
 	};
 
 	const mainImage = (g: InstallableGameExtended) => {
-		const shot = g?.screenshots?.[0];
-		const img = shot || g?.cover;
-		return img ? getGameResourceUrl(g, img) : "";
+		return `${PUBLIC_MEDIAS_URL}/games/${g.folderSlug}/screenshot_full_1.webp`;
 	};
 
 	const thumbImage = (g: InstallableGameExtended) =>
 		g?.cover
-			? getGameResourceUrl(g, g.cover)
+			? `${PUBLIC_MEDIAS_URL}/games/${g.folderSlug}/poster_small.webp`
 			: g?.screenshots?.[0]
 			? getGameResourceUrl(g, g.screenshots[0])
 			: "";
