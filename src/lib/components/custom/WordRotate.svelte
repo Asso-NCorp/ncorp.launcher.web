@@ -18,7 +18,7 @@
     {/if}
     {#key word}
         <span
-            class="col-start-1 row-start-1 inline-block text-center leading-tight word-shadow {className}"
+            class="col-start-1 row-start-1 inline-block text-center leading-tight {className}"
             in:fly={{ y: -50, delay: 120 }}
             out:fly={{ y: 40, duration: 160 }}>
             {word}

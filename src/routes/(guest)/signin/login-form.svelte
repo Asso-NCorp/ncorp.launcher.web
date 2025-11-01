@@ -94,9 +94,9 @@
                     {#snippet children({ props })}
                         <div class="flex items-center">
                             <Label for="password">{$t("password")}</Label>
-                            <a href="/reset-pwd" tabindex="-1" class="ml-auto inline-block text-sm underline">
+                            <!-- <a href="/reset-pwd" tabindex="-1" class="ml-auto inline-block text-sm underline">
                                 {$t("forgot_password")} ?
-                            </a>
+                            </a> -->
                         </div>
                         <Input {...props} id="password" bind:value={$formData.password} type="password" />
                     {/snippet}

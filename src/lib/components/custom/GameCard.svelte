@@ -146,7 +146,7 @@
         {/if}
 
         <!-- Badges/top-right -->
-        <div class="absolute right-2 top-2 flex items-center">
+        <div class="absolute right-2 top-2 z-20 flex items-center">
             {#if isRecentlyAdded(game) && !game.isPlaying && !showDetails}
                 <Badge
                     variant="secondary"
@@ -236,7 +236,7 @@
 
     {#if game.isInstalling && !showDetails}
         <div
-            class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50">
+            class="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center gap-2 bg-black/50">
             {#if !game.isCancellingInstall}
                 {#if isGameInstallingCurrentGame}
                     <ArrowDown class="absolute left-2 top-2 size-6 animate-bounce text-blue-600 " />
