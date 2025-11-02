@@ -48,10 +48,22 @@ type ActivitySession = {
 };
 
 /**
+ * Calculate total_seconds from start_time and end_time
+ */
+function calculateTotalSeconds(session: GameSession): GameSession {
+    if (!session.total_seconds && session.end_time && session.start_time) {
+        const startTime = new Date(session.start_time).getTime();
+        const endTime = new Date(session.end_time).getTime();
+        session.total_seconds = Math.max(0, Math.round((endTime - startTime) / 1000));
+    }
+    return session;
+}
+
+/**
  * Fetch current user's game sessions
  */
 async function getCurrentUserSessions(userId: string): Promise<GameSession[]> {
-    return await db.game_session.findMany({
+    const sessions = await db.game_session.findMany({
         where: { user_id: userId },
         include: {
             user: {
@@ -65,15 +77,17 @@ async function getCurrentUserSessions(userId: string): Promise<GameSession[]> {
             },
         },
         orderBy: { start_time: "desc" },
-        take: 500, // Increased to get more sessions for accurate statistics
+        take: 500,
     });
+    
+    return sessions.map(calculateTotalSeconds);
 }
 
 /**
  * Fetch other users' game sessions
  */
 async function getOtherUsersSessions(currentUserId: string): Promise<GameSession[]> {
-    return await db.game_session.findMany({
+    const sessions = await db.game_session.findMany({
         where: {
             user_id: { not: currentUserId },
         },
@@ -91,6 +105,9 @@ async function getOtherUsersSessions(currentUserId: string): Promise<GameSession
         orderBy: { start_time: "desc" },
         take: 500, // Increased to get more sessions for accurate leaderboard calculation
     });
+    
+    // Calculate missing total_seconds from timestamps
+    return sessions.map(calculateTotalSeconds);
 }
 
 /**
@@ -112,15 +129,18 @@ async function enrichSessionsWithGameData(sessions: GameSession[], token: string
             ]),
         );
 
-        // Enrich each session with game data
-        return sessions.map((session) => ({
-            ...session,
-            game: gameMap.get(session.game_slug.toLowerCase()),
-        }));
+        // Enrich each session with game data and ensure total_seconds is calculated
+        return sessions.map((session) => {
+            const enriched = {
+                ...session,
+                game: gameMap.get(session.game_slug.toLowerCase()),
+            };
+            return calculateTotalSeconds(enriched);
+        });
     } catch (error) {
         console.error("Failed to enrich sessions with game data:", error);
-        // Return sessions as-is if enrichment fails
-        return sessions;
+        // Return sessions as-is if enrichment fails, but still calculate total_seconds
+        return sessions.map(calculateTotalSeconds);
     }
 }
 
@@ -441,53 +461,54 @@ function calculateActivityHeatmap(sessions: GameSession[]): Map<string, number> 
 }
 
 /**
- * Calculate leaderboard for the current month
+ * Calculate leaderboard for a specific month
  */
 function calculateMonthlyLeaderboard(
     allSessions: GameSession[],
     currentUserId: string,
+    roles: any[],
+    targetDate: Date = new Date(),
 ): { leaderboardData: any[]; userRank: number } {
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
+    const firstDayOfNextMonth = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 1);
 
-    // Filter sessions from this month and only include valid sessions (> 0 seconds)
-    const monthSessions = allSessions.filter(
-        (s) => new Date(s.start_time) >= firstDayOfMonth && (s.total_seconds || 0) > 0,
-    );
+    // Create a map of role names to role objects for quick lookup
+    const roleMap = new Map(roles.map((r) => [r.name, r]));
 
-    // Group by user and sum playtime
-    const userStats = new Map<string, { totalPlayTime: number; sessionCount: number }>();
+    // Filter sessions from the target month that have end_time (completed sessions)
+    const monthSessions = allSessions.filter((s) => {
+        const startTime = new Date(s.start_time);
+        return startTime >= firstDayOfMonth && startTime < firstDayOfNextMonth && s.end_time;
+    });
+
+    // Group by user and sum playtime in seconds
+    const userStats = new Map<string, { totalSeconds: number; sessionCount: number; userInfo: any }>();
 
     monthSessions.forEach((session) => {
         const userId = session.user_id;
-        const current = userStats.get(userId) || { totalPlayTime: 0, sessionCount: 0 };
-        current.totalPlayTime += session.total_seconds || 0;
+        const startTime = new Date(session.start_time).getTime();
+        const endTime = new Date(session.end_time!).getTime();
+        const sessionSeconds = Math.max(0, (endTime - startTime) / 1000);
+
+        const current = userStats.get(userId) || { totalSeconds: 0, sessionCount: 0, userInfo: session.user };
+        current.totalSeconds += sessionSeconds;
         current.sessionCount += 1;
         userStats.set(userId, current);
     });
 
-    // Convert to leaderboard format
-    const sessionsByUserId = new Map<string, GameSession[]>();
-    monthSessions.forEach((session) => {
-        if (!sessionsByUserId.has(session.user_id)) {
-            sessionsByUserId.set(session.user_id, []);
-        }
-        sessionsByUserId.get(session.user_id)!.push(session);
-    });
-
+    // Convert to leaderboard format (keep totalPlayTime in seconds)
     const leaderboard = Array.from(userStats.entries())
         .map(([userId, stats]) => {
-            const userSessions = sessionsByUserId.get(userId) || [];
-            const userInfo = userSessions.length > 0 ? userSessions[0].user : null;
-
+            const userRole = roleMap.get(stats.userInfo?.role);
             return {
                 id: userId,
-                name: userInfo?.name || "Utilisateur",
-                displayUsername: userInfo?.displayUsername,
-                image: userInfo?.image,
-                totalPlayTime: stats.totalPlayTime,
+                name: stats.userInfo?.name || "Utilisateur",
+                displayUsername: stats.userInfo?.displayUsername,
+                image: stats.userInfo?.image,
+                totalPlayTime: stats.totalSeconds, // Keep in seconds, component will convert to hours
                 sessionCount: stats.sessionCount,
                 isCurrentUser: userId === currentUserId,
+                decoration: userRole?.avatar_decoration_static || userRole?.avatar_decoration_animated,
             };
         })
         .sort((a, b) => b.totalPlayTime - a.totalPlayTime)
@@ -541,7 +562,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     const peakHours = calculatePeakHours(validUserSessions);
     const activityHeatmap = calculateActivityHeatmap(validUserSessions);
     const favoriteGames = userGameSummaries.slice(0, 4);
-    const { leaderboardData, userRank } = calculateMonthlyLeaderboard(allSessions, user.id);
+    const { leaderboardData, userRank } = calculateMonthlyLeaderboard(allSessions, user.id, roles, new Date());
 
     return {
         gameSessions: enrichedUserGameSessions,
@@ -557,5 +578,6 @@ export const load: PageServerLoad = async ({ locals }) => {
         allUsers,
         leaderboardData,
         userRank,
+        allSessions,
     };
 };

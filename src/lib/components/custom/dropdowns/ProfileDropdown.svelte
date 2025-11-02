@@ -18,7 +18,6 @@
 
     let { user }: { user: LiveUser | undefined } = $props();
     let name = user?.name;
-    console.log("ProfileDropdown user:", user);
 
     const handleDisconnect = async () => {
         try {

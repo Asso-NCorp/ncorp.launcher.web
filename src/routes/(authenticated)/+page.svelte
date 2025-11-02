@@ -182,7 +182,7 @@
     <!-- Statistiques avancées -->
     <!-- <AdvancedStats streak={data.streak} peakHours={data.peakHours} /> -->
 
-    <div class="grid grid-cols-2 xl:grid-cols-3 gap-6 h-150">
+    <div class="grid grid-cols-2 xl:grid-cols-3 gap-6">
         <!-- Colonne gauche: Achievements et ActivityHeatmap empilés -->
         <div class="col-span-1 flex flex-col gap-6 min-h-0">
             <!-- Succès et badges -->
@@ -197,14 +197,14 @@
         </div>
 
         <!-- Colonne centrale: RecentGames avec hauteur limitée -->
-        <div class="col-span-1 overflow-y-auto min-h-0">
+        <div class="col-span-1 overflow-y-auto min-h-0 h-165">
             <RecentGames gameSessions={data.gameSessions} />
         </div>
 
         <!-- Colonne droite: Leaderboard mensuel (hidden sur petits écrans) -->
         {#if data.leaderboardData && data.leaderboardData.length > 0}
-            <div class="hidden lg:block">
-                <Leaderboard leaderboardData={data.leaderboardData} currentUserId={data.user?.id} rank={data.userRank} />
+            <div class="hidden lg:block h-165 overflow-y-auto">
+                <Leaderboard leaderboardData={data.leaderboardData} currentUserId={data.user?.id} rank={data.userRank} allSessions={data.allSessions} roles={data.roles} />
             </div>
         {/if}
     </div>
