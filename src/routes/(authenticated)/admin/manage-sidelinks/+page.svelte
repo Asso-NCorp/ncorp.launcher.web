@@ -91,7 +91,7 @@
     <!-- Main Content -->
     <div class="grid grid-cols-3 gap-6 flex-1">
         <!-- Sidelinks List -->
-        <div class="col-span-1 min-h-0">
+        <div class="col-span-2 min-h-0">
             <Card.Root class="h-full flex flex-col">
                 <Card.Header class="border-b">
                     <div class="flex items-center justify-between">
@@ -115,7 +115,7 @@
         </div>
 
         <!-- Side Panel -->
-        <div class="col-span-2 min-h-0">
+        <div class="col-span-1 min-h-0">
             {#if showAddForm}
                 <AddSidelinkForm data={{ addForm: data.addForm }} />
             {:else if selectedSidelink}
