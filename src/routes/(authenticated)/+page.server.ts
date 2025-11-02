@@ -1,7 +1,9 @@
 import { db } from "$srv/db";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { PUBLIC_SIGNIN_PATH } from "$env/static/public";
+import { PUBLIC_SIGNIN_PATH, PUBLIC_MEDIAS_URL } from "$env/static/public";
+import { getServerApi } from "$src/lib/utils";
+import { extendGames } from "$src/lib/utils/games";
 
 // Types for better code organization
 type UserInfo = {
@@ -20,6 +22,10 @@ type GameSession = {
     end_time: Date | null;
     total_seconds: number | null;
     user: UserInfo;
+    game?: {
+        name?: string;
+        image?: string;
+    };
 };
 
 type GameSummary = {
@@ -59,7 +65,7 @@ async function getCurrentUserSessions(userId: string): Promise<GameSession[]> {
             },
         },
         orderBy: { start_time: "desc" },
-        take: 50, // Increased to get more sessions
+        take: 500, // Increased to get more sessions for accurate statistics
     });
 }
 
@@ -83,8 +89,39 @@ async function getOtherUsersSessions(currentUserId: string): Promise<GameSession
             },
         },
         orderBy: { start_time: "desc" },
-        take: 100, // Increased to get more sessions from other users
+        take: 500, // Increased to get more sessions for accurate leaderboard calculation
     });
+}
+
+/**
+ * Enrich game sessions with game metadata from the server API
+ */
+async function enrichSessionsWithGameData(sessions: GameSession[], token: string): Promise<GameSession[]> {
+    try {
+        const api = getServerApi(token);
+        const allGames = extendGames(await api.getAvailableGames());
+
+        // Create a map of game_slug to game data for fast lookup
+        const gameMap = new Map(
+            allGames.map((g) => [
+                g.folderSlug?.toLowerCase(),
+                {
+                    name: g.title || g.folderSlug,
+                    image: `${PUBLIC_MEDIAS_URL}/games/${g.folderSlug}/poster_square.webp`,
+                },
+            ]),
+        );
+
+        // Enrich each session with game data
+        return sessions.map((session) => ({
+            ...session,
+            game: gameMap.get(session.game_slug.toLowerCase()),
+        }));
+    } catch (error) {
+        console.error("Failed to enrich sessions with game data:", error);
+        // Return sessions as-is if enrichment fails
+        return sessions;
+    }
 }
 
 /**
@@ -413,8 +450,10 @@ function calculateMonthlyLeaderboard(
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Filter sessions from this month
-    const monthSessions = allSessions.filter((s) => new Date(s.start_time) >= firstDayOfMonth);
+    // Filter sessions from this month and only include valid sessions (> 0 seconds)
+    const monthSessions = allSessions.filter(
+        (s) => new Date(s.start_time) >= firstDayOfMonth && (s.total_seconds || 0) > 0,
+    );
 
     // Group by user and sum playtime
     const userStats = new Map<string, { totalPlayTime: number; sessionCount: number }>();
@@ -473,16 +512,22 @@ export const load: PageServerLoad = async ({ locals }) => {
         db.user.findMany({ select: { id: true, name: true, displayUsername: true, image: true } }),
     ]);
 
+    // Enrich sessions with game metadata from the server API
+    const enrichedUserGameSessions = await enrichSessionsWithGameData(userGameSessions, locals.token || "");
+    const enrichedOtherUsersSessions = await enrichSessionsWithGameData(otherUsersSessions, locals.token || "");
+
     // Combine all sessions for trending calculation
-    const allSessions = [...userGameSessions, ...otherUsersSessions];
+    const allSessions = [...enrichedUserGameSessions, ...enrichedOtherUsersSessions];
 
     // Process current user's data for game summaries (personal stats)
-    const validUserSessions = filterValidSessions(userGameSessions);
+    const validUserSessions = filterValidSessions(enrichedUserGameSessions);
     const userGameSummaries = createUserGameSummaries(validUserSessions);
 
     // Process individual sessions for activity feed (shows each session separately)
     const currentUserActivitySessions = createCurrentUserActivitySessions(validUserSessions);
-    const otherUsersActivitySessions = createOtherUsersActivitySessions(filterValidSessions(otherUsersSessions));
+    const otherUsersActivitySessions = createOtherUsersActivitySessions(
+        filterValidSessions(enrichedOtherUsersSessions),
+    );
 
     // Combine all individual sessions for the activity feed
     const allActivities = combineAndSortActivitySessions(currentUserActivitySessions, otherUsersActivitySessions);
@@ -499,7 +544,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     const { leaderboardData, userRank } = calculateMonthlyLeaderboard(allSessions, user.id);
 
     return {
-        gameSessions: userGameSessions,
+        gameSessions: enrichedUserGameSessions,
         userGameSummaries,
         allActivities,
         trendingGames,

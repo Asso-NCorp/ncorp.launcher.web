@@ -79,7 +79,7 @@
                             {getMedalEmoji(position)}
                         </div>
                         <div class="min-w-0 flex-1">
-                            <AvatarDiscord size={32} name={user.name} src={`/api/avatars/${user.id}`} alt={user.name} />
+                            <AvatarDiscord size={32} name={user.displayUsername || user.name} src={`/api/avatars/${user.id}`} alt={user.displayUsername || user.name} />
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-medium">

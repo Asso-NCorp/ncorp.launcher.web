@@ -22,6 +22,7 @@
     import ActivityHeatmap from "$lib/components/dashboard/ActivityHeatmap.svelte";
     import Leaderboard from "$lib/components/dashboard/Leaderboard.svelte";
     import OnlineFriends from "$lib/components/dashboard/OnlineFriends.svelte";
+    import RecentGames from "$lib/components/dashboard/RecentGames.svelte";
 
     // Configure dayjs
     dayjs.extend(duration);
@@ -181,18 +182,31 @@
     <!-- Statistiques avancées -->
     <!-- <AdvancedStats streak={data.streak} peakHours={data.peakHours} /> -->
 
-    <div class="grid grid-cols-2 gap-6">
+    <div class="grid grid-cols-2 xl:grid-cols-3 gap-6 h-150">
+        <!-- Colonne gauche: Achievements et ActivityHeatmap empilés -->
+        <div class="col-span-1 flex flex-col gap-6 min-h-0">
+            <!-- Succès et badges -->
+            <div class="shrink-0">
+                <Achievements achievements={data.achievements} />
+            </div>
 
-    <!-- Succès et badges -->
-    <Achievements achievements={data.achievements} />
+            <!-- Calendrier d'activité -->
+            <div class="flex-1 min-h-0 overflow-y-auto">
+                <ActivityHeatmap activityHeatmap={data.activityHeatmap} gameSessions={data.gameSessions} />
+            </div>
+        </div>
 
-    <!-- Leaderboard mensuel -->
-    {#if data.leaderboardData && data.leaderboardData.length > 0}
-        <Leaderboard leaderboardData={data.leaderboardData} currentUserId={data.user?.id} rank={data.userRank} />
-    {/if}
+        <!-- Colonne centrale: RecentGames avec hauteur limitée -->
+        <div class="col-span-1 overflow-y-auto min-h-0">
+            <RecentGames gameSessions={data.gameSessions} />
+        </div>
 
-    <!-- Calendrier d'activité -->
-    <ActivityHeatmap activityHeatmap={data.activityHeatmap} />
+        <!-- Colonne droite: Leaderboard mensuel (hidden sur petits écrans) -->
+        {#if data.leaderboardData && data.leaderboardData.length > 0}
+            <div class="hidden lg:block">
+                <Leaderboard leaderboardData={data.leaderboardData} currentUserId={data.user?.id} rank={data.userRank} />
+            </div>
+        {/if}
     </div>
 
     <!-- Jeux tendance -->

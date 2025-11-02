@@ -40,15 +40,15 @@
 </script>
 
 {#if achievements.length > 0}
-    <Card>
+    <Card class="h-full">
         <CardHeader class="pb-4">
             <CardTitle class="flex items-center gap-2">
                 <iconify-icon icon="mdi:trophy" class="text-yellow-500"></iconify-icon>
                 Succès et badges
             </CardTitle>
         </CardHeader>
-        <CardContent>
-            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <CardContent class="h-full flex flex-col">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 flex-1">
                 {#each achievements as achievement}
                     {@const details = achievementDescriptions[achievement.id]}
                     <Tooltip.Root>
