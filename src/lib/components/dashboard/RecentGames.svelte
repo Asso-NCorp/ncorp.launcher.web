@@ -172,7 +172,7 @@
                                                 variant="ghost"
                                                 size="sm"
                                                 onclick={async () => await goto(`/games/${game.game_slug}`)}
-                                                class="h-auto p-0 font-medium hover:bg-transparent hover:underline truncate w-full justify-start">
+                                                class="h-auto w-full justify-start truncate p-0 font-medium hover:bg-transparent hover:underline">
                                                 {formatGameName(game.game_slug)}
                                             </Button>
                                         </div>
