@@ -12,6 +12,7 @@ class GameStore {
     selected: InstallableGameExtended[] = $derived(this.games.filter((g) => g.isSelected));
     isLoading = $state(false);
     installedGames: InstallableGameExtended[] = $derived(this.games.filter((g) => g.isInstalled));
+    recentlyAddedGames: InstallableGameExtended[] = $derived(this.getAllRecentlyAddedGames());
     allGames: InstallableGameExtended[] = $state([]);
 
     lastGameFetchAt: number = $state(0); // ms epoch (info)
@@ -162,6 +163,16 @@ class GameStore {
 
     resetSelected() {
         this.games.forEach((g) => (g.isSelected = false));
+    }
+
+    getAllRecentlyAddedGames(): InstallableGameExtended[] {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return this.allGames.filter((g) => {
+            if (!g.dateAdded) return false;
+            const gameDate = new Date(g.dateAdded);
+            return gameDate > thirtyDaysAgo;
+        });
     }
 
     clearSearch = () => {

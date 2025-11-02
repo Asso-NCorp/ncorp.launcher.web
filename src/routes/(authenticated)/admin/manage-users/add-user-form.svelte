@@ -176,22 +176,25 @@
 </script>
 
 <Card.Root class="sticky top-4 w-full">
-    <Card.Header>
-        <Card.Title>
-            <BlurFade delay={0.3} class="text-2xl font-bold">Ajouter un utilisateur</BlurFade>
-        </Card.Title>
+    <Card.Header class="border-b">
+        <div class="space-y-1">
+            <Card.Title>
+                <BlurFade delay={0.3} class="text-xl font-bold">Ajouter un utilisateur</BlurFade>
+            </Card.Title>
+            <p class="text-sm text-muted-foreground">Créez un nouveau compte utilisateur</p>
+        </div>
     </Card.Header>
-    <Card.Content class="max-h-[calc(100vh-12rem)] overflow-y-auto">
-        <form method="POST" action="?/add" class="flex flex-col gap-4" autocomplete="off" use:enhance>
+    <Card.Content class="max-h-[calc(100vh-12rem)] overflow-y-auto pt-6">
+        <form method="POST" action="?/add" class="flex flex-col gap-6" autocomplete="off" use:enhance>
             {#if $allErrors.length > 0}
                 <Alert.Root variant="destructive">
                     <CircleAlert class="size-4" />
                     <Alert.Title>Erreur{$allErrors.length > 0 && "s"}</Alert.Title>
                     <Alert.Description>
-                        <ul>
+                        <ul class="mt-2 space-y-1">
                             {#each $allErrors as error}
-                                <li>
-                                    {error.messages.join(". ")}
+                                <li class="text-sm">
+                                    • {error.messages.join(". ")}
                                 </li>
                             {/each}
                         </ul>
@@ -201,16 +204,17 @@
 
             <!-- No userId needed for adding a new user -->
 
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <Form.Field {form} name="username">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="username">Nom d'utilisateur</Label>
+                            <Label for="username" class="text-sm font-semibold">Nom d'utilisateur</Label>
                             <div class="relative">
                                 <Input
                                     {...props}
                                     required
                                     bind:value={$formData.username}
+                                    placeholder="Ex: jean.dupont"
                                     class={usernameError
                                         ? "border-red-500 pr-10"
                                         : usernameAvailable && $formData.username
@@ -218,16 +222,20 @@
                                           : "pr-10"} />
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                                     {#if usernameChecking}
-                                        <Loader size={24} />
+                                        <Loader size={20} />
                                     {:else if usernameAvailable && $formData.username}
                                         <Check class="size-4 text-green-500" />
                                     {/if}
                                 </div>
                             </div>
                             {#if usernameError}
-                                <p class="mt-1 text-xs text-red-500">{usernameError}</p>
+                                <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                                    <span class="text-lg">⚠</span> {usernameError}
+                                </p>
                             {:else if usernameAvailable && $formData.username}
-                                <p class="mt-1 text-xs text-green-500">Nom d'utilisateur disponible</p>
+                                <p class="mt-1 text-xs text-green-500 flex items-center gap-1">
+                                    <span class="text-lg">✓</span> Nom d'utilisateur disponible
+                                </p>
                             {/if}
                         {/snippet}
                     </Form.Control>
@@ -237,8 +245,8 @@
                 <Form.Field {form} name="name">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="name">Pseudo</Label>
-                            <Input {...props} required bind:value={$formData.name} />
+                            <Label for="name" class="text-sm font-semibold">Pseudo (Nom d'affichage)</Label>
+                            <Input {...props} required bind:value={$formData.name} placeholder="Ex: Jean Dupont" />
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
@@ -247,8 +255,8 @@
                 <Form.Field {form} name="email">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="email">Email</Label>
-                            <Input {...props} type="email" required autocomplete="off" bind:value={$formData.email} />
+                            <Label for="email" class="text-sm font-semibold">Email</Label>
+                            <Input {...props} type="email" required autocomplete="off" bind:value={$formData.email} placeholder="Ex: jean@example.com" />
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
@@ -257,7 +265,7 @@
                 <Form.Field {form} name="role">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="role">Rôle</Label>
+                            <Label for="role" class="text-sm font-semibold">Rôle</Label>
                             <Select.Root type="single" required bind:value={$formData.role} {...props}>
                                 <Select.Trigger class="w-full">
                                     <span>{$formData.role || "Sélectionner un rôle"}</span>
@@ -276,38 +284,43 @@
                 <Form.Field {form} name="password">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="password">Mot de passe</Label>
+                            <Label for="password" class="text-sm font-semibold">Mot de passe</Label>
                             <Input
                                 autocomplete="new-password"
                                 {...props}
                                 type="password"
                                 required
-                                bind:value={$formData.password} />
+                                bind:value={$formData.password}
+                                placeholder="Minimum 8 caractères" />
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
                 </Form.Field>
             </div>
 
-            <div class="flex gap-4">
+            <div class="space-y-3 border-t pt-4">
                 <FormButton
                     disabled={$submitting ||
                         Boolean($formData.username && (usernameChecking || usernameError !== null)) ||
-                        !areAllFieldsFilled()}>
+                        !areAllFieldsFilled()}
+                    class="w-full">
                     {#if $submitting}
-                        <Loader size={24} />
+                        <Loader size={20} class="mr-2" />
+                        Création en cours...
                     {:else}
-                        Ajouter
+                        Ajouter l'utilisateur
                     {/if}
                 </FormButton>
-            </div>
 
-            {#if !areAllFieldsFilled() && !$submitting}
-                <p class="mt-2 text-sm text-amber-500">
-                    <CircleAlert class="mr-1 inline-block size-4" />
-                    Veuillez remplir tous les champs obligatoires avant de soumettre le formulaire
-                </p>
-            {/if}
+                {#if !areAllFieldsFilled() && !$submitting}
+                    <div class="rounded-md bg-amber-50 dark:bg-amber-950/20 p-3 text-sm text-amber-800 dark:text-amber-200">
+                        <div class="flex gap-2">
+                            <CircleAlert class="size-4 mt-0.5 shrink-0" />
+                            <p>Veuillez remplir tous les champs obligatoires</p>
+                        </div>
+                    </div>
+                {/if}
+            </div>
 
             {#if browser && import.meta.env.DEV}
                 <SuperDebug data={$formData} />

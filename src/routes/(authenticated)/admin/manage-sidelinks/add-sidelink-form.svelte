@@ -56,23 +56,26 @@
     }
 </script>
 
-<Card.Root class="w-full">
-    <Card.Header>
-        <Card.Title>
-            <BlurFade delay={0.3} class="text-2xl font-bold">Ajouter un lien</BlurFade>
-        </Card.Title>
+<Card.Root class="sticky top-4 w-full">
+    <Card.Header class="border-b">
+        <div class="space-y-1">
+            <Card.Title>
+                <BlurFade delay={0.3} class="text-xl font-bold">Ajouter un lien</BlurFade>
+            </Card.Title>
+            <p class="text-sm text-muted-foreground">Créez un nouveau lien de sidebar</p>
+        </div>
     </Card.Header>
-    <Card.Content>
-        <form method="POST" action="?/add" class="flex flex-col gap-4" autocomplete="off" use:enhance>
+    <Card.Content class="pt-6">
+        <form method="POST" action="?/add" class="flex flex-col gap-6" autocomplete="off" use:enhance>
             {#if $allErrors.length > 0}
                 <Alert.Root variant="destructive">
                     <CircleAlert class="size-4" />
                     <Alert.Title>Erreur{$allErrors.length > 0 && "s"}</Alert.Title>
                     <Alert.Description>
-                        <ul>
+                        <ul class="mt-2 space-y-1">
                             {#each $allErrors as error}
-                                <li>
-                                    {error.messages.join(". ")}
+                                <li class="text-sm">
+                                    • {error.messages.join(". ")}
                                 </li>
                             {/each}
                         </ul>
@@ -80,12 +83,12 @@
                 </Alert.Root>
             {/if}
 
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <Form.Field {form} name="name">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="name">Nom</Label>
-                            <Input {...props} required bind:value={$formData.name} />
+                            <Label for="name" class="text-sm font-semibold">Nom</Label>
+                            <Input {...props} required bind:value={$formData.name} placeholder="Ex: Documentation" />
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
@@ -94,8 +97,8 @@
                 <Form.Field {form} name="url">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="url">URL</Label>
-                            <Input {...props} required type="url" bind:value={$formData.url} />
+                            <Label for="url" class="text-sm font-semibold">URL</Label>
+                            <Input {...props} required type="url" bind:value={$formData.url} placeholder="Ex: https://example.com" />
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
@@ -104,30 +107,35 @@
                 <Form.Field {form} name="hidden">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="hidden">Caché</Label>
-                            <Checkbox {...props} bind:checked={$formData.hidden} />
+                            <div class="flex items-center gap-3">
+                                <Checkbox {...props} bind:checked={$formData.hidden} id="hidden" />
+                                <Label for="hidden" class="text-sm font-semibold cursor-pointer">Masquer ce lien</Label>
+                            </div>
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
                 </Form.Field>
             </div>
 
-            <div class="flex gap-4">
-                <FormButton disabled={$submitting || !areAllFieldsFilled()}>
+            <div class="space-y-3 border-t pt-4">
+                <FormButton disabled={$submitting || !areAllFieldsFilled()} class="w-full">
                     {#if $submitting}
-                        <Loader size={24} />
+                        <Loader size={20} class="mr-2" />
+                        Ajout en cours...
                     {:else}
-                        Ajouter
+                        Ajouter le lien
                     {/if}
                 </FormButton>
-            </div>
 
-            {#if !areAllFieldsFilled() && !$submitting}
-                <p class="mt-2 text-sm text-amber-500">
-                    <CircleAlert class="mr-1 inline-block size-4" />
-                    Veuillez remplir tous les champs obligatoires avant de soumettre le formulaire
-                </p>
-            {/if}
+                {#if !areAllFieldsFilled() && !$submitting}
+                    <div class="rounded-md bg-amber-50 dark:bg-amber-950/20 p-3 text-sm text-amber-800 dark:text-amber-200">
+                        <div class="flex gap-2">
+                            <CircleAlert class="size-4 mt-0.5 shrink-0" />
+                            <p>Veuillez remplir tous les champs obligatoires</p>
+                        </div>
+                    </div>
+                {/if}
+            </div>
 
             {#if browser && import.meta.env.DEV}
                 <SuperDebug data={$formData} />

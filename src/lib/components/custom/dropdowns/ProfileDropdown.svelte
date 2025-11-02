@@ -1,6 +1,6 @@
 <script lang="ts">
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-    import { Settings, LogOut, ComputerIcon, UserCircle } from "@lucide/svelte";
+    import { Settings, LogOut, ComputerIcon, UserCircle, CircleUser } from "@lucide/svelte";
     import { buttonVariants } from "../../ui/button";
     import { authClient, type User } from "$src/lib/auth/client";
     import SideMenuItem from "../SideMenuItem.svelte";
@@ -18,6 +18,7 @@
 
     let { user }: { user: LiveUser | undefined } = $props();
     let name = user?.name;
+    console.log("ProfileDropdown user:", user);
 
     const handleDisconnect = async () => {
         try {
@@ -74,7 +75,7 @@
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item onclick={() => goto("/my/profile")}>
-                    <UserCircle class="mr-2 size-4" />
+                    <CircleUser class="mr-2 size-4" />
                     <span>{$t("my_profile")}</span>
                 </DropdownMenu.Item>
             </DropdownMenu.Group>
@@ -91,7 +92,7 @@
                 </DropdownMenu.Item>
             </DropdownMenu.Group>
             <DropdownMenu.Item
-                class="text-danger hover:!bg-danger/20 hover:!text-danger"
+                class="text-danger hover:bg-danger/20! hover:text-danger!"
                 onclick={handleDisconnect}>
                 <LogOut class="mr-2 size-4" />
                 <span>{$t("logout")}</span>

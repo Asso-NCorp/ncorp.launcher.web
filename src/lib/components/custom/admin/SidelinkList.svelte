@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Skeleton } from "$lib/components/ui/skeleton";
     import * as Table from "$lib/components/ui/table/index.js";
-    import { Link } from "@lucide/svelte";
+    import { Link, Trash2 } from "@lucide/svelte";
     import Button from "../../ui/button/button.svelte";
     import * as Popover from "$lib/components/ui/popover/index.js";
     import { toast } from "svelte-sonner";
@@ -59,15 +59,12 @@
     };
 </script>
 
-<div class="h-full w-full">
+<div class="h-full w-full flex flex-col">
     {#if loading}
         <Skeleton />
     {:else}
-        <span class={cn("block", global.sidebarCollapsed && "text-sm")}>
-            {global.sidebarCollapsed ? "Liens" : "Sélectionnez un lien"}
-        </span>
         <Table.Root class={cn("", global.sidebarCollapsed && "text-sm")}>
-            <Table.Header>
+            <Table.Header class="bg-muted/30">
                 <Table.Row>
                     <Table.Head class="w-10"></Table.Head>
                     <Table.Head class={cn("", global.sidebarCollapsed && "text-xs")}>Nom</Table.Head>
@@ -82,7 +79,7 @@
             </Table.Header>
             <Table.Body>
                 {#each sidelinks as sidelink (sidelink.id)}
-                    <Table.Row class="cursor-pointer" onclick={() => onSelect(sidelink)}>
+                    <Table.Row class="cursor-pointer hover:bg-muted/50 transition-colors group" onclick={() => onSelect(sidelink)}>
                         <Table.Cell>
                             <Link class={cn("size-5", global.sidebarCollapsed && "size-4")} />
                         </Table.Cell>
@@ -110,19 +107,24 @@
                                     popoverStates[sidelink.id] = isOpen;
                                 }}>
                                 <Popover.Trigger class="text-destructive-foreground">
-                                    <Button variant="outline" size={global.sidebarCollapsed ? "sm" : "default"}>
-                                        {global.sidebarCollapsed ? "×" : "Supprimer"}
-                                    </Button>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center justify-center px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10 rounded transition-colors"
+                                        title="Supprimer ce lien">
+                                        <Trash2 class="size-4" />
+                                    </button>
                                 </Popover.Trigger>
                                 <Popover.Content>
-                                    <div class="flex flex-col gap-2">
-                                        <span class={cn("", global.sidebarCollapsed && "text-sm")}>
-                                            Êtes-vous sûr ?
-                                        </span>
-                                        <span class={cn("", global.sidebarCollapsed && "text-xs")}>
-                                            Cette action est irréversible.
-                                        </span>
-                                        <div class="flex gap-2">
+                                    <div class="flex flex-col gap-3">
+                                        <div>
+                                            <span class={cn("font-semibold block", global.sidebarCollapsed && "text-sm")}>
+                                                Êtes-vous sûr ?
+                                            </span>
+                                            <span class={cn("text-sm text-muted-foreground", global.sidebarCollapsed && "text-xs")}>
+                                                Cette action est irréversible.
+                                            </span>
+                                        </div>
+                                        <div class="flex gap-2 justify-end">
                                             <Popover.Close>
                                                 <Button
                                                     variant="outline"

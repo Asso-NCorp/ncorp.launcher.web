@@ -89,13 +89,13 @@
                         icon={PackageOpen}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/my-games"
-                        label={$t("my_games") + ` (${GamesStore.installedGames.length})`}
+                        label={$t("my_games") + ` (${GamesStore.allGames.filter(g => g.isInstalled).length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={PackagePlus}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/recently-added-games"
-                        label={$t("recently_added_games")}
+                        label={$t("recently_added_games") + ` (${GamesStore.recentlyAddedGames.length})`}
                         iconOnly={global.sidebarCollapsed} />
 
                     <SideMenuSubItem

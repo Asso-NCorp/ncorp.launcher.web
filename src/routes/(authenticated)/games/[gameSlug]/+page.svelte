@@ -15,12 +15,16 @@
     import "bigger-picture/css";
     import { onMount } from "svelte";
     import { toast } from "svelte-sonner";
-    import { PUBLIC_MEDIAS_URL } from "$env/static/public";
+    import { PUBLIC_MEDIAS_URL, PUBLIC_BACKEND_API_URL } from "$env/static/public";
+    import { getGameTrailer } from "$src/lib/backend";
+    import VideoPlayer from "$src/lib/components/custom/VideoPlayer.svelte";
 
     let { data }: { data: PageData } = $props();
     const game = data.game;
 
     let reactiveGame = $derived(GamesStore.get(game.folderSlug!) || game);
+    let trailerUrl = $state<string | null>(null);
+    let loadingTrailer = $state(false);
 
     if (game?.screenshots) {
         var randomScreenshot = Math.floor(Math.random() * game.screenshots.length);
@@ -66,8 +70,28 @@
         }
     };
 
+    const loadTrailer = async () => {
+        if (!game.steamAppId || trailerUrl || loadingTrailer) return;
+        loadingTrailer = true;
+        try {
+            const trailer = await getGameTrailer({
+                baseUrl: PUBLIC_BACKEND_API_URL,
+                query: { steamAppId: game.steamAppId },
+            });
+            trailerUrl = trailer?.data || null;
+        } catch (error) {
+            console.error("Error loading trailer:", error);
+            trailerUrl = null;
+        } finally {
+            loadingTrailer = false;
+        }
+    };
+
     onMount(() => {
         runBiggerPicture();
+        if (game.steamAppId) {
+            loadTrailer();
+        }
     });
 </script>
 
@@ -115,6 +139,18 @@
         <p>{game.description}</p>
 
         <div id="screenshots" class="grid grid-cols-5 gap-2 lg:h-52">
+            {#if game.steamAppId && trailerUrl}
+                <VideoPlayer
+                    src={trailerUrl}
+                    poster={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/screenshot_full_1.webp`}
+                    title={game.title}
+                    class="col-span-2 row-span-2" />
+            {:else if game.steamAppId && loadingTrailer}
+                <div class="col-span-2 row-span-2 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground">
+                    Chargement du trailer...
+                </div>
+            {/if}
+
             {#if game.screenshots}
                 {#each game.screenshots as screenshot, i}
                     <a in:fly|global={{ y: -40, duration: 300, delay: 100 * i }} class="h-full w-full">

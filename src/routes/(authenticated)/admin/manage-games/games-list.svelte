@@ -2,141 +2,209 @@
     import { Skeleton } from "$src/lib/components/ui/skeleton";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import type { InstallableGame } from "$src/lib/shared-models";
-    import DataTable, { type Api } from "datatables.net";
-    import { onMount, onDestroy, mount } from "svelte";
-    import DeleteGameButton from "$src/lib/components/custom/DeleteGameButton.svelte";
+    import * as Table from "$lib/components/ui/table/index.js";
+    import * as Popover from "$lib/components/ui/popover/index.js";
+    import Button from "$lib/components/ui/button/button.svelte";
+    import { buttonVariants } from "$lib/components/ui/button/index.js";
+    import { Input } from "$lib/components/ui/input/index.js";
+    import { Trash2 } from "@lucide/svelte";
     import { PUBLIC_MEDIAS_URL } from "$env/static/public";
+    import { toast } from "svelte-sonner";
+    import { Skeleton as SkeletonLoader } from "$src/lib/components/ui/skeleton";
+    import { cn } from "$lib/utils";
 
-    let { gameSelected }: { gameSelected: (game: InstallableGame) => void } = $props();
+    let { gameSelected, onDelete }: { gameSelected: (game: InstallableGame) => void; onDelete?: (game: InstallableGame) => Promise<void> } = $props();
 
-    let tableEl: HTMLTableElement | null = null;
-    let tableApi: Api<any> | null = null;
+    const games = $derived(GamesStore.games || []);
+    let searchQuery = $state("");
 
-    // Apply global search input classes once (must be before any DataTable() call)
-    if ((DataTable as any)?.ext?.classes) {
-        DataTable.ext.classes.search.input =
-            "flex! h-10! w-96! rounded-md! border! !border-input !bg-background-darker px-3! py-2! text-base! !ring-offset-background file:border-0! file:bg-transparent! file:text-sm! file:font-medium! placeholder:!text-muted-foreground focus-visible:outline-none! focus-visible:ring-2! focus-visible:!ring-ring focus-visible:ring-offset-2! disabled:cursor-not-allowed! disabled:opacity-50! md:text-sm!";
-    }
+    const filteredGames = $derived(
+        games.filter((game) =>
+            game.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            game.folderSlug?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+    );
 
-    onMount(() => {
-        if (!tableEl) return;
-        if (tableApi) return;
-        tableApi = new DataTable(tableEl, {
-            data: GamesStore.games,
-            searching: true,
-            paging: false,
-            info: false,
-            language: { search: "Rechercher..." },
-            columns: [
-                {
-                    title: "Titre",
-                    data: "title",
-                    width: "80%",
-                    className: "relative font-bold h-16 cursor-pointer",
-                    render: (data, type, row) => {
-                        if (type === "display") {
-                            return `
-								<div class="absolute inset-0 w-2/3 bg-cover bg-center mask-linear mask-dir-to-r mask-point-to-[80%]"
-									style="background-image:url('${PUBLIC_MEDIAS_URL}/games/${row.folderSlug}/poster_rect.webp')"></div>
-								<div class="absolute inset-y-0 right-0 w-1/2"></div>
-								<span
-									data-folder="${row.folderSlug}"
-									class="select-game absolute right-4 top-1/2 -translate-y-1/2 z-10 text-right text-sm sm:text-base font-bold shadow-lg hover:underline hover:text-primary-600 transition-colors duration-200">
-									${data}
-								</span>
-							`;
-                        }
-                        return data;
-                    },
-                },
-                {
-                    title: "",
-                    data: null,
-                    orderable: false,
-                    className: "text-right align-middle",
-                    render: () => "",
-                },
-            ],
-            order: [[0, "asc"]],
-            createdRow: (row, data: InstallableGame) => {
-                // Mount the delete button Svelte component into last cell
-                const td = row.cells[1];
-                mount(DeleteGameButton, {
-                    target: td,
-                    props: { game: data },
-                });
-            },
-            rowCallback: (row: HTMLTableRowElement, data: InstallableGame) => {
-                const firstCell = row.cells[0];
-                if (firstCell && !firstCell.dataset.selectBound) {
-                    firstCell.addEventListener("click", () => {
-                        gameSelected(data);
-                    });
-                    firstCell.dataset.selectBound = "1";
-                }
-            },
-        });
-    });
-
-    onDestroy(() => {
-        if (tableApi) {
-            tableApi.destroy();
-            tableApi = null;
-        }
-    });
+    let popoverStates: Record<string, boolean> = {};
 
     $effect(() => {
-        // Access to establish dependency
-        GamesStore.games;
-        if (tableApi) {
-            tableApi.clear();
-            if (GamesStore.games?.length) {
-                tableApi.rows.add(GamesStore.games);
-            }
-            tableApi.draw(false);
+        if (games && games.length > 0) {
+            const newStates: Record<string, boolean> = {};
+            games.forEach((game: InstallableGame) => {
+                if (game.folderSlug) {
+                    newStates[game.folderSlug] = false;
+                }
+            });
+            popoverStates = newStates;
         }
     });
+
+    function closePopover(folderSlug: string | undefined) {
+        if (folderSlug) {
+            popoverStates[folderSlug] = false;
+        }
+    }
+
+    const handleDelete = async (game: InstallableGame) => {
+        try {
+            if (game.folderSlug) {
+                // Use the default delete from GamesStore if no custom onDelete provided
+                if (onDelete) {
+                    await onDelete(game);
+                } else {
+                    GamesStore.deleteGame(game.folderSlug);
+                }
+                closePopover(game.folderSlug);
+            }
+            toast.success("Jeu supprimé avec succès", {
+                class: "bg-green-500",
+            });
+        } catch (error) {
+            console.error("Error deleting game:", error);
+            toast.error("Erreur lors de la suppression du jeu", {
+                class: "bg-red-500",
+            });
+        }
+    };
 </script>
 
-<div class="relative">
-    {#if GamesStore.isLoading}
-        <div class="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
-            <Skeleton />
+{#if GamesStore.isLoading}
+    <div class="flex items-center justify-center py-8">
+        <SkeletonLoader />
+    </div>
+{:else}
+    <div class="h-full w-full flex flex-col overflow-hidden space-y-4">
+        <!-- Search Bar -->
+        <div class="shrink-0 flex justify-center">
+            <Input
+                type="text"
+                placeholder="Rechercher un jeu..."
+                bind:value={searchQuery}
+                class="w-1/2"
+            />
         </div>
-    {/if}
-    <table class="min-w-full divide-y divide-border" bind:this={tableEl}>
-        <thead class="bg-card">
-            <tr>
-                <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">Titre</th>
-                <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-border bg-popover"></tbody>
-    </table>
-</div>
 
-<svelte:head>
-    <link rel="stylesheet" href="/css/datatables.min.css" />
-    <link rel="stylesheet" href="/css/datatables.theme.css" />
-</svelte:head>
+        <div class="flex-1 min-h-0 overflow-y-auto">
+            <Table.Root class="border">
+            <Table.Header class="bg-muted/30">
+                <Table.Row>
+                    <Table.Head class="w-2/3">Titre</Table.Head>
+                    <Table.Head class="w-1/6 text-center">Ajouté le</Table.Head>
+                    <Table.Head class="w-1/6 text-center">Modifié le</Table.Head>
+                    <Table.Head class="w-12 text-right">Actions</Table.Head>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body class="divide-y divide-border">
+{#each filteredGames as game (game.folderSlug)}
+                    <Table.Row 
+                        class="cursor-pointer hover:bg-muted/50 transition-colors h-16 group" 
+                        onclick={() => gameSelected(game)}
+                    >
+                        <Table.Cell class="relative font-bold overflow-hidden">
+                            {#if game.folderSlug}
+                                <div class="absolute inset-0 left-0 w-96 bg-cover bg-center rounded-l"
+                                    style="background-image:url('{PUBLIC_MEDIAS_URL}/games/{game.folderSlug}/screenshot_small_1.webp'); -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%); mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);"></div>
+                                <div class="absolute inset-0 left-0 right-0 bg-linear-to-r from-transparent via-transparent to-background pointer-events-none"></div>
+                                <div class="absolute inset-0 left-0 w-96 bg-linear-to-r from-black/90 via-black/50 to-transparent pointer-events-none"></div>
+                                <div class="absolute inset-0 bg-muted/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                            {/if}
+                            <span class="relative z-10 text-left text-sm sm:text-base font-bold drop-shadow-lg px-4 h-full flex items-center">
+                                {game.title}
+                            </span>
+                        </Table.Cell>
+                        <Table.Cell class="text-sm text-muted-foreground text-center">
+                            {#if game.dateAdded}
+                                {(() => {
+                                    const date = new Date(game.dateAdded);
+                                    const formatted = date.toLocaleDateString('fr-FR');
+                                    // Don't show if it's 01/01/01 or year 1
+                                    return formatted !== '01/01/0001' && date.getFullYear() > 1900 ? formatted : '-';
+                                })()}
+                            {:else}
+                                -
+                            {/if}
+                        </Table.Cell>
+                        <Table.Cell class="text-sm text-muted-foreground text-center">
+                            {#if game.dateUpdated}
+                                {(() => {
+                                    const date = new Date(game.dateUpdated);
+                                    const formatted = date.toLocaleDateString('fr-FR');
+                                    // Don't show if it's 01/01/01 or year 1
+                                    return formatted !== '01/01/0001' && date.getFullYear() > 1900 ? formatted : '-';
+                                })()}
+                            {:else}
+                                -
+                            {/if}
+                        </Table.Cell>
+                        <Table.Cell class="text-right w-20">
+                            {#if game.folderSlug}
+                                <Popover.Root
+                                    open={popoverStates[game.folderSlug] === true}
+                                    onOpenChange={(isOpen) => {
+                                        if (game.folderSlug) {
+                                            popoverStates[game.folderSlug] = isOpen;
+                                        }
+                                    }}
+                                >
+                                    <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "sm" })} onclick={(e) => e.stopPropagation()}>
+                                        <Trash2 class="size-4 text-danger" />
+                                    </Popover.Trigger>
+                                    <Popover.Content class="w-56">
+                                        <div class="flex flex-col gap-3">
+                                            <div>
+                                                <span class="font-semibold block">Êtes-vous sûr ?</span>
+                                                <span class="text-sm text-muted-foreground">Cette action est irréversible.</span>
+                                            </div>
+                                            <div class="flex gap-2 justify-end">
+                                                <Popover.Close>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onclick={() => closePopover(game.folderSlug)}
+                                                    >
+                                                        Annuler
+                                                    </Button>
+                                                </Popover.Close>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onclick={() => handleDelete(game)}
+                                                >
+                                                    Supprimer
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Popover.Content>
+                                </Popover.Root>
+                            {/if}
+                        </Table.Cell>
+                    </Table.Row>
+                {/each}
+            </Table.Body>
+        </Table.Root>
+        </div>
+    </div>
+{/if}
 
 <style>
-    /* Keep row height consistent */
-    table.dataTable tbody tr {
-        height: 4rem;
+    :global(table) {
+        width: 100%;
+        table-layout: fixed;
     }
-
-    /* Hover */
-    table.dataTable tbody tr.selected,
-    table.dataTable tbody tr:hover {
-        background: hsl(var(--muted) / 0.25);
+    
+    :global(table thead th:first-child) {
+        width: 40.666%;
     }
-
-    /* Sticky header (works after DT builds) */
-    table.dataTable thead th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: hsl(var(--card));
+    
+    :global(table thead th:nth-child(2)) {
+        width: 16.667%;
+    }
+    
+    :global(table thead th:nth-child(3)) {
+        width: 16.667%;
+    }
+    
+    :global(table thead th:last-child) {
+        width: 8.334%;
     }
 </style>

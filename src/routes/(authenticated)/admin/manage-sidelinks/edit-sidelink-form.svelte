@@ -66,23 +66,26 @@
     });
 </script>
 
-<Card.Root class="w-full">
-    <Card.Header>
-        <Card.Title>
-            <BlurFade delay={0.3} class="text-2xl font-bold">Modifier un lien</BlurFade>
-        </Card.Title>
+<Card.Root class="sticky top-4 w-full">
+    <Card.Header class="border-b">
+        <div class="space-y-1">
+            <Card.Title>
+                <BlurFade delay={0.3} class="text-xl font-bold">Modifier un lien</BlurFade>
+            </Card.Title>
+            <p class="text-sm text-muted-foreground">Mettez à jour les détails du lien</p>
+        </div>
     </Card.Header>
-    <Card.Content>
-        <form method="POST" action="?/update" class="flex flex-col gap-4" use:enhance>
+    <Card.Content class="pt-6">
+        <form method="POST" action="?/update" class="flex flex-col gap-6" use:enhance>
             {#if $allErrors.length > 0}
                 <Alert.Root variant="destructive">
                     <CircleAlert class="size-4" />
                     <Alert.Title>Erreur{$allErrors.length > 0 && "s"}</Alert.Title>
                     <Alert.Description>
-                        <ul>
+                        <ul class="mt-2 space-y-1">
                             {#each $allErrors as error}
-                                <li>
-                                    {error.messages.join(". ")}
+                                <li class="text-sm">
+                                    • {error.messages.join(". ")}
                                 </li>
                             {/each}
                         </ul>
@@ -90,15 +93,15 @@
                 </Alert.Root>
             {/if}
 
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <!-- Hidden field for id when editing -->
                 <input type="hidden" name="id" value={sidelinkData.id} />
 
                 <Form.Field form={editForm} name="name">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="name">Nom</Label>
-                            <Input {...props} required bind:value={$form.name} />
+                            <Label for="name" class="text-sm font-semibold">Nom</Label>
+                            <Input {...props} required bind:value={$form.name} placeholder="Ex: Documentation" />
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
@@ -107,8 +110,8 @@
                 <Form.Field form={editForm} name="url">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="url">URL</Label>
-                            <Input {...props} type="url" required bind:value={$form.url} />
+                            <Label for="url" class="text-sm font-semibold">URL</Label>
+                            <Input {...props} type="url" required bind:value={$form.url} placeholder="Ex: https://example.com" />
                         {/snippet}
                     </Form.Control>
                     <Form.FieldErrors />
@@ -117,8 +120,10 @@
                 <Form.Field form={editForm} name="hidden">
                     <Form.Control>
                         {#snippet children({ props })}
-                            <Label for="hidden">Caché</Label>
-                            <Checkbox {...props} bind:checked={$form.hidden} />
+                            <div class="flex items-center gap-3">
+                                <Checkbox {...props} bind:checked={$form.hidden} id="hidden" />
+                                <Label for="hidden" class="text-sm font-semibold cursor-pointer">Masquer ce lien</Label>
+                            </div>
                             <input name={props.name} value={$form.hidden} hidden />
                         {/snippet}
                     </Form.Control>
@@ -126,33 +131,37 @@
                 </Form.Field>
             </div>
 
-            <div class="flex gap-4">
-                <Form.Button disabled={$submitting || !areAllFieldsFilled()}>
-                    {#if $submitting}
-                        <Loader size={24} />
-                    {:else}
-                        Mettre à jour
-                    {/if}
-                </Form.Button>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onclick={() => {
-                        // We need to dispatch a custom event to notify the parent component
-                        // that we want to clear the selection
-                        const event = new CustomEvent("clearSelection");
-                        document.dispatchEvent(event);
-                    }}>
-                    Nouveau lien
-                </Button>
-            </div>
+            <div class="space-y-3 border-t pt-4">
+                <div class="flex gap-2">
+                    <Form.Button disabled={$submitting || !areAllFieldsFilled()}>
+                        {#if $submitting}
+                            <Loader size={16} />
+                        {:else}
+                            Mettre à jour
+                        {/if}
+                    </Form.Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onclick={() => {
+                            // We need to dispatch a custom event to notify the parent component
+                            // that we want to clear the selection
+                            const event = new CustomEvent("clearSelection");
+                            document.dispatchEvent(event);
+                        }}>
+                        Nouveau
+                    </Button>
+                </div>
 
-            {#if !areAllFieldsFilled() && !$submitting}
-                <p class="mt-2 text-sm text-amber-500">
-                    <CircleAlert class="mr-1 inline-block size-4" />
-                    Veuillez remplir tous les champs obligatoires avant de soumettre le formulaire
-                </p>
-            {/if}
+                {#if !areAllFieldsFilled() && !$submitting}
+                    <div class="rounded-md bg-amber-50 dark:bg-amber-950/20 p-3 text-sm text-amber-800 dark:text-amber-200">
+                        <div class="flex gap-2">
+                            <CircleAlert class="size-4 mt-0.5 shrink-0" />
+                            <p>Veuillez remplir tous les champs obligatoires</p>
+                        </div>
+                    </div>
+                {/if}
+            </div>
 
             {#if browser && import.meta.env.DEV}
                 <SuperDebug data={$form} />

@@ -1,8 +1,13 @@
 <script lang="ts">
     import { Skeleton } from "$lib/components/ui/skeleton";
     import { authClient, type User } from "$src/lib/auth/client";
-    import DataTable, { type Api } from "datatables.net-dt";
-    import { onMount, onDestroy } from "svelte";
+    import * as Table from "$lib/components/ui/table/index.js";
+    import * as Popover from "$lib/components/ui/popover/index.js";
+    import Button from "$lib/components/ui/button/button.svelte";
+    import { buttonVariants } from "$lib/components/ui/button/index.js";
+    import { Input } from "$lib/components/ui/input/index.js";
+    import { Trash2 } from "@lucide/svelte";
+    import { toast } from "svelte-sonner";
 
     let {
         loading,
@@ -10,160 +15,158 @@
         onSelect,
     }: { loading: boolean; users: User[]; onSelect: (user: User) => void } = $props();
 
-    let table: HTMLTableElement | null = null;
-    let tableApi: Api<any> | null = null;
+    let searchQuery = $state("");
+    let popoverStates: Record<string, boolean> = {};
 
-    const COL_WIDTH = "16.66%"; // equal width for 6 columns
+    const filteredUsers = $derived(
+        users.filter((user) =>
+            user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.role?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+    );
+
+    $effect(() => {
+        if (users && users.length > 0) {
+            const newStates: Record<string, boolean> = {};
+            users.forEach((user: User) => {
+                newStates[user.id] = false;
+            });
+            popoverStates = newStates;
+        }
+    });
+
+    function closePopover(userId: string) {
+        popoverStates[userId] = false;
+    }
 
     const handleDelete = async (user: User) => {
-        await authClient.admin.removeUser({
-            userId: user.id,
-        });
-
-        window.location.reload();
+        try {
+            await authClient.admin.removeUser({
+                userId: user.id,
+            });
+            closePopover(user.id);
+            toast.success("Utilisateur supprimé avec succès", {
+                class: "bg-green-500",
+            });
+            // Refresh users list
+            window.location.reload();
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            toast.error("Erreur lors de la suppression de l'utilisateur", {
+                class: "bg-red-500",
+            });
+        }
     };
 
     const localDateTime = (date: string) => {
-        // Add 2h
         const d = new Date(date);
         d.setHours(d.getHours() + 2);
         return d.toLocaleString();
     };
-
-    onMount(() => {
-        if (!table) return;
-        tableApi = new DataTable(table, {
-            data: users,
-            searching: true,
-            paging: false,
-            pageLength: 15,
-            lengthMenu: [10, 15, 25, 50],
-            order: [[3, "desc"]],
-            columnDefs:[
-                {
-                    targets: 0,
-                    orderable: false,
-                },
-                {
-                    targets: 1,
-                    className: "font-medium",
-                },
-                {
-                    targets: 2,
-                    className: "text-center",
-                },
-                {
-                    targets: 3,
-                    className: "text-center",
-                },
-                {
-                    targets: 4,
-                    className: "text-center",
-                },
-                {
-                    targets: 5,
-                    orderable: false,
-                },
-            ],
-            columns: [
-                {
-                    title: "",
-                    data: null,
-                    orderable: false,
-                    width: COL_WIDTH,
-                    className: "", // removed w-14 to allow equal width
-                    render: (data, type, row: User) => {
-                        if (type === "display") {
-                            const alt = row.name ?? "";
-                            return `<img src="/api/avatars/${row.id}" alt="${alt}" class="size-8 rounded-full ring-2 ring-primary object-cover" />`;
-                        }
-                        return row.id;
-                    },
-                },
-                { title: "Utilisateur", data: "name", className: "font-medium", width: COL_WIDTH },
-                { title: "Rôle", data: "role", className: "text-center", width: COL_WIDTH },
-                {
-                    title: "Date d'inscription",
-                    data: "createdAt",
-                    className: "text-center",
-                    width: COL_WIDTH,
-                    render: (data, type) => (type === "display" ? new Date(data).toLocaleDateString() : data),
-                },
-                {
-                    title: "Dernière connexion",
-                    data: "lastLogin",
-                    className: "text-center",
-                    width: COL_WIDTH,
-                    render: (data, type) => (type === "display" && data ? localDateTime(data) : data ? data : "Jamais"),
-                },
-                { title: "", data: null, orderable: false, defaultContent: "", width: COL_WIDTH },
-            ],
-            createdRow: (row, data: User) => {
-                // row click selects the user
-                row.addEventListener("click", () => onSelect(data));
-
-                // actions cell (last)
-                const td = row.cells[5];
-                const btn = document.createElement("button");
-                btn.textContent = "Supprimer";
-                btn.className = "px-3 py-1 border text-destructive-foreground hover:bg-destructive/10";
-                btn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (confirm("Êtes-vous sûr ? Cette action est irréversible.")) {
-                        handleDelete(data);
-                    }
-                });
-                td.classList.add("text-right");
-                td.appendChild(btn);
-            },
-        });
-    });
-
-    onDestroy(() => {
-        if (tableApi) tableApi.destroy();
-    });
-
-    // Refresh the table when users changes
-    $effect(() => {
-        if (tableApi) {
-            tableApi.clear();
-            tableApi.rows.add(users);
-            tableApi.draw();
-        }
-    });
 </script>
-
-<svelte:head>
-    <link rel="stylesheet" href="/css/datatables.min.css" />
-    <link rel="stylesheet" href="/css/datatables.theme.css" />
-</svelte:head>
 
 {#if loading}
     <Skeleton />
 {:else}
-    <span>Sélectionnez un utilisateur</span>
-    <table class="user-table min-w-full divide-y divide-border" bind:this={table}>
-        <thead class="bg-card">
-            <tr>
-                <th class="w-10"></th>
-                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Utilisateur</th>
-                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rôle</th>
-                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date d'inscription</th>
-                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Dernière connexion</th>
-                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-border bg-popover"></tbody>
-    </table>
+    <div class="h-full w-full flex flex-col overflow-hidden space-y-4">
+        <!-- Search Bar -->
+        <div class="shrink-0 flex justify-center">
+            <Input
+                type="text"
+                placeholder="Rechercher un utilisateur..."
+                bind:value={searchQuery}
+                class="w-1/2"
+            />
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto">
+            <Table.Root class="border">
+                <Table.Header class="bg-muted/30 sticky top-0">
+                    <Table.Row>
+                        <Table.Head class="w-10"></Table.Head>
+                        <Table.Head class="w-2/5">Utilisateur</Table.Head>
+                        <Table.Head class="w-1/6 text-center">Rôle</Table.Head>
+                        <Table.Head class="w-1/6 text-center">Date d'inscription</Table.Head>
+                        <Table.Head class="w-1/6 text-center">Dernière connexion</Table.Head>
+                        <Table.Head class="w-12 text-right">Actions</Table.Head>
+                    </Table.Row>
+                </Table.Header>
+                <Table.Body class="divide-y divide-border">
+                    {#each filteredUsers as user (user.id)}
+                        <Table.Row
+                            class="cursor-pointer hover:bg-muted/50 transition-colors group"
+                            onclick={() => onSelect(user)}
+                        >
+                            <Table.Cell class="p-2">
+                                <img
+                                    src="/api/avatars/{user.id}"
+                                    alt={user.name}
+                                    class="size-8 rounded-full ring-2 ring-primary object-cover"
+                                />
+                            </Table.Cell>
+                            <Table.Cell class="font-medium">
+                                <div>{user.name}</div>
+                                <div class="text-xs text-muted-foreground">{user.email}</div>
+                            </Table.Cell>
+                            <Table.Cell class="text-center text-sm">
+                                {user.role}
+                            </Table.Cell>
+                            <Table.Cell class="text-center text-sm">
+                                {new Date(user.createdAt).toLocaleDateString()}
+                            </Table.Cell>
+                            <Table.Cell class="text-center text-sm">
+                                {user.lastLogin ? localDateTime(user.lastLogin) : "Jamais"}
+                            </Table.Cell>
+                            <Table.Cell class="text-right p-2">
+                                <Popover.Root
+                                    open={popoverStates[user.id] === true}
+                                    onOpenChange={(isOpen) => {
+                                        popoverStates[user.id] = isOpen;
+                                    }}
+                                >
+                                    <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "sm" })} onclick={(e) => e.stopPropagation()}>
+                                        <Trash2 class="size-4 text-destructive" />
+                                    </Popover.Trigger>
+                                    <Popover.Content class="w-56">
+                                        <div class="flex flex-col gap-3">
+                                            <div>
+                                                <span class="font-semibold block">Êtes-vous sûr ?</span>
+                                                <span class="text-sm text-muted-foreground">Cette action est irréversible.</span>
+                                            </div>
+                                            <div class="flex gap-2 justify-end">
+                                                <Popover.Close>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onclick={() => closePopover(user.id)}
+                                                    >
+                                                        Annuler
+                                                    </Button>
+                                                </Popover.Close>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onclick={() => handleDelete(user)}
+                                                >
+                                                    Supprimer
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Popover.Content>
+                                </Popover.Root>
+                            </Table.Cell>
+                        </Table.Row>
+                    {/each}
+                </Table.Body>
+            </Table.Root>
+        </div>
+    </div>
 {/if}
 
 <style>
-    table.user-table {
-        table-layout: fixed;
+    :global(table) {
         width: 100%;
-    }
-    table.user-table th,
-    table.user-table td {
-        width: calc(100% / 6);
+        table-layout: fixed;
     }
 </style>

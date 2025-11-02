@@ -33,7 +33,7 @@
 
     <!-- Sticky search / controls bar inside the scrolling container -->
     <div
-        class="border-border bg-background/80 supports-[backdrop-filter]:bg-background/90 sticky top-0 z-40 flex items-center justify-between gap-4 border-b px-0 py-2 pr-2 backdrop-blur">
+        class="border-border bg-background/80 supports-backdrop-filter:bg-background/90 sticky top-0 z-40 flex items-center justify-between gap-4 border-b px-0 py-2 pr-2 backdrop-blur">
         <GamesSearchBar recentGames={data.recentGames} />
         {#if slots.head}
             {@render slots.head()}
