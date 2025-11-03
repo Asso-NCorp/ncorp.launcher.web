@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Button } from "../ui/icon-button";
-    import { ArrowBigDownDash, ArrowBigUpDash, CircleStop, Play, Server, Trash2Icon, ZapIcon } from "@lucide/svelte";
+    import { ArrowBigDownDash, ArrowBigUpDash, CircleStop, Play, Server, StopCircle, Trash2Icon, ZapIcon } from "@lucide/svelte";
     import { t } from "$src/lib/translations";
     import { cn, getLocalApi } from "$src/lib/utils";
     import { GamesStore } from "$src/lib/states/games.svelte";
@@ -8,6 +8,7 @@
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
     import type { InstallableGameExtended } from "$src/lib/types";
     import { toast } from "svelte-sonner";
+    import { Progress } from "../ui/progress";
 
     let {
         game: installableGame,
@@ -56,7 +57,7 @@
             });
         } catch (error) {
             console.error(error);
-        }finally {
+        } finally {
             isGameQuitting = false;
         }
     };
@@ -76,22 +77,32 @@
             });
         } catch (error) {
             console.error(error);
-            toast.error("Erreur lors du démarrage du serveur local : " + (error as Error).message, { class: "bg-red-500" });
+            toast.error("Erreur lors du démarrage du serveur local : " + (error as Error).message, {
+                class: "bg-red-500",
+            });
         }
     };
-
 </script>
 
 <div>
     {#if liveAgentConnection.connectionState === "Connected" && liveServerConnection.connectionState === "Connected"}
         {#if game.isInstalling}
-            <Button
-                isLoading={game.isInstalling}
-                disabled={game.isInstalling}
-                class={cn("w-auto", klazz)}
-                icon={ArrowBigUpDash}>
-                {$t("installing")}
-            </Button>
+            <div class="flex flex-col gap-1 items-center overflow-hidden">
+                <Button
+                    isLoading={game.isInstalling}
+                    disabled={!game.isInstalling || game.installProgress > 50}
+                    variant="destructive"
+                    class={cn("w-auto", klazz)}
+                    icon={CircleStop}
+                    onclick={handleUninstallClick}>
+                    {$t("cancel")} {(game.installProgress ? ` (${game.installProgress}%)` : "")}
+                </Button>
+                <Progress
+                    class="h-1 w-full"
+                    value={game.installProgress}
+                    max={100}
+                    aria-label="Installation progress" />
+            </div>
         {:else if game.isInstalled}
             <div class="flex items-center">
                 {#if game.isPlaying}
@@ -105,35 +116,35 @@
                         {$t("exit")}
                     </Button>
                 {:else}
-                <div class="flex gap-2">
-                    <Button
-                        isLoading={game.isInstalling || game.isLoading || game.isPlaying}
-                        disabled={game.isInstalling || game.isLoading || game.isPlaying}
-                        variant="success"
-                        class={cn("w-auto", klazz)}
-                        onclick={handlePlayClick}
-                        icon={Play}>
-                        {$t("launch")}
-                    </Button>
-                    {#if game.hasLocalServer}
+                    <div class="flex gap-2">
                         <Button
                             isLoading={game.isInstalling || game.isLoading || game.isPlaying}
                             disabled={game.isInstalling || game.isLoading || game.isPlaying}
-                            variant="default"
-                            title={$t("start_server")}
+                            variant="success"
                             class={cn("w-auto", klazz)}
-                            onclick={handleStartServerClick}
-                            icon={Server}>
+                            onclick={handlePlayClick}
+                            icon={Play}>
+                            {$t("launch")}
                         </Button>
-                    {/if}
-                </div>
+                        {#if game.hasLocalServer}
+                            <Button
+                                isLoading={game.isInstalling || game.isLoading || game.isPlaying}
+                                disabled={game.isInstalling || game.isLoading || game.isPlaying}
+                                variant="default"
+                                title={$t("start_server")}
+                                class={cn("w-auto", klazz)}
+                                onclick={handleStartServerClick}
+                                icon={Server}>
+                            </Button>
+                        {/if}
+                    </div>
                 {/if}
                 <Button
                     isLoading={game.isInstalling}
                     disabled={game.isInstalling || game.isLoading || game.isPlaying}
                     variant="secondary"
                     title={$t("uninstall")}
-                    class={cn("w-auto text-danger", klazz)}
+                    class={cn("text-danger w-auto", klazz)}
                     icon={Trash2Icon}
                     onclick={handleUninstallClick}>
                 </Button>

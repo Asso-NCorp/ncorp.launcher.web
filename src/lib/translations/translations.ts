@@ -31,7 +31,7 @@ export default {
         home: "Accueil",
         settings: "Paramètres",
         installed: "Installé",
-        installing: "Installation en cours",
+        installing: "Installation...",
         sort_order: "Ordre de tri",
         welcome_to_the: "Bienvenue à la",
         log_in: "Se connecter",
