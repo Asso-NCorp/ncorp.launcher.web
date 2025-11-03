@@ -39,6 +39,7 @@
     import AdminControlsModal from "$src/lib/components/layout/AdminControlsModal.svelte";
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import { toast } from "svelte-sonner";
+    import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
 
     let loading = $state(false);
     let showAdminModal = $state(false);
@@ -359,6 +360,8 @@
 {/if}
 
 <WinnerOverlay bind:this={winnerOverlay} />
+
+<ReinstallModal />
 
 <style>
     :root {

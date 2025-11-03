@@ -1,11 +1,22 @@
 <script lang="ts">
-    import { Button } from "../ui/icon-button";
-    import { ArrowBigDownDash, ArrowBigUpDash, CircleStop, Play, Server, StopCircle, Trash2Icon, ZapIcon } from "@lucide/svelte";
+    import { Button, buttonVariants } from "../ui/icon-button";
+    import {
+        ArrowBigDownDash,
+        ArrowBigUpDash,
+        CircleStop,
+        Play,
+        RefreshCw,
+        Server,
+        StopCircle,
+        Trash2Icon,
+        ZapIcon,
+    } from "@lucide/svelte";
     import { t } from "$src/lib/translations";
     import { cn, getLocalApi } from "$src/lib/utils";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
+    import { reinstallModalStore } from "$src/lib/states/reinstall-modal.svelte";
     import type { InstallableGameExtended } from "$src/lib/types";
     import { toast } from "svelte-sonner";
     import { Progress } from "../ui/progress";
@@ -87,7 +98,7 @@
 <div>
     {#if liveAgentConnection.connectionState === "Connected" && liveServerConnection.connectionState === "Connected"}
         {#if game.isInstalling}
-            <div class="flex flex-col gap-1 items-center overflow-hidden">
+            <div class="flex flex-col items-center gap-1 overflow-hidden">
                 <Button
                     isLoading={game.isInstalling}
                     disabled={!game.isInstalling || game.installProgress > 50}
@@ -95,7 +106,8 @@
                     class={cn("w-auto", klazz)}
                     icon={CircleStop}
                     onclick={handleUninstallClick}>
-                    {$t("cancel")} {(game.installProgress ? ` (${game.installProgress}%)` : "")}
+                    {$t("cancel")}
+                    {game.installProgress ? ` (${game.installProgress}%)` : ""}
                 </Button>
                 <Progress
                     class="h-1 w-full"
@@ -124,8 +136,17 @@
                             class={cn("w-auto", klazz)}
                             onclick={handlePlayClick}
                             icon={Play}>
-                            {$t("launch")}
                         </Button>
+
+                        <Button
+                            isLoading={game.isInstalling || game.isLoading || game.isPlaying}
+                            disabled={game.isInstalling || game.isLoading || game.isPlaying}
+                            variant="info"
+                            class={cn("w-auto", klazz)}
+                            onclick={() => reinstallModalStore.open(game)}
+                            icon={RefreshCw}>
+                        </Button>
+
                         {#if game.hasLocalServer}
                             <Button
                                 isLoading={game.isInstalling || game.isLoading || game.isPlaying}

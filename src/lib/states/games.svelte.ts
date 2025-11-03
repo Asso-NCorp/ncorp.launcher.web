@@ -213,8 +213,8 @@ class GameStore {
         });
     };
 
-    installGame = async (game: InstallableGameExtended) => {
-        if (game.isInstalled) return;
+    installGame = async (game: InstallableGameExtended, reinstall?: boolean) => {
+        if (game.isInstalled && !reinstall) return;
         try {
             game.isInstalling = true;
             const result = await getLocalApi().install({ installableGame: game });
