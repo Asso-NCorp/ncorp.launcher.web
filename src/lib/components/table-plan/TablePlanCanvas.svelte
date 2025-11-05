@@ -6,7 +6,7 @@
     import { cn } from "$lib/utils";
     import { t } from "$lib/translations";
     import { Button } from "$lib/components/ui/button";
-    import { RotateCw, Trash2 } from "@lucide/svelte";
+    import { RotateCw, Trash2, ZoomIn, ZoomOut } from "@lucide/svelte";
     import TablePlanTableCard from "./TablePlanTableCard.svelte";
 
     interface User {
@@ -27,6 +27,7 @@
     const { room, mode = "editor", onDeleteTable, users = [], currentUserName } = $props();
 
     let canvasElement: HTMLDivElement | undefined;
+    let scrollContainer: HTMLDivElement | undefined;
     let draggedTable: TableWithSeats | null = $state(null);
     let dragOffset = $state({ x: 0, y: 0 });
     let hoveredTableId: string | null = $state(null);
@@ -34,10 +35,42 @@
     let resizeStartSize = $state({ width: 0, height: 0 });
     let resizeStartPos = $state({ x: 0, y: 0 });
     let displayTables = $state<TableWithSeats[]>([]);
+    let zoom = $state(1);
+    let canvasWidth = $state<number>(0);
+    let canvasHeight = $state<number>(0);
 
     const gridSize = 50;
 
-    // When room changes, animate in the tables sequentially
+    // Calculate canvas dimensions based on table positions
+    function calculateCanvasDimensions() {
+        if (!room?.tables || room.tables.length === 0) {
+            // Default minimum size: at least 800x600 pixels
+            canvasWidth = 1600; // 800px / 0.5 zoom minimum
+            canvasHeight = 1200; // 600px / 0.5 zoom minimum
+            return;
+        }
+
+        let maxX = 0;
+        let maxY = 0;
+
+        for (const table of room.tables) {
+            const tableRightEdge = (table.positionX + table.width) * gridSize;
+            const tableBottomEdge = (table.positionY + table.height) * gridSize;
+            maxX = Math.max(maxX, tableRightEdge);
+            maxY = Math.max(maxY, tableBottomEdge);
+        }
+
+        // Add 20% padding and ensure minimum size
+        canvasWidth = Math.max(1600, maxX * 1.2);
+        canvasHeight = Math.max(1200, maxY * 1.2);
+    }
+
+    // Recalculate dimensions when room or tables change
+    $effect(() => {
+        if (room?.tables) {
+            calculateCanvasDimensions();
+        }
+    });
     $effect(() => {
         if (room?.tables) {
             // Clear display tables to trigger animation
@@ -255,6 +288,7 @@
             console.error("Error resizing table:", err);
         } finally {
             resizingTable = null;
+            calculateCanvasDimensions();
         }
     }
 
@@ -302,6 +336,7 @@
             console.error("Error updating table position:", err);
         } finally {
             draggedTable = null;
+            calculateCanvasDimensions();
         }
     }
 
@@ -357,6 +392,33 @@
             console.error("Error rotating table:", err);
         }
     }
+
+    function handleZoomIn() {
+        zoom = Math.min(zoom + 0.2, 3);
+        updateCanvasZoom();
+    }
+
+    function handleZoomOut() {
+        zoom = Math.max(zoom - 0.2, 0.5);
+        updateCanvasZoom();
+    }
+
+    function handleResetZoom() {
+        zoom = 1;
+        updateCanvasZoom();
+    }
+
+    function updateCanvasZoom() {
+        if (canvasElement) {
+            canvasElement.style.transform = `scale(${zoom})`;
+            canvasElement.style.transformOrigin = "top left";
+        }
+        // Reset scroll position when back to 100% zoom
+        if (zoom === 1 && scrollContainer) {
+            scrollContainer.scrollLeft = 0;
+            scrollContainer.scrollTop = 0;
+        }
+    }
 </script>
 
 <svelte:window
@@ -367,29 +429,62 @@
     onmouseup={handleMouseUp}
     onmouseleave={handleMouseUp} />
 
-<div
-    bind:this={canvasElement}
-    onclick={handleCanvasClick}
-    role="region"
-    aria-label="Table plan canvas"
-    class={cn(
-        "bg-background relative",
-        "border-border overflow-auto rounded-lg border-2",
-        tablePlanState.isDragging && "cursor-grabbing",
-    )}
-    style={`
-        min-width: 100%;
-        min-height: 100%;
-        background-image: ${
-            mode === "viewer"
-                ? `radial-gradient(circle, var(--border) 1px, transparent 1px)`
-                : `linear-gradient(0deg, transparent calc(100% - 1px), var(--border) calc(100% - 1px)),
-            linear-gradient(90deg, transparent calc(100% - 1px), var(--border) calc(100% - 1px))`
-        };
-        background-size: ${mode === "viewer" ? `${gridSize}px ${gridSize}px` : `${gridSize}px ${gridSize}px`};
-        background-position: ${mode === "viewer" ? `0 0` : `0 0`};
-        background-color: var(--background);
-    `}>
+<!-- Zoom controls for editor mode -->
+{#if mode === "editor"}
+    <div class="absolute right-4 bottom-4 z-30 flex flex-col gap-2">
+        <Button
+            size="sm"
+            variant="outline"
+            class="h-8 w-8 p-0"
+            onclick={handleZoomIn}
+            title="Zoom in">
+            <ZoomIn size={16} />
+        </Button>
+        <Button
+            size="sm"
+            variant="outline"
+            class="h-8 w-8 p-0"
+            onclick={handleZoomOut}
+            title="Zoom out">
+            <ZoomOut size={16} />
+        </Button>
+        <Button
+            size="sm"
+            variant="outline"
+            class="h-8 w-8 p-0"
+            onclick={handleResetZoom}
+            title="Reset zoom">
+            <span class="text-xs font-bold">{Math.round(zoom * 100)}%</span>
+        </Button>
+    </div>
+{/if}
+
+<!-- Scroll container for pan -->
+<div bind:this={scrollContainer} class="relative h-full w-full overflow-auto">
+    <div
+        bind:this={canvasElement}
+        onclick={handleCanvasClick}
+        role="region"
+        aria-label="Table plan canvas"
+        class={cn(
+            "bg-background relative",
+            "border-border rounded-lg",
+            tablePlanState.isDragging && "cursor-grabbing",
+            mode === "editor" ? "" : "border-2 overflow-auto",
+        )}
+        style={`
+            width: ${canvasWidth}px;
+            height: ${canvasHeight}px;
+            background-image: ${
+                mode === "viewer"
+                    ? `radial-gradient(circle, var(--border) 1px, transparent 1px)`
+                    : `linear-gradient(0deg, transparent calc(100% - 1px), var(--border) calc(100% - 1px)),
+                linear-gradient(90deg, transparent calc(100% - 1px), var(--border) calc(100% - 1px))`
+            };
+            background-size: ${mode === "viewer" ? `${gridSize}px ${gridSize}px` : `${gridSize}px ${gridSize}px`};
+            background-position: ${mode === "viewer" ? `0 0` : `0 0`};
+            background-color: var(--background);
+        `}>
     {#if !room}
         <div class="absolute inset-0 flex items-center justify-center">
             <p class="text-muted-foreground/40 text-lg font-medium">
@@ -459,6 +554,7 @@
             </div>
         {/if}
     {/each}
+    </div>
 </div>
 
 <style>

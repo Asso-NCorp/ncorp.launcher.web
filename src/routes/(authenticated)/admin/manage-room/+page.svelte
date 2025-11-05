@@ -215,7 +215,7 @@
     }
 </script>
 
-<div class="bg-background flex h-full flex-col gap-4 p-6">
+<div class="bg-background flex h-full flex-col gap-4 p-6 overflow-hidden">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-foreground text-3xl font-bold">{t.get("table_plan_manager")}</h1>
@@ -275,7 +275,7 @@
             </div>
         </div>
     {:else if tablePlanState.currentEdition}
-        <div class="flex h-[calc(100%-200px)] gap-4">
+        <div class="flex min-h-0 flex-1 gap-4">
             <!-- Sidebar -->
             <div class="flex w-64 flex-col gap-4 overflow-hidden">
                 <!-- Rooms -->
@@ -347,7 +347,7 @@
             </div>
 
             <!-- Canvas -->
-            <div class="flex flex-1 flex-col gap-4">
+            <div class="flex min-w-0 flex-1 flex-col gap-4">
                 <div class="flex items-center justify-between gap-4">
                     <p class="text-muted-foreground text-sm">
                         {t.get("rooms")}: {tablePlanState.currentRoom?.name || t.get("no_room_selected")}
@@ -356,7 +356,7 @@
                         <AddTableDialog />
                     {/if}
                 </div>
-                <div class="border-border flex-1 overflow-hidden rounded-lg border">
+                <div class="border-border relative flex-1 overflow-hidden rounded-lg border">
                     <TablePlanCanvas room={tablePlanState.currentRoom} onDeleteTable={handleDeleteTable} {users} />
                 </div>
             </div>
