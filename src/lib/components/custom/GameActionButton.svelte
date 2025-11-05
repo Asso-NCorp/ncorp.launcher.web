@@ -142,6 +142,7 @@
                             isLoading={game.isInstalling || game.isLoading || game.isPlaying}
                             disabled={game.isInstalling || game.isLoading || game.isPlaying}
                             variant="info"
+                            title={$t("reinstall")}
                             class={cn("w-auto", klazz)}
                             onclick={() => reinstallModalStore.open(game)}
                             icon={RefreshCw}>
