@@ -102,6 +102,9 @@ model user {
   room_participations room_participant[]
   room_view           room_view[]
   user_settings       user_settings?
+  edition_created     edition[]          @relation("edition_created_by")
+  edition_updated     edition[]          @relation("edition_updated_by")
+  table_seats         table_seat[]
 }
 
 model verification {
@@ -538,4 +541,73 @@ enum message_type {
   TEXT
   SYSTEM
   EVENT
+}
+
+/// ====== TABLE PLAN MANAGER ======
+/// Editions (events) that can contain multiple rooms with table plans
+model edition {
+  id          String         @id @default(uuid()) @db.Char(36)
+  name        String         @db.VarChar(255)
+  description String?        @db.Text
+  startDate   DateTime       @db.DateTime(0)
+  endDate     DateTime       @db.DateTime(0)
+  createdAt   DateTime       @default(now()) @db.DateTime(0)
+  updatedAt   DateTime       @default(now()) @updatedAt @db.DateTime(0)
+  createdBy   String         @db.VarChar(36)
+  updatedBy   String         @db.VarChar(36)
+  creator     user           @relation("edition_created_by", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updater     user           @relation("edition_updated_by", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rooms       edition_room[]
+
+  @@index([createdBy], map: "edition_created_by_FK")
+  @@index([updatedBy], map: "edition_updated_by_FK")
+  @@index([startDate], map: "edition_start_date_IDX")
+}
+
+/// Rooms within an edition (e.g., "Main Hall", "VIP Section")
+model edition_room {
+  id        String   @id @default(uuid()) @db.Char(36)
+  editionId String   @db.Char(36)
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @default(now()) @updatedAt @db.DateTime(0)
+  edition   edition  @relation(fields: [editionId], references: [id], onDelete: Cascade)
+  tables    table[]
+
+  @@unique([editionId, name], map: "edition_room_unique_name")
+  @@index([editionId], map: "edition_room_edition_idx")
+}
+
+/// Tables within a room (placed on 2D plane with grid snapping)
+model table {
+  id        String       @id @default(uuid()) @db.Char(36)
+  roomId    String       @db.Char(36)
+  name      String       @db.VarChar(100)
+  positionX Int          @default(0) /// Grid position X
+  positionY Int          @default(0) /// Grid position Y
+  width     Int          @default(2) /// Width in grid units
+  height    Int          @default(2) /// Height in grid units
+  capacity  Int          @default(8) /// Number of seats
+  createdAt DateTime     @default(now()) @db.DateTime(0)
+  updatedAt DateTime     @default(now()) @updatedAt @db.DateTime(0)
+  room      edition_room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  seats     table_seat[]
+
+  @@index([roomId], map: "table_room_idx")
+}
+
+/// Seats at a table with optional user assignments
+model table_seat {
+  id        String   @id @default(uuid()) @db.Char(36)
+  tableId   String   @db.Char(36)
+  seatIndex Int /// Position around the table (0-N)
+  userId    String?  @db.VarChar(36) /// Optional user at this seat
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @default(now()) @updatedAt @db.DateTime(0)
+  table     table    @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  user      user?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([tableId, seatIndex], map: "table_seat_unique")
+  @@index([tableId], map: "table_seat_table_idx")
+  @@index([userId], map: "table_seat_user_idx")
 }

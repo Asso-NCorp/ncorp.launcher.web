@@ -25,12 +25,24 @@ const isUnprotected = (routeId: string | null, pathname: string) => {
     return false; // tout le reste est protégé
 };
 
+const isAdminRoute = (routeId: string | null, pathname: string): boolean => {
+    // Routes avec le groupe (admin) dans le routeId
+    if (routeId && routeId.includes("(admin)")) return true;
+
+    // Routes API avec /admin dans le chemin
+    if (pathname.startsWith("/api/admin")) return true;
+
+    return false;
+};
+
 export const handle: Handle = async ({ event, resolve }) => {
     const session = await auth.api.getSession(event.request);
 
     // PROTÉGER PAR DÉFAUT
     if (!isUnprotected(event.route.id, event.url.pathname)) {
-        if (!session?.user) redirect(302, PUBLIC_SIGNIN_PATH);
+        if (!session?.user) {
+            redirect(302, PUBLIC_SIGNIN_PATH);
+        }
 
         const token = event.cookies.get("token");
         if (!token) {
@@ -40,8 +52,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 
         event.locals.token = token;
 
-        // CHECK ADMIN
-        if (event.route.id?.includes("(admin)")) {
+        // CHECK ADMIN - for both page routes and API routes
+        if (isAdminRoute(event.route.id, event.url.pathname)) {
             const roles: string[] = session?.user?.role
                 ? Array.isArray(session.user.role)
                     ? session.user.role
@@ -49,8 +61,18 @@ export const handle: Handle = async ({ event, resolve }) => {
                 : [];
 
             if (!roles.includes("admin")) {
-                logger.warn(`User ${session?.user?.id} tried to access admin route`);
-                redirect(302, "/forbidden"); // crée une page 403 ou redirige /signin
+                logger.warn(`User ${session?.user?.id} tried to access admin route: ${event.url.pathname}`);
+
+                // For API routes, return 403 error
+                if (event.url.pathname.startsWith("/api")) {
+                    return new Response(JSON.stringify({ error: "Forbidden" }), {
+                        status: 403,
+                        headers: { "Content-Type": "application/json" },
+                    });
+                }
+
+                // For pages, redirect to forbidden
+                redirect(302, "/forbidden");
             }
         }
     }

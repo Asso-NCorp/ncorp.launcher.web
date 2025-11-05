@@ -9,6 +9,7 @@
         RefreshCcwDot,
         Settings2,
         Star,
+        Table,
         Users,
     } from "@lucide/svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
@@ -17,6 +18,7 @@
     import { toast } from "svelte-sonner";
     import { Card } from "../ui/card";
     import { global } from "$src/lib/states/global.svelte";
+    import SideMenu from "./SideMenu.svelte";
     let { children, class: klazz }: { children?: Snippet; class?: string } = $props();
 
     let refreshing = $state(false);
@@ -71,6 +73,13 @@
         label="FAQ"
         class={global.sidebarCollapsed ? "p-2" : ""}
         icon={CircleQuestionMark}
+        iconOnly={global.sidebarCollapsed} />
+
+    <SideMenuSubItem
+        href="/admin/manage-room"
+        label="Plan de salle"
+        class={global.sidebarCollapsed ? "p-2" : ""}
+        icon={Table}
         iconOnly={global.sidebarCollapsed} />
 
     <!-- Actions section - always visible but adapts to collapsed state -->

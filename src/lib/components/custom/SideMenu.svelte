@@ -4,7 +4,7 @@
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import {
-    CircleQuestionMark,
+        CircleQuestionMark,
         CloudDownload,
         FolderOpen,
         Gamepad2,
@@ -12,6 +12,8 @@
         MicVocal,
         PackageOpen,
         PackagePlus,
+        RefreshCcwDot,
+        Table,
     } from "@lucide/svelte";
     import SideMenuItem from "./SideMenuItem.svelte";
     import { cn, getLocalApi } from "$src/lib/utils";
@@ -67,9 +69,9 @@
     };
 </script>
 
-<aside class={cn("h-full min-w-0 min-h-0", klazz)} aria-label="Sidebar">
-    <Card class="relative flex h-full min-h-0 w-auto min-w-0 flex-col py-0 gap-0 overflow-hidden border-none">
-    <ScrollArea class="min-w-0 min-h-0 flex-1">
+<aside class={cn("h-full min-h-0 min-w-0", klazz)} aria-label="Sidebar">
+    <Card class="relative flex h-full min-h-0 w-auto min-w-0 flex-col gap-0 overflow-hidden border-none py-0">
+        <ScrollArea class="min-h-0 min-w-0 flex-1">
             <div class={cn("min-w-0 px-4", global.sidebarCollapsed && "px-2")}>
                 <!-- Added padding for content within ScrollArea -->
                 <SideMenuItem
@@ -89,7 +91,7 @@
                         icon={PackageOpen}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/my-games"
-                        label={$t("my_games") + ` (${GamesStore.allGames.filter(g => g.isInstalled).length})`}
+                        label={$t("my_games") + ` (${GamesStore.allGames.filter((g) => g.isInstalled).length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={PackagePlus}
@@ -105,7 +107,6 @@
                         label={$t("chat")}
                         iconOnly={global.sidebarCollapsed} />
 
-
                     <SideMenuSubItem
                         icon={MicVocal}
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
@@ -117,6 +118,13 @@
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
                         label="Télécharger l'agent"
+                        iconOnly={global.sidebarCollapsed} />
+
+                    <SideMenuSubItem
+                        href="/table-plans"
+                        label="Plan de salle"
+                        class={global.sidebarCollapsed ? "p-2" : ""}
+                        icon={Table}
                         iconOnly={global.sidebarCollapsed} />
 
                     {#if liveAgentConnection.isConnected === false}
@@ -144,7 +152,7 @@
                     {#if user?.role?.includes("admin")}
                         <div
                             class={cn(
-                                "relative flex h-auto w-auto flex-col rounded-lg antialiased dark:bg-background-dark",
+                                "dark:bg-background-dark relative flex h-auto w-auto flex-col rounded-lg antialiased",
                                 global.sidebarCollapsed ? "items-center" : "items-center p-4",
                             )}>
                             <!-- <BackgroundBeams /> -->
@@ -155,7 +163,9 @@
                         </div>
                     {/if}
 
-                    <SideMenuItem label="Actions rapides" class={global.sidebarCollapsed ? "text-xs truncate text-ellipsis text-wrap" : ""} />
+                    <SideMenuItem
+                        label="Actions rapides"
+                        class={global.sidebarCollapsed ? "truncate text-xs text-wrap text-ellipsis" : ""} />
 
                     <div
                         class={cn(
