@@ -25,6 +25,7 @@
     let canvasElement: HTMLDivElement | undefined = $state();
     let scrollContainer: HTMLDivElement | undefined = $state();
     let users = $state<any[]>([]);
+    let currentUser = $state(data.user);
 
     onMount(async () => {
         await loadUsers();
@@ -38,6 +39,23 @@
             }
         } catch (err) {
             console.error("Error loading users:", err);
+        }
+    }
+
+    function getRelativeTime(date: Date | string): string {
+        const targetDate = typeof date === "string" ? new Date(date) : date;
+        const now = new Date();
+        const diffMs = targetDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) {
+            return `il y a ${Math.abs(diffDays)} jour${Math.abs(diffDays) > 1 ? "s" : ""}`;
+        } else if (diffDays === 0) {
+            return "Aujourd'hui";
+        } else if (diffDays === 1) {
+            return "Demain";
+        } else {
+            return `Dans ${diffDays} jour${diffDays > 1 ? "s" : ""}`;
         }
     }
 
@@ -145,6 +163,23 @@
 
             <!-- Canvas -->
             <div class="flex min-h-0 flex-1 flex-col gap-4">
+                <!-- Edition Header Card -->
+                {#if selectedEdition && selectedRoom}
+                    <div class="border-border bg-card rounded-lg border p-3 text-center">
+                        <h2 class="text-2xl font-bold">{selectedEdition.name}</h2>
+                        {#if selectedEdition}
+                            <p class="text-muted-foreground mt-1 text-sm">
+                                {new Date(selectedEdition.startDate).toLocaleDateString()} - {new Date(
+                                    selectedEdition.endDate,
+                                ).toLocaleDateString()}
+                            </p>
+                            <p class="text-foreground mt-1 text-xs font-medium">
+                                {getRelativeTime(selectedEdition.endDate)}
+                            </p>
+                        {/if}
+                        <p class="text-muted-foreground mt-2 text-xs"><span class="font-medium">Salle :</span> {selectedRoom.name}</p>
+                    </div>
+                {/if}
                 <div class="border-border relative min-h-0 flex-1 rounded-lg border">
                     {#if selectedRoom}
                         <!-- Zoom Controls -->
@@ -176,28 +211,7 @@
                         </div>
                         <div bind:this={scrollContainer} class="h-full w-full overflow-auto">
                             <div bind:this={canvasElement} class="relative h-full w-full origin-top-left">
-                                <!-- Pixel Grid Overlay -->
-                                <div
-                                    class="pointer-events-none absolute top-0 right-0 left-0 z-10 mask-[linear-gradient(to_bottom,rgba(255,255,255,1)_0%,rgba(255,255,255,0.5)_60%,rgba(255,255,255,0)_100%)] opacity-15"
-                                    style={`height: 200px; background-image: url('data:image/svg+xml,<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" fill="none"/><rect width="20" height="20" fill="hsl(270 85%25 65%25)"/><rect x="20" y="20" width="20" height="20" fill="hsl(270 85%25 65%25)"/></svg>'); background-size: 40px 40px;`} />
-                                <!-- Edition Info Overlay -->
-                                <div
-                                    class="pointer-events-none absolute top-0 right-0 left-0 z-20 bg-linear-to-b from-black/20 to-transparent p-6 text-center">
-                                    <h2 class="text-3xl font-bold text-white drop-shadow-lg">
-                                        {selectedEdition?.name}
-                                    </h2>
-                                    {#if selectedEdition}
-                                        <p class="mt-2 text-lg text-white/80 drop-shadow-md">
-                                            {new Date(selectedEdition.createdAt).toLocaleDateString()} - {new Date(
-                                                selectedEdition.updatedAt,
-                                            ).toLocaleDateString()}
-                                        </p>
-                                    {/if}
-                                    <p class="mt-3 text-sm text-white/70 drop-shadow-md">
-                                        {selectedRoom?.name}
-                                    </p>
-                                </div>
-                                <TablePlanCanvas room={selectedRoom} mode="viewer" onDeleteTable={() => {}} {users} />
+                                <TablePlanCanvas room={selectedRoom} mode="viewer" onDeleteTable={() => {}} {users} currentUserName={currentUser?.name} />
                             </div>
                         </div>
                     {:else}

@@ -21,9 +21,10 @@
         mode?: "editor" | "viewer";
         onDeleteTable?: (tableId: string) => void | undefined;
         users?: User[];
+        currentUserName?: string;
     }
 
-    const { room, mode = "editor", onDeleteTable, users = [] } = $props();
+    const { room, mode = "editor", onDeleteTable, users = [], currentUserName } = $props();
 
     let canvasElement: HTMLDivElement | undefined;
     let draggedTable: TableWithSeats | null = $state(null);
@@ -381,11 +382,13 @@
         min-height: 100%;
         background-image: ${
             mode === "viewer"
-                ? "none"
+                ? `radial-gradient(circle, var(--border) 1px, transparent 1px)`
                 : `linear-gradient(0deg, transparent calc(100% - 1px), var(--border) calc(100% - 1px)),
             linear-gradient(90deg, transparent calc(100% - 1px), var(--border) calc(100% - 1px))`
         };
-        background-size: ${gridSize}px ${gridSize}px;
+        background-size: ${mode === "viewer" ? `${gridSize}px ${gridSize}px` : `${gridSize}px ${gridSize}px`};
+        background-position: ${mode === "viewer" ? `0 0` : `0 0`};
+        background-color: var(--background);
     `}>
     {#if !room}
         <div class="absolute inset-0 flex items-center justify-center">
@@ -405,6 +408,8 @@
             class={cn(
                 "absolute transition-shadow duration-200 select-none",
                 mode === "editor" && tablePlanState.selectedTableId === table.id
+                    ? "ring-primary z-20 shadow-lg ring-2"
+                    : mode === "viewer" && currentUserName === table.name
                     ? "ring-primary z-20 shadow-lg ring-2"
                     : "z-10 shadow-md hover:shadow-lg",
                 mode === "editor" && tablePlanState.isDragging ? "cursor-grabbing" : "cursor-pointer",
