@@ -15,6 +15,9 @@ import { parse as parseTopLevelDomain } from "tldts";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { genericOAuth } from "better-auth/plugins";
 
+// Compute the domain once to ensure consistency across all cookie operations
+const AUTH_DOMAIN = `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`;
+
 export const auth = betterAuth({
     database: createPool({
         host: MYSQL_HOST,
@@ -27,7 +30,7 @@ export const auth = betterAuth({
     advanced: {
         crossSubDomainCookies: {
             enabled: true,
-            domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
+            domain: AUTH_DOMAIN,
         },
         defaultCookieAttributes: {
             secure: PUBLIC_BETTER_AUTH_URL.startsWith("https://"),
@@ -96,13 +99,13 @@ export const auth = betterAuth({
                 ctx.setCookie("token", "", {
                     httpOnly: true,
                     maxAge: 0,
-                    domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
+                    domain: AUTH_DOMAIN,
                 });
 
                 ctx.setCookie("nlan.auth", "", {
                     httpOnly: true,
                     maxAge: 0,
-                    domain: `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`,
+                    domain: AUTH_DOMAIN,
                 });
             }
 
@@ -125,7 +128,7 @@ export const auth = betterAuth({
 
                         // 3. Pose le JWT dans un cookie partagé
                         ctx.setCookie("token", jwt, {
-                            domain: ".n-lan.com",
+                            domain: AUTH_DOMAIN,
                             path: "/",
                             httpOnly: true,
                             secure: true,

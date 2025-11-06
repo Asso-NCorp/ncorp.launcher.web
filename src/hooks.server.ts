@@ -4,9 +4,70 @@ import { svelteKitHandler } from "better-auth/svelte-kit";
 import { auth } from "$lib/auth/server";
 import { db } from "$srv/db";
 import { building } from "$app/environment";
-import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
+import { PUBLIC_BACKEND_API_URL, PUBLIC_BETTER_AUTH_URL } from "$env/static/public";
 import { logger } from "better-auth";
 import { PUBLIC_SIGNIN_PATH } from "$env/static/public";
+import { parse as parseTopLevelDomain } from "tldts";
+
+const AUTH_DOMAIN = `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`;
+
+/**
+ * Attempts to refresh the JWT token from the session if the token cookie is missing or invalid.
+ * This prevents unexpected logouts when the token cookie is cleared but the session is still valid.
+ */
+async function ensureTokenFromSession(event: any, session: any): Promise<string | null> {
+    let token = event.cookies.get("token");
+
+    logger.info(`[TOKEN_CHECK] Cookie exists: ${!!token}, Session token exists: ${!!session?.session?.token}`, {
+        userId: session?.user?.id,
+    });
+
+    // If no token cookie but session exists, try to get JWT from session
+    if (!token && session?.session?.token) {
+        try {
+            logger.info("Token cookie missing, attempting to refresh from session", {
+                userId: session?.user?.id,
+            });
+            const res = await fetch(`${PUBLIC_BETTER_AUTH_URL}/api/auth/token`, {
+                headers: {
+                    Authorization: `Bearer ${session.session.token}`,
+                },
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                token = data.token;
+
+                // Set the token cookie for future requests
+                if (token) {
+                    event.cookies.set("token", token, {
+                        domain: AUTH_DOMAIN,
+                        path: "/",
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: "none",
+                        maxAge: 60 * 60 * 24 * 30, // 30 days
+                    });
+                    logger.info("Token refreshed successfully from session", {
+                        userId: session?.user?.id,
+                    });
+                }
+            } else {
+                logger.warn("Failed to refresh token from session", {
+                    status: res.status,
+                    userId: session?.user?.id,
+                });
+            }
+        } catch (e) {
+            logger.error("Error refreshing token from session", {
+                error: e instanceof Error ? e.message : e,
+                userId: session?.user?.id,
+            });
+        }
+    }
+
+    return token || null;
+}
 
 const isUnprotected = (routeId: string | null, pathname: string) => {
     // 1) groupe public/guest
@@ -16,8 +77,9 @@ const isUnprotected = (routeId: string | null, pathname: string) => {
     const publicPages = new Set([PUBLIC_SIGNIN_PATH, "/signup"]);
     if (publicPages.has(pathname)) return true;
 
-    // 3) routes internes better-auth
-    if (pathname.startsWith("/api/auth")) return true;
+    // 3) routes internes (use startsWith for nested paths)
+    const internalRoutes = ["/api/auth", "/api/medias", "/api/avatars", "/api/resources"];
+    if (internalRoutes.some((route) => pathname.startsWith(route))) return true;
 
     // 4) assets / fichiers sans route (favicon, images, etc.)
     if (routeId === null) return true;
@@ -37,23 +99,32 @@ const isAdminRoute = (routeId: string | null, pathname: string): boolean => {
 
 export const handle: Handle = async ({ event, resolve }) => {
     const session = await auth.api.getSession(event.request);
+    const pathname = event.url.pathname;
+    const isProtected = !isUnprotected(event.route.id, pathname);
 
     // PROTÉGER PAR DÉFAUT
-    if (!isUnprotected(event.route.id, event.url.pathname)) {
+    if (isProtected) {
         if (!session?.user) {
+            logger.error(`[HOOKS] Access denied - no user for ${pathname}`);
             redirect(302, PUBLIC_SIGNIN_PATH);
         }
 
-        const token = event.cookies.get("token");
+        // Try to get token from cookie, or refresh from session if missing
+        const token = await ensureTokenFromSession(event, session);
         if (!token) {
-            logger.error("No token in cookies");
+            logger.error(`[HOOKS] Access denied - no token available for ${pathname}`, {
+                userId: session?.user?.id,
+            });
             redirect(302, PUBLIC_SIGNIN_PATH);
         }
 
         event.locals.token = token;
+        logger.info(`[HOOKS] Token set successfully for ${pathname}`, {
+            userId: session?.user?.id,
+        });
 
         // CHECK ADMIN - for both page routes and API routes
-        if (isAdminRoute(event.route.id, event.url.pathname)) {
+        if (isAdminRoute(event.route.id, pathname)) {
             const roles: string[] = session?.user?.role
                 ? Array.isArray(session.user.role)
                     ? session.user.role
@@ -61,10 +132,13 @@ export const handle: Handle = async ({ event, resolve }) => {
                 : [];
 
             if (!roles.includes("admin")) {
-                logger.warn(`User ${session?.user?.id} tried to access admin route: ${event.url.pathname}`);
+                logger.warn(`[HOOKS] Admin access denied for ${pathname}`, {
+                    userId: session?.user?.id,
+                    roles,
+                });
 
                 // For API routes, return 403 error
-                if (event.url.pathname.startsWith("/api")) {
+                if (pathname.startsWith("/api")) {
                     return new Response(JSON.stringify({ error: "Forbidden" }), {
                         status: 403,
                         headers: { "Content-Type": "application/json" },

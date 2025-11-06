@@ -181,7 +181,8 @@ export const actions: Actions = {
                 maxAge: 60 * 60 * 24 * 30, // 30 days
                 path: "/",
                 httpOnly: true,
-                sameSite: "lax",
+                secure: true,
+                sameSite: "none",
                 ...(apexDomain && { domain: apexDomain }),
             });
 
