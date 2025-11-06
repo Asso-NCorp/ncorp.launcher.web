@@ -227,9 +227,9 @@
 					preload="auto" />
 
 				<!-- dégradés -->
-				<!-- <div class="absolute inset-x-0 top-0 h-[60%] bg-linear-to-b from-black/70 via-black/40 to-transparent"></div>
+				<div class="absolute inset-x-0 top-0 h-[60%] bg-linear-to-b from-black/70 via-black/40 to-transparent"></div>
 				<div class="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/85 via-black/55 to-transparent"></div>
-				<div class="absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-black/70 via-black/45 to-transparent"></div> -->
+				<div class="absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-black/70 via-black/45 to-transparent"></div>
 
 				<!-- texte -->
 				<div class="text-foreground absolute right-auto bottom-16 left-0 z-20 flex max-w-xl flex-col gap-2 p-6">
