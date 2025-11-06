@@ -16,6 +16,7 @@
 
     // New: detect if Icon is actually an image URL (string)
     let iconIsString = typeof Icon === 'string';
+    let iconComponent = iconIsString ? undefined : (Icon as any);
 </script>
 
 {#if global.sidebarCollapsed}
@@ -37,17 +38,18 @@
                                 "size-8 shrink-0 rounded-md p-1 object-contain group-hover:text-primary dark:bg-subtle dark:group-hover:bg-primary dark:group-hover:text-white",
                                 iconClass,
                                 {
-                                    "!bg-primary text-white!": global.currentPath === href,
+                                    "bg-primary! text-white!": global.currentPath === href,
                                     "opacity-50": href === undefined,
                                 },
                             )} />
                     {:else}
-                        <Icon
+                        <svelte:component
+                            this={iconComponent}
                             class={cn(
                                 "size-8 shrink-0 rounded-md p-1 group-hover:text-primary dark:bg-subtle dark:group-hover:bg-primary dark:group-hover:text-white",
                                 iconClass,
                                 {
-                                    "!bg-primary text-white!": global.currentPath === href,
+                                    "bg-primary! text-white!": global.currentPath === href,
                                     "opacity-50": href === undefined,
                                 },
                             )} />
@@ -60,7 +62,7 @@
                 <button
                     type="button"
                     class={cn(
-                        "group flex min-w-0 items-center gap-2 rounded-(--radius) hover:text-white/80",
+                        "group flex min-w-0 items-center gap-2 rounded-lg hover:text-white/80",
                         iconOnly && "justify-center",
                         klazz,
                     )}
@@ -74,7 +76,8 @@
                                 iconClass,
                             )} />
                     {:else}
-                        <Icon
+                        <svelte:component
+                            this={iconComponent}
                             class={cn(
                                 "size-8 shrink-0 rounded-md p-1 group-hover:text-primary dark:bg-subtle dark:group-hover:bg-primary dark:group-hover:text-white",
                                 iconClass,
@@ -94,7 +97,7 @@
     <a
         {href}
         class={cn(
-            "group flex min-w-0 items-center gap-2 rounded-(--radius) hover:text-white/80",
+            "group flex min-w-0 items-center gap-2 rounded-lg hover:text-white/80",
             iconOnly && "justify-center",
             klazz,
         )}
@@ -107,17 +110,18 @@
                     "size-8 shrink-0 rounded-md p-1 object-contain group-hover:text-primary dark:bg-subtle dark:group-hover:bg-primary dark:group-hover:text-white",
                     iconClass,
                     {
-                        "!bg-primary text-white!": global.currentPath === href,
+                        "bg-primary! text-white!": global.currentPath === href,
                         "opacity-50": href === undefined,
                     },
                 )} />
         {:else}
-            <Icon
+            <svelte:component
+                this={iconComponent}
                 class={cn(
                     "size-8 shrink-0 rounded-md p-1 group-hover:text-primary dark:bg-subtle dark:group-hover:bg-primary dark:group-hover:text-white",
                     iconClass,
                     {
-                        "!bg-primary text-white!": global.currentPath === href,
+                        "bg-primary! text-white!": global.currentPath === href,
                         "opacity-50": href === undefined,
                     },
                 )} />
@@ -130,7 +134,7 @@
     <button
         type="button"
         class={cn(
-            "group flex min-w-0 items-center gap-2 rounded-(--radius) hover:text-white/80",
+            "group flex min-w-0 items-center gap-2 rounded-lg hover:text-white/80",
             iconOnly && "justify-center",
             klazz,
         )}
@@ -145,7 +149,8 @@
                     iconClass,
                 )} />
         {:else}
-            <Icon
+            <svelte:component
+                this={iconComponent}
                 class={cn(
                     "size-8 shrink-0 rounded-md p-1 group-hover:text-primary dark:bg-subtle dark:group-hover:bg-primary dark:group-hover:text-white",
                     iconClass,

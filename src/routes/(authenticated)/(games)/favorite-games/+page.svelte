@@ -1,9 +1,7 @@
 <script lang="ts">
     import GamesDataTable from "$src/lib/components/custom/GamesDataTable.svelte";
     import GamesGrid from "$src/lib/components/custom/GamesGrid.svelte";
-    import { ArrowBigUpDash, Heart } from "@lucide/svelte";
     import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
-    import { Button } from "$src/lib/components/ui/button";
     import { fly } from "svelte/transition";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { global } from "$src/lib/states/global.svelte";
@@ -11,9 +9,10 @@
     import { Badge } from "$src/lib/components/ui/badge";
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import { t } from "$src/lib/translations";
+    import { Heart } from "@lucide/svelte";
 
     let filteredGames = $derived(
-        [...GamesStore.games].sort((a, b) => a.title.localeCompare(b.title)).filter((game) => game.isFavorite),
+        [...GamesStore.games].sort((a, b) => a.title!.localeCompare(b.title!)).filter((game) => game.isFavorite),
     );
 
     // Defer registration until snippets exist; ensure cleanup fires.

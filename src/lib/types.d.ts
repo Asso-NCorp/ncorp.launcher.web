@@ -3,7 +3,7 @@ import type { InstallableGame } from "./shared-models";
 
 export type SideMenuSubItemProps = {
     href?: string;
-    icon?: typeof IconType;
+    icon?: typeof IconType | string;
     class?: string;
     iconClass?: string;
     label: string;
