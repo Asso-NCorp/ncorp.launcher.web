@@ -20,14 +20,14 @@
 </script>
 
 {#if visibleLinks.length > 0 || loading}
-    <Card.Root class={cn("mb-4 w-full overflow-hidden border-x-0", global.sidebarCollapsed && "mb-2")}>
+    <Card.Root class={cn("mb-0 w-full overflow-hidden border-x-0 gap-0! py-2", global.sidebarCollapsed && "mb-2")}>
         <!-- Always show header, but adapt styling -->
-        <Card.Header class={cn("p-3 pb-0", global.sidebarCollapsed && "p-1 pb-0")}>
+        <Card.Header class={cn("px-4 pb-2", global.sidebarCollapsed && "px-2 pb-2")}>
             <Card.Title class={cn("text-sm font-medium", global.sidebarCollapsed && "text-center text-xs")}>
                 {global.sidebarCollapsed ? "Liens" : $t("quick_links")}
             </Card.Title>
         </Card.Header>
-        <Card.Content class={cn("p-3 pt-2", global.sidebarCollapsed && "p-1")}>
+        <Card.Content class={cn("px-4 py-2", global.sidebarCollapsed && "px-2 py-2")}>
             {#if loading}
                 <div class="space-y-2">
                     <Skeleton class={cn("h-6 w-full", global.sidebarCollapsed && "h-4")} />
@@ -38,7 +38,7 @@
                     {global.sidebarCollapsed ? "!" : error}
                 </p>
             {:else}
-                <div class={cn("flex gap-1", global.sidebarCollapsed ? "flex-col items-center" : "flex-col")}>
+                <div class={cn("flex gap-0", global.sidebarCollapsed ? "flex-col items-center" : "flex-col")}>
                     {#each visibleLinks as link}
                         {#if global.sidebarCollapsed}
                             <!-- Collapsed: show only icons with tooltips -->
@@ -62,8 +62,8 @@
                                 href={link.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="flex items-center gap-2 rounded-md p-1 text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
-                                <ExternalLink class="size-4" />
+                                class="flex items-center gap-2 rounded-md py-1 px-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
+                                <ExternalLink class="size-4 shrink-0" />
                                 <span class="truncate">{link.name}</span>
                             </a>
                         {/if}

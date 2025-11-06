@@ -33,6 +33,7 @@
     import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { Button } from "../ui/button";
+    import Separator from "../ui/separator/separator.svelte";
     let { children, class: klazz }: { children?: Snippet; class?: string } = $props();
 
     const user = page.data["user"] as User;
@@ -73,7 +74,7 @@
 <aside class={cn("h-full min-h-0 min-w-0", klazz)} aria-label="Sidebar">
     <Card class="relative flex h-full min-h-0 w-auto min-w-0 flex-col gap-0 overflow-hidden border-none py-0">
         <ScrollArea class="min-h-0 min-w-0 flex-1">
-            <div class={cn("min-w-0 px-4", global.sidebarCollapsed && "px-2")}>
+            <div class={cn("min-w-0 px-4 py-3", global.sidebarCollapsed && "px-2")}>
                 <!-- Added padding for content within ScrollArea -->
                 <SideMenuItem
                     showSquareCard={!global.sidebarCollapsed}
@@ -81,48 +82,45 @@
                     label={global.sidebarCollapsed ? "" : $t("home")}
                     collapsed={global.sidebarCollapsed} />
                 <!-- Navigation menu items - always visible but adapt to collapsed state -->
-                <div class={cn("flex flex-col", global.sidebarCollapsed ? "items-center space-y-3" : "space-y-0")}>
+                <div class={cn("mt-3 flex flex-col gap-1", global.sidebarCollapsed ? "items-center" : "")}>
                     <SideMenuSubItem
                         icon={Gamepad2}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/all-games"
                         label={$t("available_games") + ` (${GamesStore.allGames.length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={Heart}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/favorite-games"
                         label={$t("favorite_games") + ` (${GamesStore.getFavoriteGames().length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={PackageOpen}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/my-games"
                         label={$t("my_games") + ` (${GamesStore.allGames.filter((g) => g.isInstalled).length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={PackagePlus}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/recently-added-games"
                         label={$t("recently_added_games") + ` (${GamesStore.recentlyAddedGames.length})`}
                         iconOnly={global.sidebarCollapsed} />
+                </div>
 
+                <Separator class={cn("my-3", global.sidebarCollapsed && "mx-2")} />
+
+                <div class={cn("w-auto flex-col gap-1", global.sidebarCollapsed ? "flex items-center" : "flex")}>
                     <SideMenuSubItem
                         icon={MessageCircle}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/chat"
                         label={$t("chat")}
                         iconOnly={global.sidebarCollapsed} />
 
                     <SideMenuSubItem
                         icon={MicVocal}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         onClick={handleStartTeamSpeak}
                         label="Lancer TeamSpeak"
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={CloudDownload}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
                         label="Télécharger l'agent"
                         iconOnly={global.sidebarCollapsed} />
@@ -130,14 +128,12 @@
                     <SideMenuSubItem
                         href="/table-plans"
                         label="Plan de salle"
-                        class={global.sidebarCollapsed ? "p-2" : ""}
                         icon={Table}
                         iconOnly={global.sidebarCollapsed} />
 
                     {#if liveAgentConnection.isConnected === false}
                         <SideMenuSubItem
                             icon="{PUBLIC_BACKEND_API_URL}/resources/agent_icon.ico"
-                            class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                             label="Lancer l'agent"
                             onClick={handleStartAgent}
                             iconOnly={global.sidebarCollapsed} />
@@ -145,22 +141,21 @@
 
                     <SideMenuSubItem
                         icon={CircleQuestionMark}
-                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/faq"
                         label="FAQ"
                         iconOnly={global.sidebarCollapsed} />
                 </div>
 
                 <!-- Side Links and Admin Menu - always visible but adapt to collapsed state -->
-                <div class={cn("mt-5 w-auto flex-col gap-2", global.sidebarCollapsed ? "flex items-center" : "flex")}>
+                <div class={cn("mt-3 w-auto flex-col", global.sidebarCollapsed ? "flex items-center gap-1" : "flex gap-0")}>
                     <!-- Side Links Component -->
                     <SideLinks />
 
                     {#if user?.role?.includes("admin")}
                         <div
                             class={cn(
-                                "dark:bg-background-dark relative flex h-auto w-auto flex-col rounded-lg antialiased",
-                                global.sidebarCollapsed ? "items-center" : "items-center p-4",
+                                "dark:bg-background-dark relative flex h-auto w-auto flex-col rounded-lg antialiased gap-1",
+                                global.sidebarCollapsed ? "items-center" : "items-center px-4",
                             )}>
                             <!-- <BackgroundBeams /> -->
                             {#if !global.sidebarCollapsed}
@@ -177,7 +172,7 @@
                     <div
                         class={cn(
                             "flex flex-col gap-1",
-                            global.sidebarCollapsed ? "items-center space-y-2" : "text-base",
+                            global.sidebarCollapsed ? "items-center" : "text-base",
                         )}>
                         {#if global.sidebarCollapsed}
                             <Tooltip.Root>
@@ -202,7 +197,7 @@
         </ScrollArea>
         {#if children}
             <hr class="mt-auto" />
-            <div class={cn("p-2", global.sidebarCollapsed && "px-1")}>
+            <div class={cn("px-4 py-3", global.sidebarCollapsed && "px-2")}>
                 {@render children?.()}
             </div>
         {/if}

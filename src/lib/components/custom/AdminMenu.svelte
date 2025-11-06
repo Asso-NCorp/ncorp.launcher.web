@@ -36,54 +36,47 @@
     };
 </script>
 
-<div class={cn("flex w-auto flex-col", global.sidebarCollapsed ? "items-center" : "space-y-0", klazz)}>
+<div class={cn("flex w-auto flex-col gap-1", global.sidebarCollapsed ? "items-center" : "", klazz)}>
     <SideMenuSubItem
         href="/admin/manage-games"
         label={$t("manage_games")}
-        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Settings2}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/manage-games/featured"
         label={$t("featured_games")}
-        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Star}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/manage-users"
         label={$t("users_management")}
-        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Users}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/manage-sidelinks"
         label={$t("links_management")}
-        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Link}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/lottery"
         label="Loterie"
-        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={FerrisWheel}
         iconOnly={global.sidebarCollapsed} />
 
     <SideMenuSubItem
         href="/admin/faq"
         label="FAQ"
-        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={CircleQuestionMark}
         iconOnly={global.sidebarCollapsed} />
 
     <SideMenuSubItem
         href="/admin/manage-room"
         label="Plan de salle"
-        class={global.sidebarCollapsed ? "p-2" : ""}
         icon={Table}
         iconOnly={global.sidebarCollapsed} />
 
     <!-- Actions section - always visible but adapts to collapsed state -->
-    <div class={cn("mt-5 flex flex-col gap-1", global.sidebarCollapsed ? "items-center space-y-2" : "text-base")}>
+    <div class={cn("mt-3 flex flex-col gap-1", global.sidebarCollapsed ? "items-center" : "text-base")}>
         {#if global.sidebarCollapsed}
             <!-- Collapsed: icon-only buttons with tooltips -->
             <Tooltip.Root>
@@ -100,7 +93,7 @@
             <!-- Expanded: full layout -->
             <Tooltip.Root>
                 <Tooltip.Trigger>
-                    <div class="flex w-full">
+                    <div class="flex w-full gap-2">
                         <Card class="flex items-center justify-center bg-secondary text-primary shadow-sm py-0">
                             <span class="block origin-center -rotate-90 transform text-xs">ADM</span>
                         </Card>

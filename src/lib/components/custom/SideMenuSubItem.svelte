@@ -25,7 +25,7 @@
                 <a
                     {href}
                     class={cn(
-                        "group flex min-w-0 items-center gap-2 rounded-(--radius) p-1 hover:text-white/80",
+                        "group flex min-w-0 items-center gap-2 rounded-lg hover:text-white/80",
                         iconOnly && "justify-center",
                         klazz,
                     )}>
@@ -60,7 +60,7 @@
                 <button
                     type="button"
                     class={cn(
-                        "group flex min-w-0 items-center gap-2 rounded-(--radius) p-1 hover:text-white/80",
+                        "group flex min-w-0 items-center gap-2 rounded-(--radius) hover:text-white/80",
                         iconOnly && "justify-center",
                         klazz,
                     )}
@@ -94,7 +94,7 @@
     <a
         {href}
         class={cn(
-            "group flex min-w-0 items-center gap-2 rounded-(--radius) p-1 hover:text-white/80",
+            "group flex min-w-0 items-center gap-2 rounded-(--radius) hover:text-white/80",
             iconOnly && "justify-center",
             klazz,
         )}
@@ -130,7 +130,7 @@
     <button
         type="button"
         class={cn(
-            "group flex min-w-0 items-center gap-2 rounded-(--radius) p-1 hover:text-white/80",
+            "group flex min-w-0 items-center gap-2 rounded-(--radius) hover:text-white/80",
             iconOnly && "justify-center",
             klazz,
         )}
