@@ -286,7 +286,7 @@
                                                             <AvatarDiscord
                                                                 size={24}
                                                                 name={player.name}
-                                                                src={`/api/avatars/${player.id}`}
+                                                                src={player.image!}
                                                                 alt={player.name}
                                                                 decorationSrc={getAvatarDecoration(player.role)} />
                                                         </div>

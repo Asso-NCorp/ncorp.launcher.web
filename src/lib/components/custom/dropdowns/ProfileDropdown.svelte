@@ -46,7 +46,7 @@
         <SideMenuItem href="/" class="w-full py-0 pb-0 text-base" collapsed={global.sidebarCollapsed}>
             <div class="relative">
                 <Avatar.Root class="size-8 ring-primary">
-                    <Avatar.Image src="/api/avatars/{user?.id}" alt={user?.name} class="object-cover object-center" />
+                    <Avatar.Image src={user?.image!} alt={user?.name} class="object-cover object-center" />
                     <Avatar.Fallback class="text-muted-foreground">
                         {user?.name?.charAt(0)}{user?.name?.charAt(1)}
                     </Avatar.Fallback>

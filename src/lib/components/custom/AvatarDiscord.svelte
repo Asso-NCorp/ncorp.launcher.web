@@ -1,5 +1,4 @@
 <script lang="ts">
-    import * as Avatar from "$lib/components/ui/avatar/index.js";
     import { UserRound } from "@lucide/svelte";
     // Props
     const {

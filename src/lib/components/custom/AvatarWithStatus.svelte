@@ -26,7 +26,7 @@
     <AvatarDiscord
         {size}
         name={user.name!}
-        src={`/api/avatars/${user.id}`}
+        src={user.image}
         alt={user.name}
         {decorationSrc}
         ring={isSpeaking} />

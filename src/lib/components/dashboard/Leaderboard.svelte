@@ -196,7 +196,7 @@
                         <AvatarDiscord 
                             size={32} 
                             name={user.displayUsername || user.name} 
-                            src={`/api/avatars/${user.id}`} 
+                            src={user.image!} 
                             alt={user.displayUsername || user.name}
                             decorationSrc={user.decoration || undefined} 
                         />
