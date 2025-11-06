@@ -244,6 +244,16 @@ model user_game {
   @@index([game_slug, installed_at], map: "user_game_slug_installed_at_idx")
 }
 
+model user_game_favorite {
+  user_id   String   @db.VarChar(36)
+  game_slug String   @db.VarChar(100)
+  addedAt   DateTime @default(now()) @db.DateTime(0)
+
+  @@id([user_id, game_slug])
+  @@index([user_id], map: "user_game_favorite_user_id_FK")
+  @@index([game_slug], map: "user_game_favorite_game_slug_FK")
+}
+
 /// ====== FAQ ======
 model faq {
   id         Int      @id @default(autoincrement())

@@ -437,6 +437,37 @@ class GameStore {
             toast.error("Erreur lors de la désinstallation");
         }
     };
+
+    toggleFavorite = async (slug: string) => {
+        const game = this.get(slug);
+        if (!game) return;
+
+        try {
+            const response = await fetch("/api/games/favorite", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    gameSlug: slug,
+                    isFavorite: !game.isFavorite,
+                }),
+            });
+
+            if (!response.ok) {
+                toast.error("Erreur lors de la mise à jour du favori");
+                return;
+            }
+
+            game.isFavorite = !game.isFavorite;
+            toast.success(game.isFavorite ? "Ajouté aux favoris" : "Retiré des favoris");
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+            toast.error("Erreur lors de la mise à jour du favori");
+        }
+    };
+
+    getFavoriteGames = (): InstallableGameExtended[] => {
+        return this.allGames.filter((g) => g.isFavorite);
+    };
 }
 
 export const GamesStore = new GameStore();

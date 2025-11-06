@@ -22,6 +22,7 @@ type InstallableGameUI = {
     status?: string;
     eta?: string;
     totalInstallations: number;
+    isFavorite: boolean;
 };
 
 export interface ServerItemData {

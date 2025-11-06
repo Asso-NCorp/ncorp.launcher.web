@@ -8,6 +8,7 @@
         CloudDownload,
         FolderOpen,
         Gamepad2,
+        Heart,
         MessageCircle,
         MicVocal,
         PackageOpen,
@@ -86,6 +87,12 @@
                         class={global.sidebarCollapsed ? "p-2" : "pt-3"}
                         href="/all-games"
                         label={$t("available_games") + ` (${GamesStore.allGames.length})`}
+                        iconOnly={global.sidebarCollapsed} />
+                    <SideMenuSubItem
+                        icon={Heart}
+                        class={global.sidebarCollapsed ? "p-2" : "pt-3"}
+                        href="/favorite-games"
+                        label={$t("favorite_games") + ` (${GamesStore.getFavoriteGames().length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={PackageOpen}

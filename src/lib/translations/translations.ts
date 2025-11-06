@@ -140,6 +140,10 @@ export default {
         failed_to_load_editions: "Impossible de charger les éditions",
         start_date: "Date de début",
         end_date: "Date de fin",
+        favorite_games: "Jeux favoris",
+        add_to_favorites: "Ajouter aux favoris",
+        remove_from_favorites: "Retirer des favoris",
+        favorite: "Favori",
     },
     en: {
         lang,
@@ -280,5 +284,9 @@ export default {
         failed_to_load_editions: "Failed to load editions",
         start_date: "Start date",
         end_date: "End date",
+        favorite_games: "Favorite games",
+        add_to_favorites: "Add to favorites",
+        remove_from_favorites: "Remove from favorites",
+        favorite: "Favorite",
     },
 };

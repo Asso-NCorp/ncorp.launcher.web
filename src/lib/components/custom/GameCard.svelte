@@ -8,7 +8,7 @@
     import { goto } from "$app/navigation";
     import GameActionButton from "./GameActionButton.svelte";
     import { t } from "$src/lib/translations";
-    import { ArrowBigDown, ArrowDown, Clock, FolderOpen, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
+    import { ArrowBigDown, ArrowDown, Clock, FolderOpen, Heart, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
     import Button from "../ui/button/button.svelte";
     import { getLocalApi, isRecentlyAdded } from "$src/lib/utils";
@@ -16,6 +16,8 @@
     import WordRotate from "./WordRotate.svelte";
     import { liveUsers } from "$src/lib/states/live-users.svelte";
     import { Progress } from "../ui/progress";
+    import { GamesStore } from "$src/lib/states/games.svelte";
+    
     let { game }: { game: InstallableGameExtended } = $props();
     let currentScreenshot = $state(game.screenshots ? `screenshot_small_1.webp` : "");
     let showDetails = $state(false);
@@ -76,6 +78,13 @@
             </div>
         {/if}
 
+        <!-- Favorite heart indicator -->
+        {#if game.isFavorite && !showDetails}
+            <div transition:fade={{ duration: 100 }} class="absolute left-2 top-2 z-20">
+                <Heart size={20} class="text-red-500" fill="currentColor" />
+            </div>
+        {/if}
+
         <div class="relative">
             <!-- Reordered: image first, overlay second so no z-index needed -->
             {#if showDetails}
@@ -121,6 +130,14 @@
         {#if showDetails}
             <div class="absolute left-2 top-2 flex flex-col items-center gap-2 {!showDetails ? 'opacity-0' : null}">
                 <Checkbox id="select-{game.folderSlug}" bind:checked={game.isSelected} />
+                <Button
+                    onclick={() => GamesStore.toggleFavorite(game.folderSlug!)}
+                    size="sm"
+                    title={game.isFavorite ? $t("remove_from_favorites") : $t("add_to_favorites")}
+                    variant="ghost"
+                    class={game.isFavorite ? "text-red-500 hover:text-red-600" : ""}>
+                    <Heart size={16} fill={game.isFavorite ? "currentColor" : "none"} />
+                </Button>
                 <Button
                     disabled={!game.isInstalled}
                     onclick={() => openGameFolder()}

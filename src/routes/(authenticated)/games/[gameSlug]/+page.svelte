@@ -2,7 +2,7 @@
     import LazyImage from "$src/lib/components/custom/LazyImage.svelte";
     import { getGameResourceUrl, getLocalApi, getRandomScreenshot } from "$src/lib/utils";
     import Button from "$src/lib/components/ui/button/button.svelte";
-    import { ArrowLeft, FolderOpen } from "@lucide/svelte";
+    import { ArrowLeft, FolderOpen, Heart } from "@lucide/svelte";
     import { onNavigate } from "$app/navigation";
     import Badge from "$src/lib/components/ui/badge/badge.svelte";
     import GameActionButton from "$src/lib/components/custom/GameActionButton.svelte";
@@ -117,7 +117,7 @@
                     {game.title}
                 </h1>
             {/if}
-            <div class="flex">
+            <div class="flex gap-2">
                 <Button
                     variant="secondary"
                     disabled={!reactiveGame.isInstalled}
@@ -127,6 +127,14 @@
                     <FolderOpen />
                 </Button>
                 <GameActionButton game={reactiveGame} uninstallVariant="ghost" />
+                <Button
+                    variant="ghost"
+                    onclick={() => GamesStore.toggleFavorite(game.folderSlug!)}
+                    title={reactiveGame.isFavorite ? $t("remove_from_favorites") : $t("add_to_favorites")}
+                    class="{reactiveGame.isFavorite ? "text-red-500 hover:text-red-600" : ""} h-auto bg-background-subtle/50">
+                    <Heart fill={reactiveGame.isFavorite ? "currentColor" : "none"} />
+                    {reactiveGame.isFavorite ? $t("favorite") : $t("add_to_favorites")}
+                </Button>
             </div>
         </div>
         <div class="flex items-center gap-2">

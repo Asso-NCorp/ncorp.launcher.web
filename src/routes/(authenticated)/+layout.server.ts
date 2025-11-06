@@ -115,6 +115,34 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
                 logger.debug("Using cached available games");
             }
             availableGames = gamesCache?.availableGames ?? [];
+
+            // Load user favorites and match them to games
+            if (jwtToken && user) {
+                try {
+                    const userFavorites = await db.user_game_favorite.findMany({
+                        where: { user_id: user.id },
+                        select: { game_slug: true },
+                    });
+                    const favoriteSet = new Set(userFavorites.map((f) => f.game_slug));
+                    availableGames = availableGames.map((g) => ({
+                        ...g,
+                        isFavorite: favoriteSet.has(g.folderSlug!),
+                    }));
+                } catch (e) {
+                    logger.error(`Error fetching user favorites: ${e}`);
+                    // Default to isFavorite: false for all games if there's an error
+                    availableGames = availableGames.map((g) => ({
+                        ...g,
+                        isFavorite: false,
+                    }));
+                }
+            } else {
+                // Default to isFavorite: false for all games if no user
+                availableGames = availableGames.map((g) => ({
+                    ...g,
+                    isFavorite: false,
+                }));
+            }
         } catch (e) {
             logger.error(`Error fetching available games: ${e}`);
         }
