@@ -103,7 +103,6 @@ export const actions: Actions = {
                         email: form.data.email,
                         password: form.data.password,
                         name: form.data.name,
-                        role: "user",
                         lastLogin: new Date(),
                         image: "/api/avatars/" + form.data.username,
                     },
