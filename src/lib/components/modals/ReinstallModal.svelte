@@ -17,6 +17,7 @@
 
         try {
             isLoading = true;
+            await GamesStore.deleteGame(reinstallModalStore.game.folderSlug!);
             await GamesStore.installGame(reinstallModalStore.game, true);
             reinstallModalStore.close();
         } finally {
