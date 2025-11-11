@@ -2,15 +2,17 @@
     import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
     import { Button } from "$lib/components/ui/button";
     import { GamesStore } from "$lib/states/games.svelte";
+    import type { GameSession, GroupedGameDay } from "$lib/types/dashboard";
     import dayjs from "dayjs";
     import duration from "dayjs/plugin/duration";
     import { goto } from "$app/navigation";
     import { PUBLIC_MEDIAS_URL } from "$env/static/public";
     import { fly } from "svelte/transition";
+    import { Gamepad2 } from "@lucide/svelte";
 
     dayjs.extend(duration);
 
-    let { gameSessions }: { gameSessions: any[] } = $props();
+    let { gameSessions }: { gameSessions: GameSession[] } = $props();
 
     function formatDuration(totalSeconds: number | null): string {
         if (totalSeconds == null || totalSeconds < 1) return "0s";
@@ -104,22 +106,7 @@
 
             return acc;
         },
-        {} as Record<
-            string,
-            {
-                date: string;
-                displayDate: dayjs.Dayjs;
-                games: Record<
-                    string,
-                    {
-                        game_slug: string;
-                        totalSeconds: number;
-                        sessionCount: number;
-                        lastSession: string;
-                    }
-                >;
-            }
-        >,
+        {} as Record<string, GroupedGameDay>,
     );
 
     // Sort days by date (most recent first) and get the 5 most recent days
@@ -160,8 +147,7 @@
                                             class="h-10 w-10 rounded object-cover" />
                                     {:else}
                                         <div class="bg-muted flex h-10 w-10 items-center justify-center rounded">
-                                            <iconify-icon icon="mdi:gamepad-variant" class="text-muted-foreground">
-                                            </iconify-icon>
+                                            <Gamepad2 class="text-muted-foreground" />
                                         </div>
                                     {/if}
 

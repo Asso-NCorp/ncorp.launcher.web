@@ -4,37 +4,13 @@
     import { Button } from "$lib/components/ui/button";
     import AvatarDiscord from "$lib/components/custom/AvatarDiscord.svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
+    import type { LeaderboardUser, GameSession } from "$lib/types/dashboard";
     import dayjs from "dayjs";
     import duration from "dayjs/plugin/duration";
     import "dayjs/locale/fr";
 
     dayjs.extend(duration);
     dayjs.locale("fr");
-
-    interface LeaderboardUser {
-        id: string;
-        name: string;
-        displayUsername: string | null;
-        image: string | null;
-        totalPlayTime: number;
-        isCurrentUser: boolean;
-        decoration?: string | null;
-    }
-
-    interface GameSession {
-        id: string;
-        user_id: string;
-        game_slug: string;
-        start_time: Date | string;
-        end_time: Date | string | null;
-        total_seconds: number | null;
-        user: {
-            id: string;
-            name: string;
-            displayUsername: string | null;
-            image: string | null;
-        };
-    }
 
     let {
         leaderboardData,
@@ -195,14 +171,14 @@
                         </div>
                         <AvatarDiscord 
                             size={32} 
-                            name={user.displayUsername || user.name} 
+                            name={user.name} 
                             src={user.image!} 
-                            alt={user.displayUsername || user.name}
+                            alt={user.name}
                             decorationSrc={user.decoration || undefined} 
                         />
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-medium">
-                                {user.displayUsername || user.name}
+                                {user.name}
                                 {#if isHighlighted}
                                     <span class="text-primary ml-2 text-xs font-semibold">(Vous)</span>
                                 {/if}
