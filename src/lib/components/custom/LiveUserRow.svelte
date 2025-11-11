@@ -199,9 +199,9 @@
                 {/if}
             </div>
 
-            {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
+            {#if (user.downloadingGame?.progress && user.downloadingGame.progress > 0 && user.downloadingGame.progress < 100) || (user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100)}
                 <Progress
-                    value={user.gameInstallProgress}
+                    value={user.downloadingGame?.progress || user.gameInstallProgress || 0}
                     class="pointer-events-none absolute -bottom-px right-2 h-[3px] w-[80%] self-center"
                     color="primary"
                     aria-label="Game install progress" />
