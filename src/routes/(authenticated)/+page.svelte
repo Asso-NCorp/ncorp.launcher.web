@@ -23,6 +23,7 @@
     import Leaderboard from "$lib/components/dashboard/Leaderboard.svelte";
     import OnlineFriends from "$lib/components/dashboard/OnlineFriends.svelte";
     import RecentGames from "$lib/components/dashboard/RecentGames.svelte";
+    import { Gamepad2 } from "@lucide/svelte";
 
     // Configure dayjs
     dayjs.extend(duration);
@@ -240,13 +241,12 @@
 
                             {#if game}
                                 <img
-                                    src={`${PUBLIC_MEDIAS_URL}/games/${trendingGame.game_slug}/poster_small.webp`}
+                                    src={`${PUBLIC_MEDIAS_URL}/games/${trendingGame.game_slug}/poster_square.webp`}
                                     alt="Cover for {formatGameName(trendingGame.game_slug)}"
                                     class="h-12 w-12 rounded object-cover" />
                             {:else}
                                 <div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
-                                    <iconify-icon icon="mdi:gamepad-variant" class="text-muted-foreground">
-                                    </iconify-icon>
+                                    <Gamepad2 class="text-muted-foreground" />
                                 </div>
                             {/if}
                             <div class="flex-1">
