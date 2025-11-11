@@ -8,8 +8,24 @@ class LiveUsers {
     updateUserDownloadSpeed(userId: string, slug: string, moPerSeconds: number, mbitsPerSeconds: number) {
         const user = this.getUser(userId);
         if (user) {
+            // Update legacy properties for backward compatibility
             user.downloadSpeedMegaBytesPerSecond = moPerSeconds;
             user.downloadSpeedMegabitsPerSecond = mbitsPerSeconds;
+
+            // Update new downloadingGame tracking
+            if (!user.downloadingGame) {
+                user.downloadingGame = {
+                    gameSlug: slug,
+                    gameTitle: GamesStore.get(slug)?.title || slug,
+                    progress: 0,
+                    speedMBps: moPerSeconds,
+                    speedMbps: mbitsPerSeconds,
+                };
+            } else {
+                user.downloadingGame.speedMBps = moPerSeconds;
+                user.downloadingGame.speedMbps = mbitsPerSeconds;
+                user.downloadingGame.gameSlug = slug;
+            }
         }
     }
     users = $state<LiveUser[]>([]);
@@ -50,20 +66,23 @@ class LiveUsers {
         }
     }
 
-    updateUserActivity(userId: string, activity: UserActivity) {
+    updateUserActivity(userId: string, activity: UserActivity | undefined) {
         const user = this.getUser(userId);
         if (user) {
-            logger.info(`User ${userId} activity updated to ${activity}`);
+            logger.info(`User ${userId} activity updated to ${activity?.activityType}`);
             user.activity = activity;
 
-            if (user.activity.activityType === "Idle") {
-                user.downloadSpeedMegaBytesPerSecond = 0;
-                user.downloadSpeedMegabitsPerSecond = 0;
-                user.gameInstallProgress = 0;
+            if (user.activity?.activityType === "Idle") {
+                // Only clear speeds if there's no active download
+                if (!user.downloadingGame) {
+                    user.downloadSpeedMegaBytesPerSecond = 0;
+                    user.downloadSpeedMegabitsPerSecond = 0;
+                    user.gameInstallProgress = 0;
+                }
             }
 
             if (userId == global.currentUser?.id) {
-                if (user.activity.activityType == "Playing") {
+                if (user.activity?.activityType == "Playing") {
                     if (GamesStore.has(user.activity.gameSlug!)) {
                         const game = GamesStore.get(user.activity.gameSlug!);
                         if (game) {
@@ -83,20 +102,25 @@ class LiveUsers {
     updateUserGameProgress(gameSlug: string, userId: string, progress: number) {
         const user = this.getUser(userId);
         if (user) {
-            user.gameInstallProgress = progress;
-            if (user.activity) {
-                user.activity.activityType = "Installing";
-                user.activity.gameSlug = gameSlug;
-            } else {
-                user.activity = {
-                    activityType: "Installing",
-                    gameSlug: gameSlug,
-                    gameTitle: GamesStore.get(gameSlug)?.title,
+            if (!user.downloadingGame) {
+                user.downloadingGame = {
+                    gameSlug,
+                    gameTitle: GamesStore.get(gameSlug)?.title || gameSlug,
+                    progress: progress,
+                    speedMBps: user.downloadSpeedMegaBytesPerSecond || 0,
+                    speedMbps: user.downloadSpeedMegabitsPerSecond || 0,
                 };
+            } else {
+                user.downloadingGame.gameSlug = gameSlug;
+                user.downloadingGame.gameTitle = GamesStore.get(gameSlug)?.title || gameSlug;
+                user.downloadingGame.progress = progress;
             }
 
             if (progress >= 100) {
-                user.gameInstallProgress = 0; // Reset progress when installation is complete
+                user.downloadingGame = undefined; // Clear when done
+                user.gameInstallProgress = 0;
+            } else {
+                user.gameInstallProgress = progress;
             }
         } else {
             logger.info(`[updateUserGameProgress] : User ${userId} not found.`);

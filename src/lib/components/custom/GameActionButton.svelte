@@ -20,6 +20,7 @@
     import type { InstallableGameExtended } from "$src/lib/types";
     import { toast } from "svelte-sonner";
     import { Progress } from "../ui/progress";
+    import { fi } from "zod/v4/locales";
 
     let {
         game: installableGame,
@@ -81,6 +82,22 @@
         await GamesStore.uninstallGame(game);
     };
 
+    const handleCancelClick = async () => {
+        try {
+            game.isCancellingInstall = true;
+            await localApi.cancelInstallation({
+                gameSlug: game.folderSlug,
+            });
+        } catch (error) {
+            console.error(error);
+            toast.error("Erreur lors de l'annulation de l'installation : " + (error as Error).message, {
+                class: "bg-red-500",
+            });
+        }finally {
+            game.isCancellingInstall = false;
+        }
+    };
+
     const handleStartServerClick = async () => {
         try {
             await localApi.startServer({
@@ -100,12 +117,12 @@
         {#if game.isInstalling}
             <div class="flex flex-col items-center gap-1 overflow-hidden">
                 <Button
-                    isLoading={game.isInstalling}
-                    disabled={!game.isInstalling || game.installProgress > 50}
+                    isLoading={game.isCancellingInstall}
+                    disabled={game.isCancellingInstall || game.installProgress > 50}
                     variant="destructive"
                     class={cn("w-auto", klazz)}
                     icon={CircleStop}
-                    onclick={handleUninstallClick}>
+                    onclick={handleCancelClick}>
                     {$t("cancel")}
                     {game.installProgress ? ` (${game.installProgress}%)` : ""}
                 </Button>

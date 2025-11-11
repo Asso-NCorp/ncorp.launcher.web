@@ -294,9 +294,9 @@
                 class="absolute inset-x-0 bottom-2 z-10 flex flex-col gap-2 px-2 text-xs">
                 <div class="mx-auto flex flex-1 justify-evenly gap-2 w-full">
                     <span>📦{game.installProgress}%</span>
-                    {#if liveUsers.currentUser?.downloadSpeedMegaBytesPerSecond && game.installProgress <= 50}
+                    {#if liveUsers.currentUser?.downloadingGame?.speedMBps && game.installProgress <= 50}
                         <span class="text-blue-600">↓</span>
-                        <span>{liveUsers.currentUser.downloadSpeedMegaBytesPerSecond.toFixed(1)} Mo/s</span>
+                        <span>{liveUsers.currentUser.downloadingGame.speedMBps.toFixed(1)} Mo/s</span>
                     {/if}
                     {#if game.installProgress > 50}
                         <span>🍗 Extraction</span>

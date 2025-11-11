@@ -1,6 +1,7 @@
 import { toast } from "svelte-sonner";
 import { FetchError } from "../shared-models";
 import type { InstallableGameExtended } from "../types";
+import type { UserActivity } from "../shared-models";
 import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi, syncArrayInPlace } from "../utils";
@@ -152,10 +153,22 @@ class GameStore {
         const g = this.get(slug);
         if (g) {
             if (userId === global.currentUser?.id) g.isPlaying = isPlaying;
-            liveUsers.updateUserActivity(userId, isPlaying ? `Joue à ${g.title}` : undefined);
+            
+            // Only update activity if not downloading another game, or if starting to play
+            const user = liveUsers.getUser(userId);
+            if (isPlaying || !user?.downloadingGame) {
+                const activity: UserActivity | undefined = isPlaying 
+                    ? { 
+                        activityType: "Playing", 
+                        gameSlug: slug, 
+                        gameTitle: g.title 
+                      } 
+                    : undefined;
+                liveUsers.updateUserActivity(userId, activity);
+            }
         } else {
             console.error(`Game with folder slug ${slug} not found`);
-            liveUsers.updateUserActivity(userId, "Joue à un jeu");
+            liveUsers.updateUserActivity(userId, { activityType: "Playing", gameTitle: "Joue à un jeu" });
         }
     }
 

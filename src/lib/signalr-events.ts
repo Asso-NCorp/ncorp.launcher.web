@@ -96,7 +96,7 @@ export class SignalREventBinder {
                 if (userId === global.currentUser?.id) {
                     let game = GamesStore.get(slug);
                     if (game) {
-                        GamesStore.setGameIsInstalling(slug, true);
+                        game.isInstalling = true;
                     }
                 }
             },
@@ -127,14 +127,16 @@ export class SignalREventBinder {
             let user = liveUsers.getUser(userId);
             if (!user) return;
 
-            if (user.activity) {
-                user.activity.gameSlug = undefined;
-                user.activity.gameTitle = undefined;
-                user.activity.activityType = "Idle";
-            }
+            // Clear download state
+            user.downloadingGame = undefined;
             user.gameInstallProgress = 0;
             user.downloadSpeedMegaBytesPerSecond = 0;
             user.downloadSpeedMegabitsPerSecond = 0;
+
+            // Only clear activity if user is not currently playing something
+            if (user.activity?.activityType !== "Playing") {
+                user.activity = { activityType: "Idle" };
+            }
 
             if (user.id === global.currentUser?.id) {
                 let game = GamesStore.get(gameSlug);

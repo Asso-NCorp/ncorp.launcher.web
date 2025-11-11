@@ -43,11 +43,13 @@
 
     let shouldShowActivityImage = $derived(
         user.activity?.activityType === "Playing" ||
-            (user.activity?.activityType === "Installing" && user.activity?.gameSlug),
+            (user.activity?.activityType === "Installing" && user.activity?.gameSlug) ||
+            (user.downloadingGame?.gameSlug),
     );
 
     let showActivity = $derived(
-        !!user.activity && user.activity.activityType !== "Idle" && user.status !== "Disconnected",
+        (!!user.activity && user.activity.activityType !== "Idle" && user.status !== "Disconnected") ||
+            (!!user.downloadingGame && user.status !== "Disconnected"),
     );
 
     function waitCanPlay(el: HTMLVideoElement) {
@@ -123,14 +125,14 @@
             showStatusDot={true}
             status={user.status} />
 
-        <!-- GRID pour garder le nom centré quand l’activité est absente -->
+        <!-- GRID pour garder le nom centré quand l'activité est absente -->
         <div class="name-activity-grid h-8 min-h-8 w-full overflow-hidden text-start">
             {#if shouldShowActivityImage}
                 <img
                     in:fade={{ duration: 300 }}
                     out:fade={{ duration: 200 }}
-                    src={GamesStore.getGameScreenshot(user.activity!.gameSlug!)}
-                    alt={user.activity?.gameTitle || user.name}
+                    src={GamesStore.getGameScreenshot(user.downloadingGame?.gameSlug || user.activity!.gameSlug!)}
+                    alt={user.downloadingGame?.gameTitle || user.activity?.gameTitle || user.name}
                     style="mask-image:linear-gradient(90deg, transparent 0%, rgba(0, 128, 183, .08) 20%, rgba(0, 128, 183, .08) 50%, rgba(0, 128, 183, .6) {hovering
                         ? '70'
                         : '100'}%);"
@@ -150,22 +152,49 @@
                     <div
                         transition:fly={{ y: -10, duration: 250 }}
                         class="z-20 flex w-full items-center gap-1 overflow-hidden text-xs font-bold text-gray-500">
-                        {#if user.activity?.activityType === "Playing"}
-                            <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
-                        {:else}
+                        {#if user.downloadingGame}
+                            <!-- Show downloading state when downloading -->
                             <ArrowDown class="inline-block h-4 w-4 text-blue-600" />
+                            <div
+                                role="button"
+                                onclick={async () => await goto(`/games/${user.downloadingGame?.gameSlug}`)}
+                                class="flex h-3 flex-1 items-center justify-items-start gap-1 p-0 text-xs">
+                                <span class="w-full max-w-[65%] truncate p-1 text-primary/70">
+                                    {user.downloadingGame?.gameTitle}
+                                </span>
+                                {#if user.downloadingGame.progress && user.downloadingGame.progress > 0 && user.downloadingGame.progress < 100}
+                                    <span class="text-xs text-white/70">({user.downloadingGame.progress}%)</span>
+                                {/if}
+                            </div>
+                        {:else if user.activity?.activityType === "Playing"}
+                            <!-- Show playing state when not downloading -->
+                            <Gamepad2 class="inline-block h-4 w-4 text-green-600" />
+                            <div
+                                role="button"
+                                onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
+                                class="flex h-3 flex-1 items-center justify-items-start gap-1 p-0 text-xs">
+                                <span class="w-full max-w-[65%] truncate p-1 text-primary/70">
+                                    {user.activity?.gameTitle}
+                                </span>
+                                {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
+                                    <span class="text-xs text-white/70">({user.gameInstallProgress}%)</span>
+                                {/if}
+                            </div>
+                        {:else if user.activity?.activityType === "Installing"}
+                            <!-- Show installing state for legacy installing activities -->
+                            <ArrowDown class="inline-block h-4 w-4 text-blue-600" />
+                            <div
+                                role="button"
+                                onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
+                                class="flex h-3 flex-1 items-center justify-items-start gap-1 p-0 text-xs">
+                                <span class="w-full max-w-[65%] truncate p-1 text-primary/70">
+                                    {user.activity?.gameTitle}
+                                </span>
+                                {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
+                                    <span class="text-xs text-white/70">({user.gameInstallProgress}%)</span>
+                                {/if}
+                            </div>
                         {/if}
-                        <div
-                            role="button"
-                            onclick={async () => await goto(`/games/${user.activity?.gameSlug}`)}
-                            class="flex h-3 flex-1 items-center justify-items-start gap-1 p-0 text-xs">
-                            <span class="w-full max-w-[65%] truncate p-1 text-primary/70">
-                                {user.activity?.gameTitle}
-                            </span>
-                            {#if user.gameInstallProgress && user.gameInstallProgress > 0 && user.gameInstallProgress < 100}
-                                <span class="text-xs text-white/70">({user.gameInstallProgress}%)</span>
-                            {/if}
-                        </div>
                     </div>
                 {/if}
             </div>
@@ -206,12 +235,12 @@
             {/if}
         {/if}
 
-        {#if user.downloadSpeedMegaBytesPerSecond && user.downloadSpeedMegaBytesPerSecond > 0}
+        {#if user.downloadingGame?.speedMBps && user.downloadingGame.speedMBps > 0}
             <div
                 class="absolute right-2 top-0 flex items-center gap-1 font-ggsans-bold text-xss text-white/60"
                 style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);">
                 <span class="text-[0.65rem] text-blue-600">↓</span>
-                <span>{user.downloadSpeedMegaBytesPerSecond.toFixed(1)} Mo/s</span>
+                <span>{user.downloadingGame.speedMBps.toFixed(1)} Mo/s</span>
             </div>
         {/if}
     </div>
