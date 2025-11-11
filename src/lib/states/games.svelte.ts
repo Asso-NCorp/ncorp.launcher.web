@@ -126,6 +126,17 @@ class GameStore {
         g.isLoading = !isInstalled;
     }
 
+    setGameIsInstalling(slug: string, isInstalling: boolean) {
+        // Set all other games to not installing
+        this.games.forEach((g) => {
+            if (g.folderSlug !== slug) g.isInstalling = false;
+        });
+        const g = this.get(slug);
+        if (g) {
+            g.isInstalling = isInstalling;
+        }
+    }
+
     getGameCover = (slug: string): string => {
         const g = this.get(slug);
         return g?.cover ? `/api/resources/${g.cover}` : "/img/not_found.webp";

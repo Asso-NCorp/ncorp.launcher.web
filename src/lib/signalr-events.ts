@@ -96,7 +96,7 @@ export class SignalREventBinder {
                 if (userId === global.currentUser?.id) {
                     let game = GamesStore.get(slug);
                     if (game) {
-                        game.isInstalling = true;
+                        GamesStore.setGameIsInstalling(slug, true);
                     }
                 }
             },
