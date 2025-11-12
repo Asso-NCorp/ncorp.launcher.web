@@ -7,6 +7,7 @@
         FerrisWheel,
         Link,
         RefreshCcwDot,
+        Server,
         Settings2,
         Star,
         Table,
@@ -19,6 +20,7 @@
     import { Card } from "../ui/card";
     import { global } from "$src/lib/states/global.svelte";
     import SideMenu from "./SideMenu.svelte";
+    import SideMenuItem from "./SideMenuItem.svelte";
     let { children, class: klazz }: { children?: Snippet; class?: string } = $props();
 
     let refreshing = $state(false);
@@ -52,6 +54,13 @@
         label={$t("users_management")}
         icon={Users}
         iconOnly={global.sidebarCollapsed} />
+    
+    <SideMenuSubItem
+        href="/admin/manage-game-servers"
+        label="Serveurs de jeux"
+        icon={Server}
+        iconOnly={global.sidebarCollapsed} />
+        
     <SideMenuSubItem
         href="/admin/manage-sidelinks"
         label={$t("links_management")}

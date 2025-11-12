@@ -105,6 +105,8 @@ model user {
   edition_created     edition[]          @relation("edition_created_by")
   edition_updated     edition[]          @relation("edition_updated_by")
   table_seats         table_seat[]
+  game_server_created game_server[]      @relation("game_server_created_by")
+  game_server_updated game_server[]      @relation("game_server_updated_by")
 }
 
 model verification {
@@ -223,6 +225,28 @@ model game {
   @@index([created_by], map: "game_user_created_FK")
   @@index([updated_by], map: "game_user_updated_FK")
   @@index([folder_slug], map: "game_folder_slug_IDX")
+}
+
+model game_server {
+  id                 Int       @id @default(autoincrement())
+  game_slug          String    @db.VarChar(100)
+  game_title         String    @db.VarChar(255)
+  type               String    @db.VarChar(10)
+  port               Int       @db.UnsignedInt
+  description        String?   @db.Text
+  name               String    @db.VarChar(255)
+  monitor            Boolean   @default(false)
+  last_detection_at  DateTime? @db.DateTime(0)
+  created_at         DateTime  @default(now()) @db.DateTime(0)
+  updated_at         DateTime  @default(now()) @updatedAt @db.DateTime(0)
+  created_by         String    @db.VarChar(36)
+  updated_by         String    @db.VarChar(36)
+  creator     user     @relation("game_server_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "game_server_created_by_FK")
+  updater     user     @relation("game_server_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "game_server_updated_by_FK")
+
+  @@index([game_slug], map: "game_server_game_slug_IDX")
+  @@index([created_by], map: "game_server_created_by_IDX")
+  @@index([updated_by], map: "game_server_updated_by_IDX")
 }
 
 model role {
