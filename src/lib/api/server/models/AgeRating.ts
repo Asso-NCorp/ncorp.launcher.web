@@ -13,27 +13,27 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AgeRatingContentDescriptionIdentitiesOrValues } from './AgeRatingContentDescriptionIdentitiesOrValues';
+import type { AgeRatingOrganizationIdentityOrValue } from './AgeRatingOrganizationIdentityOrValue';
 import {
-    AgeRatingContentDescriptionIdentitiesOrValuesFromJSON,
-    AgeRatingContentDescriptionIdentitiesOrValuesFromJSONTyped,
-    AgeRatingContentDescriptionIdentitiesOrValuesToJSON,
-    AgeRatingContentDescriptionIdentitiesOrValuesToJSONTyped,
-} from './AgeRatingContentDescriptionIdentitiesOrValues';
-import type { AgeRatingCategory } from './AgeRatingCategory';
+    AgeRatingOrganizationIdentityOrValueFromJSON,
+    AgeRatingOrganizationIdentityOrValueFromJSONTyped,
+    AgeRatingOrganizationIdentityOrValueToJSON,
+    AgeRatingOrganizationIdentityOrValueToJSONTyped,
+} from './AgeRatingOrganizationIdentityOrValue';
+import type { AgeRatingCategoryIdentityOrValue } from './AgeRatingCategoryIdentityOrValue';
 import {
-    AgeRatingCategoryFromJSON,
-    AgeRatingCategoryFromJSONTyped,
-    AgeRatingCategoryToJSON,
-    AgeRatingCategoryToJSONTyped,
-} from './AgeRatingCategory';
-import type { AgeRatingTitle } from './AgeRatingTitle';
+    AgeRatingCategoryIdentityOrValueFromJSON,
+    AgeRatingCategoryIdentityOrValueFromJSONTyped,
+    AgeRatingCategoryIdentityOrValueToJSON,
+    AgeRatingCategoryIdentityOrValueToJSONTyped,
+} from './AgeRatingCategoryIdentityOrValue';
+import type { AgeRatingContentDescriptionV2IdentitiesOrValues } from './AgeRatingContentDescriptionV2IdentitiesOrValues';
 import {
-    AgeRatingTitleFromJSON,
-    AgeRatingTitleFromJSONTyped,
-    AgeRatingTitleToJSON,
-    AgeRatingTitleToJSONTyped,
-} from './AgeRatingTitle';
+    AgeRatingContentDescriptionV2IdentitiesOrValuesFromJSON,
+    AgeRatingContentDescriptionV2IdentitiesOrValuesFromJSONTyped,
+    AgeRatingContentDescriptionV2IdentitiesOrValuesToJSON,
+    AgeRatingContentDescriptionV2IdentitiesOrValuesToJSONTyped,
+} from './AgeRatingContentDescriptionV2IdentitiesOrValues';
 
 /**
  * 
@@ -43,34 +43,28 @@ import {
 export interface AgeRating {
     /**
      * 
-     * @type {AgeRatingCategory}
-     * @memberof AgeRating
-     */
-    category?: AgeRatingCategory | null;
-    /**
-     * 
      * @type {string}
      * @memberof AgeRating
      */
     checksum?: string | null;
     /**
      * 
-     * @type {AgeRatingContentDescriptionIdentitiesOrValues}
+     * @type {AgeRatingOrganizationIdentityOrValue}
      * @memberof AgeRating
      */
-    contentDescriptions?: AgeRatingContentDescriptionIdentitiesOrValues | null;
+    organization?: AgeRatingOrganizationIdentityOrValue | null;
     /**
      * 
-     * @type {number}
+     * @type {AgeRatingCategoryIdentityOrValue}
      * @memberof AgeRating
      */
-    id?: number | null;
+    ratingCategory?: AgeRatingCategoryIdentityOrValue | null;
     /**
      * 
-     * @type {AgeRatingTitle}
+     * @type {AgeRatingContentDescriptionV2IdentitiesOrValues}
      * @memberof AgeRating
      */
-    rating?: AgeRatingTitle | null;
+    ratingContentDescriptions?: AgeRatingContentDescriptionV2IdentitiesOrValues | null;
     /**
      * 
      * @type {string}
@@ -83,9 +77,13 @@ export interface AgeRating {
      * @memberof AgeRating
      */
     synopsis?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof AgeRating
+     */
+    id?: number | null;
 }
-
-
 
 /**
  * Check if a given object implements the AgeRating interface.
@@ -104,13 +102,13 @@ export function AgeRatingFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
-        'category': json['category'] == null ? undefined : AgeRatingCategoryFromJSON(json['category']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
-        'contentDescriptions': json['contentDescriptions'] == null ? undefined : AgeRatingContentDescriptionIdentitiesOrValuesFromJSON(json['contentDescriptions']),
-        'id': json['id'] == null ? undefined : json['id'],
-        'rating': json['rating'] == null ? undefined : AgeRatingTitleFromJSON(json['rating']),
+        'organization': json['organization'] == null ? undefined : AgeRatingOrganizationIdentityOrValueFromJSON(json['organization']),
+        'ratingCategory': json['ratingCategory'] == null ? undefined : AgeRatingCategoryIdentityOrValueFromJSON(json['ratingCategory']),
+        'ratingContentDescriptions': json['ratingContentDescriptions'] == null ? undefined : AgeRatingContentDescriptionV2IdentitiesOrValuesFromJSON(json['ratingContentDescriptions']),
         'ratingCoverUrl': json['ratingCoverUrl'] == null ? undefined : json['ratingCoverUrl'],
         'synopsis': json['synopsis'] == null ? undefined : json['synopsis'],
+        'id': json['id'] == null ? undefined : json['id'],
     };
 }
 
@@ -125,13 +123,13 @@ export function AgeRatingToJSONTyped(value?: AgeRating | null, ignoreDiscriminat
 
     return {
         
-        'category': AgeRatingCategoryToJSON(value['category']),
         'checksum': value['checksum'],
-        'contentDescriptions': AgeRatingContentDescriptionIdentitiesOrValuesToJSON(value['contentDescriptions']),
-        'id': value['id'],
-        'rating': AgeRatingTitleToJSON(value['rating']),
+        'organization': AgeRatingOrganizationIdentityOrValueToJSON(value['organization']),
+        'ratingCategory': AgeRatingCategoryIdentityOrValueToJSON(value['ratingCategory']),
+        'ratingContentDescriptions': AgeRatingContentDescriptionV2IdentitiesOrValuesToJSON(value['ratingContentDescriptions']),
         'ratingCoverUrl': value['ratingCoverUrl'],
         'synopsis': value['synopsis'],
+        'id': value['id'],
     };
 }
 

@@ -12,32 +12,64 @@
  * Do not edit the class manually.
  */
 
+import { mapValues } from '../runtime';
+import type { AgeRatingOrganizationIdentityOrValue } from './AgeRatingOrganizationIdentityOrValue';
+import {
+    AgeRatingOrganizationIdentityOrValueFromJSON,
+    AgeRatingOrganizationIdentityOrValueFromJSONTyped,
+    AgeRatingOrganizationIdentityOrValueToJSON,
+    AgeRatingOrganizationIdentityOrValueToJSONTyped,
+} from './AgeRatingOrganizationIdentityOrValue';
 
 /**
  * 
  * @export
+ * @interface AgeRatingCategory
  */
-export const AgeRatingCategory = {
-    Esrb: 'ESRB',
-    Pegi: 'PEGI',
-    Cero: 'CERO',
-    Usk: 'USK',
-    Grac: 'GRAC',
-    ClassInd: 'CLASS_IND',
-    Acb: 'ACB'
-} as const;
-export type AgeRatingCategory = typeof AgeRatingCategory[keyof typeof AgeRatingCategory];
+export interface AgeRatingCategory {
+    /**
+     * 
+     * @type {string}
+     * @memberof AgeRatingCategory
+     */
+    checksum?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AgeRatingCategory
+     */
+    createdAt?: Date | null;
+    /**
+     * 
+     * @type {AgeRatingOrganizationIdentityOrValue}
+     * @memberof AgeRatingCategory
+     */
+    organization?: AgeRatingOrganizationIdentityOrValue | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AgeRatingCategory
+     */
+    rating?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof AgeRatingCategory
+     */
+    id?: number | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AgeRatingCategory
+     */
+    updatedAt?: Date | null;
+}
 
-
-export function instanceOfAgeRatingCategory(value: any): boolean {
-    for (const key in AgeRatingCategory) {
-        if (Object.prototype.hasOwnProperty.call(AgeRatingCategory, key)) {
-            if (AgeRatingCategory[key as keyof typeof AgeRatingCategory] === value) {
-                return true;
-            }
-        }
-    }
-    return false;
+/**
+ * Check if a given object implements the AgeRatingCategory interface.
+ */
+export function instanceOfAgeRatingCategory(value: object): value is AgeRatingCategory {
+    return true;
 }
 
 export function AgeRatingCategoryFromJSON(json: any): AgeRatingCategory {
@@ -45,14 +77,37 @@ export function AgeRatingCategoryFromJSON(json: any): AgeRatingCategory {
 }
 
 export function AgeRatingCategoryFromJSONTyped(json: any, ignoreDiscriminator: boolean): AgeRatingCategory {
-    return json as AgeRatingCategory;
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'checksum': json['checksum'] == null ? undefined : json['checksum'],
+        'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
+        'organization': json['organization'] == null ? undefined : AgeRatingOrganizationIdentityOrValueFromJSON(json['organization']),
+        'rating': json['rating'] == null ? undefined : json['rating'],
+        'id': json['id'] == null ? undefined : json['id'],
+        'updatedAt': json['updatedAt'] == null ? undefined : (new Date(json['updatedAt'])),
+    };
 }
 
-export function AgeRatingCategoryToJSON(value?: AgeRatingCategory | null): any {
-    return value as any;
+export function AgeRatingCategoryToJSON(json: any): AgeRatingCategory {
+    return AgeRatingCategoryToJSONTyped(json, false);
 }
 
-export function AgeRatingCategoryToJSONTyped(value: any, ignoreDiscriminator: boolean): AgeRatingCategory {
-    return value as AgeRatingCategory;
+export function AgeRatingCategoryToJSONTyped(value?: AgeRatingCategory | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
+
+    return {
+        
+        'checksum': value['checksum'],
+        'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt'] as any).toISOString()),
+        'organization': AgeRatingOrganizationIdentityOrValueToJSON(value['organization']),
+        'rating': value['rating'],
+        'id': value['id'],
+        'updatedAt': value['updatedAt'] == null ? undefined : ((value['updatedAt'] as any).toISOString()),
+    };
 }
 

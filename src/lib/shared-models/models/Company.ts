@@ -27,13 +27,6 @@ import {
     CompanyLogoIdentityOrValueToJSON,
     CompanyLogoIdentityOrValueToJSONTyped,
 } from './CompanyLogoIdentityOrValue';
-import type { StartDateCategory } from './StartDateCategory';
-import {
-    StartDateCategoryFromJSON,
-    StartDateCategoryFromJSONTyped,
-    StartDateCategoryToJSON,
-    StartDateCategoryToJSONTyped,
-} from './StartDateCategory';
 import type { CompanyIdentityOrValue } from './CompanyIdentityOrValue';
 import {
     CompanyIdentityOrValueFromJSON,
@@ -41,13 +34,20 @@ import {
     CompanyIdentityOrValueToJSON,
     CompanyIdentityOrValueToJSONTyped,
 } from './CompanyIdentityOrValue';
-import type { ChangeDateCategory } from './ChangeDateCategory';
+import type { DateFormatIdentityOrValue } from './DateFormatIdentityOrValue';
 import {
-    ChangeDateCategoryFromJSON,
-    ChangeDateCategoryFromJSONTyped,
-    ChangeDateCategoryToJSON,
-    ChangeDateCategoryToJSONTyped,
-} from './ChangeDateCategory';
+    DateFormatIdentityOrValueFromJSON,
+    DateFormatIdentityOrValueFromJSONTyped,
+    DateFormatIdentityOrValueToJSON,
+    DateFormatIdentityOrValueToJSONTyped,
+} from './DateFormatIdentityOrValue';
+import type { CompanyStatusIdentityOrValue } from './CompanyStatusIdentityOrValue';
+import {
+    CompanyStatusIdentityOrValueFromJSON,
+    CompanyStatusIdentityOrValueFromJSONTyped,
+    CompanyStatusIdentityOrValueToJSON,
+    CompanyStatusIdentityOrValueToJSONTyped,
+} from './CompanyStatusIdentityOrValue';
 import type { CompanyWebsiteIdentitiesOrValues } from './CompanyWebsiteIdentitiesOrValues';
 import {
     CompanyWebsiteIdentitiesOrValuesFromJSON,
@@ -70,10 +70,10 @@ export interface Company {
     changeDate?: Date | null;
     /**
      * 
-     * @type {ChangeDateCategory}
+     * @type {DateFormatIdentityOrValue}
      * @memberof Company
      */
-    changeDateCategory?: ChangeDateCategory;
+    changeDateFormat?: DateFormatIdentityOrValue | null;
     /**
      * 
      * @type {CompanyIdentityOrValue}
@@ -154,10 +154,16 @@ export interface Company {
     startDate?: Date | null;
     /**
      * 
-     * @type {StartDateCategory}
+     * @type {DateFormatIdentityOrValue}
      * @memberof Company
      */
-    startDateCategory?: StartDateCategory | null;
+    startDateFormat?: DateFormatIdentityOrValue | null;
+    /**
+     * 
+     * @type {CompanyStatusIdentityOrValue}
+     * @memberof Company
+     */
+    status?: CompanyStatusIdentityOrValue | null;
     /**
      * 
      * @type {Date}
@@ -178,8 +184,6 @@ export interface Company {
     websites?: CompanyWebsiteIdentitiesOrValues | null;
 }
 
-
-
 /**
  * Check if a given object implements the Company interface.
  */
@@ -198,7 +202,7 @@ export function CompanyFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
     return {
         
         'changeDate': json['changeDate'] == null ? undefined : (new Date(json['changeDate'])),
-        'changeDateCategory': json['changeDateCategory'] == null ? undefined : ChangeDateCategoryFromJSON(json['changeDateCategory']),
+        'changeDateFormat': json['changeDateFormat'] == null ? undefined : DateFormatIdentityOrValueFromJSON(json['changeDateFormat']),
         'changedCompanyId': json['changedCompanyId'] == null ? undefined : CompanyIdentityOrValueFromJSON(json['changedCompanyId']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
         'country': json['country'] == null ? undefined : json['country'],
@@ -212,7 +216,8 @@ export function CompanyFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'published': json['published'] == null ? undefined : GameIdentitiesOrValuesFromJSON(json['published']),
         'slug': json['slug'] == null ? undefined : json['slug'],
         'startDate': json['startDate'] == null ? undefined : (new Date(json['startDate'])),
-        'startDateCategory': json['startDateCategory'] == null ? undefined : StartDateCategoryFromJSON(json['startDateCategory']),
+        'startDateFormat': json['startDateFormat'] == null ? undefined : DateFormatIdentityOrValueFromJSON(json['startDateFormat']),
+        'status': json['status'] == null ? undefined : CompanyStatusIdentityOrValueFromJSON(json['status']),
         'updatedAt': json['updatedAt'] == null ? undefined : (new Date(json['updatedAt'])),
         'url': json['url'] == null ? undefined : json['url'],
         'websites': json['websites'] == null ? undefined : CompanyWebsiteIdentitiesOrValuesFromJSON(json['websites']),
@@ -231,7 +236,7 @@ export function CompanyToJSONTyped(value?: Company | null, ignoreDiscriminator: 
     return {
         
         'changeDate': value['changeDate'] == null ? undefined : ((value['changeDate'] as any).toISOString()),
-        'changeDateCategory': ChangeDateCategoryToJSON(value['changeDateCategory']),
+        'changeDateFormat': DateFormatIdentityOrValueToJSON(value['changeDateFormat']),
         'changedCompanyId': CompanyIdentityOrValueToJSON(value['changedCompanyId']),
         'checksum': value['checksum'],
         'country': value['country'],
@@ -245,7 +250,8 @@ export function CompanyToJSONTyped(value?: Company | null, ignoreDiscriminator: 
         'published': GameIdentitiesOrValuesToJSON(value['published']),
         'slug': value['slug'],
         'startDate': value['startDate'] == null ? undefined : ((value['startDate'] as any).toISOString()),
-        'startDateCategory': StartDateCategoryToJSON(value['startDateCategory']),
+        'startDateFormat': DateFormatIdentityOrValueToJSON(value['startDateFormat']),
+        'status': CompanyStatusIdentityOrValueToJSON(value['status']),
         'updatedAt': value['updatedAt'] == null ? undefined : ((value['updatedAt'] as any).toISOString()),
         'url': value['url'],
         'websites': CompanyWebsiteIdentitiesOrValuesToJSON(value['websites']),

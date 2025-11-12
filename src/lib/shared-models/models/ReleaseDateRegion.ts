@@ -12,35 +12,50 @@
  * Do not edit the class manually.
  */
 
-
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
+ * @interface ReleaseDateRegion
  */
-export const ReleaseDateRegion = {
-    Europe: 'Europe',
-    NorthAmerica: 'NorthAmerica',
-    Australia: 'Australia',
-    NewZealand: 'NewZealand',
-    Japan: 'Japan',
-    China: 'China',
-    Asia: 'Asia',
-    Worldwide: 'Worldwide',
-    Korea: 'Korea',
-    Brazil: 'Brazil'
-} as const;
-export type ReleaseDateRegion = typeof ReleaseDateRegion[keyof typeof ReleaseDateRegion];
+export interface ReleaseDateRegion {
+    /**
+     * 
+     * @type {string}
+     * @memberof ReleaseDateRegion
+     */
+    checksum?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ReleaseDateRegion
+     */
+    createdAt?: Date | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReleaseDateRegion
+     */
+    region?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ReleaseDateRegion
+     */
+    updatedAt?: Date | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ReleaseDateRegion
+     */
+    id?: number | null;
+}
 
-
-export function instanceOfReleaseDateRegion(value: any): boolean {
-    for (const key in ReleaseDateRegion) {
-        if (Object.prototype.hasOwnProperty.call(ReleaseDateRegion, key)) {
-            if (ReleaseDateRegion[key as keyof typeof ReleaseDateRegion] === value) {
-                return true;
-            }
-        }
-    }
-    return false;
+/**
+ * Check if a given object implements the ReleaseDateRegion interface.
+ */
+export function instanceOfReleaseDateRegion(value: object): value is ReleaseDateRegion {
+    return true;
 }
 
 export function ReleaseDateRegionFromJSON(json: any): ReleaseDateRegion {
@@ -48,14 +63,35 @@ export function ReleaseDateRegionFromJSON(json: any): ReleaseDateRegion {
 }
 
 export function ReleaseDateRegionFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReleaseDateRegion {
-    return json as ReleaseDateRegion;
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'checksum': json['checksum'] == null ? undefined : json['checksum'],
+        'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
+        'region': json['region'] == null ? undefined : json['region'],
+        'updatedAt': json['updatedAt'] == null ? undefined : (new Date(json['updatedAt'])),
+        'id': json['id'] == null ? undefined : json['id'],
+    };
 }
 
-export function ReleaseDateRegionToJSON(value?: ReleaseDateRegion | null): any {
-    return value as any;
+export function ReleaseDateRegionToJSON(json: any): ReleaseDateRegion {
+    return ReleaseDateRegionToJSONTyped(json, false);
 }
 
-export function ReleaseDateRegionToJSONTyped(value: any, ignoreDiscriminator: boolean): ReleaseDateRegion {
-    return value as ReleaseDateRegion;
+export function ReleaseDateRegionToJSONTyped(value?: ReleaseDateRegion | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
+
+    return {
+        
+        'checksum': value['checksum'],
+        'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt'] as any).toISOString()),
+        'region': value['region'],
+        'updatedAt': value['updatedAt'] == null ? undefined : ((value['updatedAt'] as any).toISOString()),
+        'id': value['id'],
+    };
 }
 

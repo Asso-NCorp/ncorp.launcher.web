@@ -34,13 +34,13 @@ import {
     PlatformWebsiteIdentitiesOrValuesToJSON,
     PlatformWebsiteIdentitiesOrValuesToJSONTyped,
 } from './PlatformWebsiteIdentitiesOrValues';
-import type { PlatformCategory } from './PlatformCategory';
+import type { PlatformTypeIdentityOrValue } from './PlatformTypeIdentityOrValue';
 import {
-    PlatformCategoryFromJSON,
-    PlatformCategoryFromJSONTyped,
-    PlatformCategoryToJSON,
-    PlatformCategoryToJSONTyped,
-} from './PlatformCategory';
+    PlatformTypeIdentityOrValueFromJSON,
+    PlatformTypeIdentityOrValueFromJSONTyped,
+    PlatformTypeIdentityOrValueToJSON,
+    PlatformTypeIdentityOrValueToJSONTyped,
+} from './PlatformTypeIdentityOrValue';
 import type { PlatformFamilyIdentityOrValue } from './PlatformFamilyIdentityOrValue';
 import {
     PlatformFamilyIdentityOrValueFromJSON,
@@ -67,12 +67,6 @@ export interface Platform {
      * @memberof Platform
      */
     alternativeName?: string | null;
-    /**
-     * 
-     * @type {PlatformCategory}
-     * @memberof Platform
-     */
-    category?: PlatformCategory | null;
     /**
      * 
      * @type {string}
@@ -117,6 +111,12 @@ export interface Platform {
     platformLogo?: PlatformLogoIdentityOrValue | null;
     /**
      * 
+     * @type {PlatformTypeIdentityOrValue}
+     * @memberof Platform
+     */
+    platformType?: PlatformTypeIdentityOrValue | null;
+    /**
+     * 
      * @type {string}
      * @memberof Platform
      */
@@ -153,8 +153,6 @@ export interface Platform {
     websites?: PlatformWebsiteIdentitiesOrValues | null;
 }
 
-
-
 /**
  * Check if a given object implements the Platform interface.
  */
@@ -174,7 +172,6 @@ export function PlatformFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'abbreviation': json['abbreviation'] == null ? undefined : json['abbreviation'],
         'alternativeName': json['alternativeName'] == null ? undefined : json['alternativeName'],
-        'category': json['category'] == null ? undefined : PlatformCategoryFromJSON(json['category']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
         'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
         'generation': json['generation'] == null ? undefined : json['generation'],
@@ -182,6 +179,7 @@ export function PlatformFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'name': json['name'] == null ? undefined : json['name'],
         'platformFamily': json['platformFamily'] == null ? undefined : PlatformFamilyIdentityOrValueFromJSON(json['platformFamily']),
         'platformLogo': json['platformLogo'] == null ? undefined : PlatformLogoIdentityOrValueFromJSON(json['platformLogo']),
+        'platformType': json['platformType'] == null ? undefined : PlatformTypeIdentityOrValueFromJSON(json['platformType']),
         'slug': json['slug'] == null ? undefined : json['slug'],
         'summary': json['summary'] == null ? undefined : json['summary'],
         'updatedAt': json['updatedAt'] == null ? undefined : (new Date(json['updatedAt'])),
@@ -204,7 +202,6 @@ export function PlatformToJSONTyped(value?: Platform | null, ignoreDiscriminator
         
         'abbreviation': value['abbreviation'],
         'alternativeName': value['alternativeName'],
-        'category': PlatformCategoryToJSON(value['category']),
         'checksum': value['checksum'],
         'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt'] as any).toISOString()),
         'generation': value['generation'],
@@ -212,6 +209,7 @@ export function PlatformToJSONTyped(value?: Platform | null, ignoreDiscriminator
         'name': value['name'],
         'platformFamily': PlatformFamilyIdentityOrValueToJSON(value['platformFamily']),
         'platformLogo': PlatformLogoIdentityOrValueToJSON(value['platformLogo']),
+        'platformType': PlatformTypeIdentityOrValueToJSON(value['platformType']),
         'slug': value['slug'],
         'summary': value['summary'],
         'updatedAt': value['updatedAt'] == null ? undefined : ((value['updatedAt'] as any).toISOString()),

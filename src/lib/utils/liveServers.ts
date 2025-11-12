@@ -1,17 +1,7 @@
 import { PRIVATE_SERVER_DETECTOR_URL } from "$env/static/private";
+import type { DetectedServer } from "../shared-models";
 import { GamesStore } from "../states/games.svelte";
 import type { InstallableGameExtended } from "../types";
-
-export interface DetectedServer {
-    gameSlug: string;
-    port: number;
-    type: string;
-    processName: string;
-    pid: number;
-    startTime: string;
-    uptime: string;
-    memoryMb: number;
-}
 
 export interface DetectedServerWithGame extends DetectedServer {
     game?: InstallableGameExtended;
@@ -40,7 +30,7 @@ export async function fetchLiveServers(): Promise<DetectedServer[]> {
 export function enrichServersWithGames(servers: DetectedServer[]): DetectedServerWithGame[] {
     return servers.map((server) => ({
         ...server,
-        game: GamesStore.get(server.gameSlug),
+        game: GamesStore.get(server.gameSlug!),
     }));
 }
 

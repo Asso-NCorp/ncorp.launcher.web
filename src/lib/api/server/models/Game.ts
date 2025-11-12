@@ -34,13 +34,6 @@ import {
     PlayerPerspectiveIdentitiesOrValuesToJSON,
     PlayerPerspectiveIdentitiesOrValuesToJSONTyped,
 } from './PlayerPerspectiveIdentitiesOrValues';
-import type { Category } from './Category';
-import {
-    CategoryFromJSON,
-    CategoryFromJSONTyped,
-    CategoryToJSON,
-    CategoryToJSONTyped,
-} from './Category';
 import type { CoverIdentityOrValue } from './CoverIdentityOrValue';
 import {
     CoverIdentityOrValueFromJSON,
@@ -76,13 +69,6 @@ import {
     GameIdentitiesOrValuesToJSON,
     GameIdentitiesOrValuesToJSONTyped,
 } from './GameIdentitiesOrValues';
-import type { GameStatus } from './GameStatus';
-import {
-    GameStatusFromJSON,
-    GameStatusFromJSONTyped,
-    GameStatusToJSON,
-    GameStatusToJSONTyped,
-} from './GameStatus';
 import type { LanguageSupportIdentitiesOrValues } from './LanguageSupportIdentitiesOrValues';
 import {
     LanguageSupportIdentitiesOrValuesFromJSON,
@@ -132,6 +118,20 @@ import {
     KeywordIdentitiesOrValuesToJSON,
     KeywordIdentitiesOrValuesToJSONTyped,
 } from './KeywordIdentitiesOrValues';
+import type { GameStatusIdentityOrValue } from './GameStatusIdentityOrValue';
+import {
+    GameStatusIdentityOrValueFromJSON,
+    GameStatusIdentityOrValueFromJSONTyped,
+    GameStatusIdentityOrValueToJSON,
+    GameStatusIdentityOrValueToJSONTyped,
+} from './GameStatusIdentityOrValue';
+import type { GameTypeIdentityOrValue } from './GameTypeIdentityOrValue';
+import {
+    GameTypeIdentityOrValueFromJSON,
+    GameTypeIdentityOrValueFromJSONTyped,
+    GameTypeIdentityOrValueToJSON,
+    GameTypeIdentityOrValueToJSONTyped,
+} from './GameTypeIdentityOrValue';
 import type { AlternativeNameIdentitiesOrValues } from './AlternativeNameIdentitiesOrValues';
 import {
     AlternativeNameIdentitiesOrValuesFromJSON,
@@ -247,12 +247,6 @@ export interface Game {
     bundles?: GameIdentitiesOrValues | null;
     /**
      * 
-     * @type {Category}
-     * @memberof Game
-     */
-    category?: Category | null;
-    /**
-     * 
      * @type {string}
      * @memberof Game
      */
@@ -341,6 +335,18 @@ export interface Game {
      * @memberof Game
      */
     gameModes?: GameModeIdentitiesOrValues | null;
+    /**
+     * 
+     * @type {GameStatusIdentityOrValue}
+     * @memberof Game
+     */
+    gameStatus?: GameStatusIdentityOrValue | null;
+    /**
+     * 
+     * @type {GameTypeIdentityOrValue}
+     * @memberof Game
+     */
+    gameType?: GameTypeIdentityOrValue | null;
     /**
      * 
      * @type {GenreIdentitiesOrValues}
@@ -469,12 +475,6 @@ export interface Game {
     standaloneExpansions?: GameIdentitiesOrValues | null;
     /**
      * 
-     * @type {GameStatus}
-     * @memberof Game
-     */
-    status?: GameStatus | null;
-    /**
-     * 
      * @type {string}
      * @memberof Game
      */
@@ -547,8 +547,6 @@ export interface Game {
     websites?: WebsiteIdentitiesOrValues | null;
 }
 
-
-
 /**
  * Check if a given object implements the Game interface.
  */
@@ -572,7 +570,6 @@ export function GameFromJSONTyped(json: any, ignoreDiscriminator: boolean): Game
         'alternativeNames': json['alternativeNames'] == null ? undefined : AlternativeNameIdentitiesOrValuesFromJSON(json['alternativeNames']),
         'artworks': json['artworks'] == null ? undefined : ArtworkIdentitiesOrValuesFromJSON(json['artworks']),
         'bundles': json['bundles'] == null ? undefined : GameIdentitiesOrValuesFromJSON(json['bundles']),
-        'category': json['category'] == null ? undefined : CategoryFromJSON(json['category']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
         'collections': json['collections'] == null ? undefined : CollectionIdentitiesOrValuesFromJSON(json['collections']),
         'cover': json['cover'] == null ? undefined : CoverIdentityOrValueFromJSON(json['cover']),
@@ -588,6 +585,8 @@ export function GameFromJSONTyped(json: any, ignoreDiscriminator: boolean): Game
         'gameEngines': json['gameEngines'] == null ? undefined : GameEngineIdentitiesOrValuesFromJSON(json['gameEngines']),
         'gameLocalizations': json['gameLocalizations'] == null ? undefined : GameLocalizationIdentitiesOrValuesFromJSON(json['gameLocalizations']),
         'gameModes': json['gameModes'] == null ? undefined : GameModeIdentitiesOrValuesFromJSON(json['gameModes']),
+        'gameStatus': json['gameStatus'] == null ? undefined : GameStatusIdentityOrValueFromJSON(json['gameStatus']),
+        'gameType': json['gameType'] == null ? undefined : GameTypeIdentityOrValueFromJSON(json['gameType']),
         'genres': json['genres'] == null ? undefined : GenreIdentitiesOrValuesFromJSON(json['genres']),
         'hypes': json['hypes'] == null ? undefined : json['hypes'],
         'id': json['id'] == null ? undefined : json['id'],
@@ -609,7 +608,6 @@ export function GameFromJSONTyped(json: any, ignoreDiscriminator: boolean): Game
         'similarGames': json['similarGames'] == null ? undefined : GameIdentitiesOrValuesFromJSON(json['similarGames']),
         'slug': json['slug'] == null ? undefined : json['slug'],
         'standaloneExpansions': json['standaloneExpansions'] == null ? undefined : GameIdentitiesOrValuesFromJSON(json['standaloneExpansions']),
-        'status': json['status'] == null ? undefined : GameStatusFromJSON(json['status']),
         'storyline': json['storyline'] == null ? undefined : json['storyline'],
         'summary': json['summary'] == null ? undefined : json['summary'],
         'tags': json['tags'] == null ? undefined : json['tags'],
@@ -642,7 +640,6 @@ export function GameToJSONTyped(value?: Game | null, ignoreDiscriminator: boolea
         'alternativeNames': AlternativeNameIdentitiesOrValuesToJSON(value['alternativeNames']),
         'artworks': ArtworkIdentitiesOrValuesToJSON(value['artworks']),
         'bundles': GameIdentitiesOrValuesToJSON(value['bundles']),
-        'category': CategoryToJSON(value['category']),
         'checksum': value['checksum'],
         'collections': CollectionIdentitiesOrValuesToJSON(value['collections']),
         'cover': CoverIdentityOrValueToJSON(value['cover']),
@@ -658,6 +655,8 @@ export function GameToJSONTyped(value?: Game | null, ignoreDiscriminator: boolea
         'gameEngines': GameEngineIdentitiesOrValuesToJSON(value['gameEngines']),
         'gameLocalizations': GameLocalizationIdentitiesOrValuesToJSON(value['gameLocalizations']),
         'gameModes': GameModeIdentitiesOrValuesToJSON(value['gameModes']),
+        'gameStatus': GameStatusIdentityOrValueToJSON(value['gameStatus']),
+        'gameType': GameTypeIdentityOrValueToJSON(value['gameType']),
         'genres': GenreIdentitiesOrValuesToJSON(value['genres']),
         'hypes': value['hypes'],
         'id': value['id'],
@@ -679,7 +678,6 @@ export function GameToJSONTyped(value?: Game | null, ignoreDiscriminator: boolea
         'similarGames': GameIdentitiesOrValuesToJSON(value['similarGames']),
         'slug': value['slug'],
         'standaloneExpansions': GameIdentitiesOrValuesToJSON(value['standaloneExpansions']),
-        'status': GameStatusToJSON(value['status']),
         'storyline': value['storyline'],
         'summary': value['summary'],
         'tags': value['tags'],

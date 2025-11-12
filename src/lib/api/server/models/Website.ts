@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { WebsiteCategory } from './WebsiteCategory';
+import type { WebsiteTypeIdentityOrValue } from './WebsiteTypeIdentityOrValue';
 import {
-    WebsiteCategoryFromJSON,
-    WebsiteCategoryFromJSONTyped,
-    WebsiteCategoryToJSON,
-    WebsiteCategoryToJSONTyped,
-} from './WebsiteCategory';
+    WebsiteTypeIdentityOrValueFromJSON,
+    WebsiteTypeIdentityOrValueFromJSONTyped,
+    WebsiteTypeIdentityOrValueToJSON,
+    WebsiteTypeIdentityOrValueToJSONTyped,
+} from './WebsiteTypeIdentityOrValue';
 import type { GameIdentityOrValue } from './GameIdentityOrValue';
 import {
     GameIdentityOrValueFromJSON,
@@ -34,12 +34,6 @@ import {
  * @interface Website
  */
 export interface Website {
-    /**
-     * 
-     * @type {WebsiteCategory}
-     * @memberof Website
-     */
-    category?: WebsiteCategory;
     /**
      * 
      * @type {string}
@@ -66,13 +60,17 @@ export interface Website {
     trusted?: boolean | null;
     /**
      * 
+     * @type {WebsiteTypeIdentityOrValue}
+     * @memberof Website
+     */
+    type?: WebsiteTypeIdentityOrValue | null;
+    /**
+     * 
      * @type {string}
      * @memberof Website
      */
     url?: string | null;
 }
-
-
 
 /**
  * Check if a given object implements the Website interface.
@@ -91,11 +89,11 @@ export function WebsiteFromJSONTyped(json: any, ignoreDiscriminator: boolean): W
     }
     return {
         
-        'category': json['category'] == null ? undefined : WebsiteCategoryFromJSON(json['category']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
         'game': json['game'] == null ? undefined : GameIdentityOrValueFromJSON(json['game']),
         'id': json['id'] == null ? undefined : json['id'],
         'trusted': json['trusted'] == null ? undefined : json['trusted'],
+        'type': json['type'] == null ? undefined : WebsiteTypeIdentityOrValueFromJSON(json['type']),
         'url': json['url'] == null ? undefined : json['url'],
     };
 }
@@ -111,11 +109,11 @@ export function WebsiteToJSONTyped(value?: Website | null, ignoreDiscriminator: 
 
     return {
         
-        'category': WebsiteCategoryToJSON(value['category']),
         'checksum': value['checksum'],
         'game': GameIdentityOrValueToJSON(value['game']),
         'id': value['id'],
         'trusted': value['trusted'],
+        'type': WebsiteTypeIdentityOrValueToJSON(value['type']),
         'url': value['url'],
     };
 }

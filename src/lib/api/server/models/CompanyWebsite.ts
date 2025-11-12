@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { CompanyWebsiteCategory } from './CompanyWebsiteCategory';
+import type { WebsiteTypeIdentityOrValue } from './WebsiteTypeIdentityOrValue';
 import {
-    CompanyWebsiteCategoryFromJSON,
-    CompanyWebsiteCategoryFromJSONTyped,
-    CompanyWebsiteCategoryToJSON,
-    CompanyWebsiteCategoryToJSONTyped,
-} from './CompanyWebsiteCategory';
+    WebsiteTypeIdentityOrValueFromJSON,
+    WebsiteTypeIdentityOrValueFromJSONTyped,
+    WebsiteTypeIdentityOrValueToJSON,
+    WebsiteTypeIdentityOrValueToJSONTyped,
+} from './WebsiteTypeIdentityOrValue';
 
 /**
  * 
@@ -27,12 +27,6 @@ import {
  * @interface CompanyWebsite
  */
 export interface CompanyWebsite {
-    /**
-     * 
-     * @type {CompanyWebsiteCategory}
-     * @memberof CompanyWebsite
-     */
-    category?: CompanyWebsiteCategory | null;
     /**
      * 
      * @type {string}
@@ -53,13 +47,17 @@ export interface CompanyWebsite {
     trusted?: boolean | null;
     /**
      * 
+     * @type {WebsiteTypeIdentityOrValue}
+     * @memberof CompanyWebsite
+     */
+    type?: WebsiteTypeIdentityOrValue | null;
+    /**
+     * 
      * @type {string}
      * @memberof CompanyWebsite
      */
     url?: string | null;
 }
-
-
 
 /**
  * Check if a given object implements the CompanyWebsite interface.
@@ -78,10 +76,10 @@ export function CompanyWebsiteFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'category': json['category'] == null ? undefined : CompanyWebsiteCategoryFromJSON(json['category']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
         'id': json['id'] == null ? undefined : json['id'],
         'trusted': json['trusted'] == null ? undefined : json['trusted'],
+        'type': json['type'] == null ? undefined : WebsiteTypeIdentityOrValueFromJSON(json['type']),
         'url': json['url'] == null ? undefined : json['url'],
     };
 }
@@ -97,10 +95,10 @@ export function CompanyWebsiteToJSONTyped(value?: CompanyWebsite | null, ignoreD
 
     return {
         
-        'category': CompanyWebsiteCategoryToJSON(value['category']),
         'checksum': value['checksum'],
         'id': value['id'],
         'trusted': value['trusted'],
+        'type': WebsiteTypeIdentityOrValueToJSON(value['type']),
         'url': value['url'],
     };
 }

@@ -12,33 +12,50 @@
  * Do not edit the class manually.
  */
 
-
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
+ * @interface GameStatus
  */
-export const GameStatus = {
-    Released: 'Released',
-    Alpha: 'Alpha',
-    Beta: 'Beta',
-    EarlyAccess: 'EarlyAccess',
-    Offline: 'Offline',
-    Cancelled: 'Cancelled',
-    Rumored: 'Rumored',
-    Delisted: 'Delisted'
-} as const;
-export type GameStatus = typeof GameStatus[keyof typeof GameStatus];
+export interface GameStatus {
+    /**
+     * 
+     * @type {string}
+     * @memberof GameStatus
+     */
+    checksum?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof GameStatus
+     */
+    createdAt?: Date | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof GameStatus
+     */
+    status?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof GameStatus
+     */
+    updatedAt?: Date | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof GameStatus
+     */
+    id?: number | null;
+}
 
-
-export function instanceOfGameStatus(value: any): boolean {
-    for (const key in GameStatus) {
-        if (Object.prototype.hasOwnProperty.call(GameStatus, key)) {
-            if (GameStatus[key as keyof typeof GameStatus] === value) {
-                return true;
-            }
-        }
-    }
-    return false;
+/**
+ * Check if a given object implements the GameStatus interface.
+ */
+export function instanceOfGameStatus(value: object): value is GameStatus {
+    return true;
 }
 
 export function GameStatusFromJSON(json: any): GameStatus {
@@ -46,14 +63,35 @@ export function GameStatusFromJSON(json: any): GameStatus {
 }
 
 export function GameStatusFromJSONTyped(json: any, ignoreDiscriminator: boolean): GameStatus {
-    return json as GameStatus;
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'checksum': json['checksum'] == null ? undefined : json['checksum'],
+        'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
+        'status': json['status'] == null ? undefined : json['status'],
+        'updatedAt': json['updatedAt'] == null ? undefined : (new Date(json['updatedAt'])),
+        'id': json['id'] == null ? undefined : json['id'],
+    };
 }
 
-export function GameStatusToJSON(value?: GameStatus | null): any {
-    return value as any;
+export function GameStatusToJSON(json: any): GameStatus {
+    return GameStatusToJSONTyped(json, false);
 }
 
-export function GameStatusToJSONTyped(value: any, ignoreDiscriminator: boolean): GameStatus {
-    return value as GameStatus;
+export function GameStatusToJSONTyped(value?: GameStatus | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
+
+    return {
+        
+        'checksum': value['checksum'],
+        'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt'] as any).toISOString()),
+        'status': value['status'],
+        'updatedAt': value['updatedAt'] == null ? undefined : ((value['updatedAt'] as any).toISOString()),
+        'id': value['id'],
+    };
 }
 

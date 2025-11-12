@@ -13,20 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { ExternalCategory } from './ExternalCategory';
+import type { GameReleaseFormatIdentityOrValue } from './GameReleaseFormatIdentityOrValue';
 import {
-    ExternalCategoryFromJSON,
-    ExternalCategoryFromJSONTyped,
-    ExternalCategoryToJSON,
-    ExternalCategoryToJSONTyped,
-} from './ExternalCategory';
-import type { ExternalGameMedia } from './ExternalGameMedia';
-import {
-    ExternalGameMediaFromJSON,
-    ExternalGameMediaFromJSONTyped,
-    ExternalGameMediaToJSON,
-    ExternalGameMediaToJSONTyped,
-} from './ExternalGameMedia';
+    GameReleaseFormatIdentityOrValueFromJSON,
+    GameReleaseFormatIdentityOrValueFromJSONTyped,
+    GameReleaseFormatIdentityOrValueToJSON,
+    GameReleaseFormatIdentityOrValueToJSONTyped,
+} from './GameReleaseFormatIdentityOrValue';
 import type { PlatformIdentityOrValue } from './PlatformIdentityOrValue';
 import {
     PlatformIdentityOrValueFromJSON,
@@ -34,6 +27,13 @@ import {
     PlatformIdentityOrValueToJSON,
     PlatformIdentityOrValueToJSONTyped,
 } from './PlatformIdentityOrValue';
+import type { ExternalGameSourceIdentityOrValue } from './ExternalGameSourceIdentityOrValue';
+import {
+    ExternalGameSourceIdentityOrValueFromJSON,
+    ExternalGameSourceIdentityOrValueFromJSONTyped,
+    ExternalGameSourceIdentityOrValueToJSON,
+    ExternalGameSourceIdentityOrValueToJSONTyped,
+} from './ExternalGameSourceIdentityOrValue';
 import type { GameIdentityOrValue } from './GameIdentityOrValue';
 import {
     GameIdentityOrValueFromJSON,
@@ -48,12 +48,6 @@ import {
  * @interface ExternalGame
  */
 export interface ExternalGame {
-    /**
-     * 
-     * @type {ExternalCategory}
-     * @memberof ExternalGame
-     */
-    category?: ExternalCategory | null;
     /**
      * 
      * @type {string}
@@ -74,22 +68,28 @@ export interface ExternalGame {
     createdAt?: Date | null;
     /**
      * 
+     * @type {ExternalGameSourceIdentityOrValue}
+     * @memberof ExternalGame
+     */
+    externalGameSource?: ExternalGameSourceIdentityOrValue | null;
+    /**
+     * 
      * @type {GameIdentityOrValue}
      * @memberof ExternalGame
      */
     game?: GameIdentityOrValue | null;
     /**
      * 
+     * @type {GameReleaseFormatIdentityOrValue}
+     * @memberof ExternalGame
+     */
+    gameReleaseFormat?: GameReleaseFormatIdentityOrValue | null;
+    /**
+     * 
      * @type {number}
      * @memberof ExternalGame
      */
     id?: number | null;
-    /**
-     * 
-     * @type {ExternalGameMedia}
-     * @memberof ExternalGame
-     */
-    media?: ExternalGameMedia | null;
     /**
      * 
      * @type {string}
@@ -128,8 +128,6 @@ export interface ExternalGame {
     year?: number | null;
 }
 
-
-
 /**
  * Check if a given object implements the ExternalGame interface.
  */
@@ -147,13 +145,13 @@ export function ExternalGameFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'category': json['category'] == null ? undefined : ExternalCategoryFromJSON(json['category']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
         'countries': json['countries'] == null ? undefined : json['countries'],
         'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
+        'externalGameSource': json['externalGameSource'] == null ? undefined : ExternalGameSourceIdentityOrValueFromJSON(json['externalGameSource']),
         'game': json['game'] == null ? undefined : GameIdentityOrValueFromJSON(json['game']),
+        'gameReleaseFormat': json['gameReleaseFormat'] == null ? undefined : GameReleaseFormatIdentityOrValueFromJSON(json['gameReleaseFormat']),
         'id': json['id'] == null ? undefined : json['id'],
-        'media': json['media'] == null ? undefined : ExternalGameMediaFromJSON(json['media']),
         'name': json['name'] == null ? undefined : json['name'],
         'platform': json['platform'] == null ? undefined : PlatformIdentityOrValueFromJSON(json['platform']),
         'uid': json['uid'] == null ? undefined : json['uid'],
@@ -174,13 +172,13 @@ export function ExternalGameToJSONTyped(value?: ExternalGame | null, ignoreDiscr
 
     return {
         
-        'category': ExternalCategoryToJSON(value['category']),
         'checksum': value['checksum'],
         'countries': value['countries'],
         'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt'] as any).toISOString()),
+        'externalGameSource': ExternalGameSourceIdentityOrValueToJSON(value['externalGameSource']),
         'game': GameIdentityOrValueToJSON(value['game']),
+        'gameReleaseFormat': GameReleaseFormatIdentityOrValueToJSON(value['gameReleaseFormat']),
         'id': value['id'],
-        'media': ExternalGameMediaToJSON(value['media']),
         'name': value['name'],
         'platform': PlatformIdentityOrValueToJSON(value['platform']),
         'uid': value['uid'],

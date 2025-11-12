@@ -14,28 +14,11 @@
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import FeaturedGame from "$src/lib/components/custom/FeaturedGame.svelte";
     import { browser } from "$app/environment";
-    import type { LayoutProps } from "../$types";
-    import type { DetectedServer } from "$lib/utils/liveServers";
-    import { getLiveServers } from "../liveServers.remote";
 
     // Sort all games by title asc
-    const sortedGames = $derived([...GamesStore.games].sort((a, b) => a.title.localeCompare(b.title)));
+    const sortedGames = $derived([...GamesStore.games].sort((a, b) => a.title!.localeCompare(b.title!)));
     const filteredGames = $derived(sortedGames.filter((game) => game.isSelected && !game.isInstalled));
     const featuredGames = sortedGames.filter((game) => game.isFeatured).slice(0, 10);
-    const { data }: LayoutProps = $props();
-    let liveServers = $state<DetectedServer[]>(data.liveServers ?? []);
-
-    let refreshing = $state(false);
-
-    async function refreshLiveServers() {
-        refreshing = true;
-        try {
-            const servers = await getLiveServers();
-            liveServers = servers;
-        } finally {
-            refreshing = false;
-        }
-    }
 
     $effect(() => {
         setHeadMenu(head, title);
@@ -56,42 +39,46 @@
 
     <div class="flex items-center gap-3 py-2">
         <BlurFade delay={0.3} class="text-3xl font-bold">Serveurs de jeu actifs</BlurFade>
-        <Tooltip.Root>
-            <Tooltip.Trigger>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onclick={refreshLiveServers}
-                    disabled={refreshing}
-                    class="h-8 w-8">
-                    <RefreshCw class="size-4 {refreshing ? 'animate-spin' : ''}" />
-                </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-                <p>Rafraîchir les serveurs actifs</p>
-            </Tooltip.Content>
-        </Tooltip.Root>
     </div>
-    {#if liveServers.length > 0}
-        <div class="flex gap-4 overflow-x-auto pb-2">
-            {#each liveServers as server}
-                {@const serverGame = GamesStore.games.find((game) => game.folderSlug === server.gameSlug)}
-                {#if serverGame}
-                    <LiveServerCard {server} game={serverGame} disabled={refreshing} />
-                {/if}
-            {/each}
-        </div>
-    {:else}
-        <div class="border-border bg-muted/30 my-4 flex items-center justify-center rounded-lg border border-dashed p-8">
-            <div class="text-muted-foreground flex flex-col items-center gap-2 text-center">
-                <Server class="size-12 opacity-50" />
-                <p class="text-sm font-medium">Aucun serveur actif pour le moment</p>
-                <p class="text-xs opacity-70">Les serveurs de jeu apparaîtront ici quand ils seront en ligne</p>
+    <svelte:boundary>
+        {#if GamesStore.availableServers.length === 0}
+            <div
+                class="border-border bg-muted/30 my-4 flex items-center justify-center rounded-lg border border-dashed p-8">
+                <div class="text-muted-foreground flex flex-col items-center gap-2 text-center">
+                    <Server class="size-12 opacity-50" />
+                    <p class="text-sm font-medium">Aucun serveur actif pour le moment</p>
+                    <p class="text-xs opacity-70">Les serveurs de jeu apparaîtront ici quand ils seront en ligne</p>
+                </div>
             </div>
-        </div>
-    {/if}
+        {:else}
+            <div transition:fly={{ x: -20, duration: 250 }} class="flex gap-4 overflow-x-auto pb-2">
+                {#each GamesStore.availableServers as server, index (server.gameSlug + "_" + server.pid)}
+                    {@const serverGame = GamesStore.games.find((game) => game.folderSlug === server.gameSlug)}
 
-    <BlurFade delay={0.3} class="text-3xl py-2 font-bold">Liste de tous les jeux disponibles</BlurFade>
+                    <div transition:fly={{ x: -20, duration: 200, delay: 50 * index }}>
+                        {#if serverGame}
+                            <LiveServerCard {server} game={serverGame} />
+                        {/if}
+                    </div>
+                {/each}
+            </div>
+        {/if}
+
+        {#snippet failed(error, reset)}
+            <div class="border-border bg-destructive/10 my-4 flex items-center justify-between rounded-lg border p-4">
+                <div class="text-destructive flex flex-col gap-2">
+                    <p class="text-sm font-medium">Erreur lors du chargement des serveurs</p>
+                    <p class="text-xs opacity-70">{error.message}</p>
+                </div>
+                <Button onclick={() => { GamesStore.availableServers = []; reset(); }} variant="outline" size="sm">
+                    <RefreshCw class="size-4" />
+                    Réessayer
+                </Button>
+            </div>
+        {/snippet}
+    </svelte:boundary>
+
+    <BlurFade delay={0.3} class="py-2 text-3xl font-bold">Liste de tous les jeux disponibles</BlurFade>
 {/snippet}
 {#snippet head()}
     {#if GamesStore.selected.length > 0}

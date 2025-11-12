@@ -13,20 +13,20 @@
  */
 
 import { mapValues } from '../runtime';
-import type { ReleaseDateRegion } from './ReleaseDateRegion';
+import type { ReleaseDateRegionIdentityOrValue } from './ReleaseDateRegionIdentityOrValue';
 import {
-    ReleaseDateRegionFromJSON,
-    ReleaseDateRegionFromJSONTyped,
-    ReleaseDateRegionToJSON,
-    ReleaseDateRegionToJSONTyped,
-} from './ReleaseDateRegion';
-import type { ReleaseDateCategory } from './ReleaseDateCategory';
+    ReleaseDateRegionIdentityOrValueFromJSON,
+    ReleaseDateRegionIdentityOrValueFromJSONTyped,
+    ReleaseDateRegionIdentityOrValueToJSON,
+    ReleaseDateRegionIdentityOrValueToJSONTyped,
+} from './ReleaseDateRegionIdentityOrValue';
+import type { DateFormatIdentityOrValue } from './DateFormatIdentityOrValue';
 import {
-    ReleaseDateCategoryFromJSON,
-    ReleaseDateCategoryFromJSONTyped,
-    ReleaseDateCategoryToJSON,
-    ReleaseDateCategoryToJSONTyped,
-} from './ReleaseDateCategory';
+    DateFormatIdentityOrValueFromJSON,
+    DateFormatIdentityOrValueFromJSONTyped,
+    DateFormatIdentityOrValueToJSON,
+    DateFormatIdentityOrValueToJSONTyped,
+} from './DateFormatIdentityOrValue';
 import type { PlatformIdentityOrValue } from './PlatformIdentityOrValue';
 import {
     PlatformIdentityOrValueFromJSON,
@@ -57,12 +57,6 @@ import {
 export interface ReleaseDate {
     /**
      * 
-     * @type {ReleaseDateCategory}
-     * @memberof ReleaseDate
-     */
-    category?: ReleaseDateCategory | null;
-    /**
-     * 
      * @type {string}
      * @memberof ReleaseDate
      */
@@ -79,6 +73,12 @@ export interface ReleaseDate {
      * @memberof ReleaseDate
      */
     date?: Date | null;
+    /**
+     * 
+     * @type {DateFormatIdentityOrValue}
+     * @memberof ReleaseDate
+     */
+    dateFormat?: DateFormatIdentityOrValue | null;
     /**
      * 
      * @type {GameIdentityOrValue}
@@ -111,10 +111,10 @@ export interface ReleaseDate {
     platform?: PlatformIdentityOrValue | null;
     /**
      * 
-     * @type {ReleaseDateRegion}
+     * @type {ReleaseDateRegionIdentityOrValue}
      * @memberof ReleaseDate
      */
-    region?: ReleaseDateRegion | null;
+    releaseRegion?: ReleaseDateRegionIdentityOrValue | null;
     /**
      * 
      * @type {ReleaseDateStatusIdentityOrValue}
@@ -135,8 +135,6 @@ export interface ReleaseDate {
     year?: number | null;
 }
 
-
-
 /**
  * Check if a given object implements the ReleaseDate interface.
  */
@@ -154,16 +152,16 @@ export function ReleaseDateFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'category': json['category'] == null ? undefined : ReleaseDateCategoryFromJSON(json['category']),
         'checksum': json['checksum'] == null ? undefined : json['checksum'],
         'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
         'date': json['date'] == null ? undefined : (new Date(json['date'])),
+        'dateFormat': json['dateFormat'] == null ? undefined : DateFormatIdentityOrValueFromJSON(json['dateFormat']),
         'game': json['game'] == null ? undefined : GameIdentityOrValueFromJSON(json['game']),
         'id': json['id'] == null ? undefined : json['id'],
         'human': json['human'] == null ? undefined : json['human'],
         'month': json['month'] == null ? undefined : json['month'],
         'platform': json['platform'] == null ? undefined : PlatformIdentityOrValueFromJSON(json['platform']),
-        'region': json['region'] == null ? undefined : ReleaseDateRegionFromJSON(json['region']),
+        'releaseRegion': json['releaseRegion'] == null ? undefined : ReleaseDateRegionIdentityOrValueFromJSON(json['releaseRegion']),
         'status': json['status'] == null ? undefined : ReleaseDateStatusIdentityOrValueFromJSON(json['status']),
         'updatedAt': json['updatedAt'] == null ? undefined : (new Date(json['updatedAt'])),
         'year': json['year'] == null ? undefined : json['year'],
@@ -181,16 +179,16 @@ export function ReleaseDateToJSONTyped(value?: ReleaseDate | null, ignoreDiscrim
 
     return {
         
-        'category': ReleaseDateCategoryToJSON(value['category']),
         'checksum': value['checksum'],
         'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt'] as any).toISOString()),
         'date': value['date'] == null ? undefined : ((value['date'] as any).toISOString()),
+        'dateFormat': DateFormatIdentityOrValueToJSON(value['dateFormat']),
         'game': GameIdentityOrValueToJSON(value['game']),
         'id': value['id'],
         'human': value['human'],
         'month': value['month'],
         'platform': PlatformIdentityOrValueToJSON(value['platform']),
-        'region': ReleaseDateRegionToJSON(value['region']),
+        'releaseRegion': ReleaseDateRegionIdentityOrValueToJSON(value['releaseRegion']),
         'status': ReleaseDateStatusIdentityOrValueToJSON(value['status']),
         'updatedAt': value['updatedAt'] == null ? undefined : ((value['updatedAt'] as any).toISOString()),
         'year': value['year'],

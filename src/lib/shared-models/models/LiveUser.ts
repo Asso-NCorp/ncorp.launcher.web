@@ -106,12 +106,6 @@ export interface LiveUser {
      * @memberof LiveUser
      */
     agentVersion?: string;
-    /**
-     * Concurrent download state (tracked separately from activity to preserve playing state)
-     * @type {any}
-     * @memberof LiveUser
-     */
-    downloadingGame?: any;
 }
 
 
@@ -145,7 +139,6 @@ export function LiveUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'downloadSpeedMegaBytesPerSecond': json['downloadSpeedMegaBytesPerSecond'] == null ? undefined : json['downloadSpeedMegaBytesPerSecond'],
         'downloadSpeedMegabitsPerSecond': json['downloadSpeedMegabitsPerSecond'] == null ? undefined : json['downloadSpeedMegabitsPerSecond'],
         'agentVersion': json['agentVersion'] == null ? undefined : json['agentVersion'],
-        'downloadingGame': json['downloadingGame'] == null ? undefined : json['downloadingGame'],
     };
 }
 
@@ -172,7 +165,6 @@ export function LiveUserToJSONTyped(value?: LiveUser | null, ignoreDiscriminator
         'downloadSpeedMegaBytesPerSecond': value['downloadSpeedMegaBytesPerSecond'],
         'downloadSpeedMegabitsPerSecond': value['downloadSpeedMegabitsPerSecond'],
         'agentVersion': value['agentVersion'],
-        'downloadingGame': value['downloadingGame'],
     };
 }
 
