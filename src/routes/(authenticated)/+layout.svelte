@@ -40,6 +40,7 @@
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import { toast } from "svelte-sonner";
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
+    import { getLiveServers } from "./(games)/liveServers.remote";
 
     let loading = $state(false);
     let showAdminModal = $state(false);
@@ -98,7 +99,9 @@
     global.currentUser = user;
     liveUsers.users = data.liveUsers; // Filter and sort upcoming events
     GamesStore.setGames(data.availableGames ?? []);
-
+    // Fetch live servers - this runs on the server and is available in the client
+    const liveServersQuery = getLiveServers();
+       
     const upcomingEvents = $derived(() => {
         const now = new Date();
         return events

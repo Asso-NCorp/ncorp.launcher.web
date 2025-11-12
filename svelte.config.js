@@ -13,6 +13,9 @@ const config = {
         },
         csrf: { checkOrigin: false },
         serviceWorker: { register: false },
+        experimental: {
+            remoteFunctions: true,
+        },
     },
     vite: { ssr: { noExternal: ["three"] } },
     compilerOptions: {

@@ -10,6 +10,7 @@
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { onNavigate } from "$app/navigation";
     import type { LayoutData, PageData } from "../$types";
+    import { getLiveServers } from "./liveServers.remote";
 
     let { children, data }: { children?: Snippet; data: PageData } = $props();
 
@@ -18,11 +19,8 @@
     onNavigate(() => {
         GamesStore.resetSelected();
     });
-    /* onMount(async () => {
-        if (GamesStore.games.length === 0) {
-            await GamesStore.getAvailableGames();
-        }
-    }); */
+
+    
 </script>
 
 <!-- Root fills available space; inner scroller hosts title + sticky bar + children -->

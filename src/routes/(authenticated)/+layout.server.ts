@@ -5,9 +5,11 @@ import { getServerApi } from "$src/lib/utils";
 import { db } from "$srv/db";
 import { getWinnerGifFiles } from "$src/lib/server/fileUtils";
 import { extendGames } from "$src/lib/utils/games";
+import { fetchLiveServers } from "$src/lib/utils/liveServers";
 import type { InstallableGameExtended } from "$src/lib/types";
 import type { event, global_settings, role } from "@prisma/client";
 import type { LiveUser } from "$src/lib/shared-models";
+import type { DetectedServer } from "$src/lib/utils/liveServers";
 
 // Cache config
 const GLOBAL_CACHE_TTL_MS = 60_000;
@@ -30,10 +32,13 @@ let gamesCache: {
 const isStale = (c: { fetchedAt: number } | null, ttl: number) => !c || Date.now() - c.fetchedAt > ttl;
 const routeRequiresGames = (path: string) => GAME_ROUTE_PREFIXES.some((p) => path.startsWith(p));
 
-export const load: LayoutServerLoad = async ({ locals, url }) => {
+export const load: LayoutServerLoad = async ({ locals, url, depends }) => {
     logger.info("Layout load");
     const user = locals.user;
     const jwtToken = locals.token as string | undefined;
+
+    // Add dependency for live servers
+    depends("app:liveServers");
 
     // Global cached data
     if (isStale(globalCache, GLOBAL_CACHE_TTL_MS)) {
@@ -81,6 +86,14 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
         } catch (e) {
             logger.error(`Error fetching user-scoped data: ${e}`);
         }
+    }
+
+    // Fetch live servers (server-side caching handled by the API)
+    let liveServers: DetectedServer[] = [];
+    try {
+        liveServers = await fetchLiveServers();
+    } catch (e) {
+        logger.error(`Error fetching live servers: ${e}`);
     }
 
     // Available games cached & conditional
@@ -159,5 +172,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
         winnersGifsFiles: globalCache?.winnersGifsFiles ?? [],
         availableGames,
         roles: globalCache?.roles ?? [],
+        liveServers,
     };
 };
