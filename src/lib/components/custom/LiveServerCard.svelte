@@ -5,9 +5,9 @@
     import { getGameResourceUrl } from "$lib/utils";
     import dayjs from "dayjs";
     import duration from "dayjs/plugin/duration";
-    import type { DetectedServer } from "$lib/utils/liveServers";
     import type { InstallableGameExtended } from "$lib/types";
     import { GamesStore } from "$src/lib/states/games.svelte";
+    import type { DetectedServer } from "$src/lib/shared-models";
 
     dayjs.extend(duration);
 
@@ -111,7 +111,9 @@
                 <div class="ml-auto flex flex-col items-end gap-0.5">
                     <p class="inline-flex items-center gap-2 text-xs text-white/90">
                         <TimerIcon size={16} />
-                        {formatUptime(server.uptime)}
+                        {#if server.uptime}
+                            {formatUptime(server.uptime)}
+                        {/if}
                     </p>
                     <!-- <p class="inline-flex items-center gap-2 text-xs text-white/90">
                         <MemoryStick size={16} />
