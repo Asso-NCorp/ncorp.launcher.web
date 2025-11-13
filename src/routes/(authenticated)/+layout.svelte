@@ -99,8 +99,7 @@
     global.currentUser = user;
     liveUsers.users = data.liveUsers; // Filter and sort upcoming events
     GamesStore.setGames(data.availableGames ?? []);
-    // Fetch live servers - this runs on the server and is available in the client
-    const liveServersQuery = getLiveServers();
+
        
     const upcomingEvents = $derived(() => {
         const now = new Date();

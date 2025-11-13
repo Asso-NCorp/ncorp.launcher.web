@@ -73,6 +73,7 @@ export class SignalREventBinder {
         });
 
         this.offAndOn(liveServerConnection, "ConnectedPlayersUpdate", (serverInfo: RConServer) => {
+            console.log("ConnectedPlayersUpdate", serverInfo);
             GamesStore.updateServerConnectedPlayers(serverInfo);
         });
 

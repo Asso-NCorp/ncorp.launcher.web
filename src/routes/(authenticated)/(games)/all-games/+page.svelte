@@ -14,6 +14,9 @@
     import BlurFade from "$src/lib/components/custom/BlurFade.svelte";
     import FeaturedGame from "$src/lib/components/custom/FeaturedGame.svelte";
     import { browser } from "$app/environment";
+    import type { PageData } from "./$types";
+
+    let { data }: { data: PageData } = $props();
 
     // Sort all games by title asc
     const sortedGames = $derived([...GamesStore.games].sort((a, b) => a.title!.localeCompare(b.title!)));
@@ -57,7 +60,7 @@
 
                     <div transition:fly={{ x: -20, duration: 200, delay: 50 * index }}>
                         {#if serverGame}
-                            <LiveServerCard {server} game={serverGame} />
+                            <LiveServerCard {server} game={serverGame} roles={data.roles} />
                         {/if}
                     </div>
                 {/each}
