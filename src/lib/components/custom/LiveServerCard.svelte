@@ -7,6 +7,7 @@
     import duration from "dayjs/plugin/duration";
     import type { DetectedServer } from "$lib/utils/liveServers";
     import type { InstallableGameExtended } from "$lib/types";
+    import { GamesStore } from "$src/lib/states/games.svelte";
 
     dayjs.extend(duration);
 
@@ -15,6 +16,8 @@
         game,
         disabled = false,
     }: { server: DetectedServer; game: InstallableGameExtended; disabled?: boolean } = $props();
+
+    let serverPlayers = $derived(GamesStore.findServerPlayers(server.gameSlug!));
 
     function formatUptime(uptimeString: string): string {
         // Parse uptime string format "2.10:09:10.2090502" (days.hours:minutes:seconds.milliseconds)
@@ -81,6 +84,16 @@
             <span class="text-xs font-medium text-white">:{server.port}</span>
         </div>
 
+        {#if serverPlayers}
+            <!-- Player Count (bottom right) -->
+            <div
+                class="px-2 absolute right-2 bottom-2 rounded bg-black/60 py-1 backdrop-blur-sm">
+                <span class="text-xs font-medium text-white">
+                    {serverPlayers.players?.length} / {serverPlayers.maxPlayers} joueurs
+                </span>
+            </div>
+        {/if}
+
         <!-- Gradient Overlay at bottom with logo/name -->
         <div class="absolute right-0 bottom-0 left-0 bg-linear-to-t from-black via-black/80 to-transparent p-3 pt-8">
             <div class="flex items-end gap-3">
@@ -100,10 +113,10 @@
                         <TimerIcon size={16} />
                         {formatUptime(server.uptime)}
                     </p>
-                    <p class="inline-flex items-center gap-2 text-xs text-white/90">
+                    <!-- <p class="inline-flex items-center gap-2 text-xs text-white/90">
                         <MemoryStick size={16} />
                         {formatMemory(server.memoryMb)}
-                    </p>
+                    </p> -->
                 </div>
             </div>
         </div>

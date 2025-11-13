@@ -20,6 +20,7 @@ import type {
   Game,
   InstallableGame,
   LiveUser,
+  RConServer,
   StringTR,
   TR,
   UpdateFeaturedGamesDto,
@@ -37,6 +38,8 @@ import {
     InstallableGameToJSON,
     LiveUserFromJSON,
     LiveUserToJSON,
+    RConServerFromJSON,
+    RConServerToJSON,
     StringTRFromJSON,
     StringTRToJSON,
     TRFromJSON,
@@ -111,6 +114,10 @@ export interface SetLocalGamesDirRequest {
 
 export interface UpdateAvailableServersRequest {
     detectedServer?: Array<DetectedServer>;
+}
+
+export interface UpdateConnectedPlayersRequest {
+    rConServer?: RConServer;
 }
 
 export interface UpdateFeaturedGamesRequest {
@@ -1001,6 +1008,44 @@ export class ServerApi extends runtime.BaseAPI {
      */
     async updateAvailableServers(requestParameters: UpdateAvailableServersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.updateAvailableServersRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     */
+    async updateConnectedPlayersRaw(requestParameters: UpdateConnectedPlayersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["x-api-key"] = await this.configuration.apiKey("x-api-key"); // ApiKey authentication
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Server/UpdateConnectedPlayers`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RConServerToJSON(requestParameters['rConServer']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async updateConnectedPlayers(requestParameters: UpdateConnectedPlayersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updateConnectedPlayersRaw(requestParameters, initOverrides);
     }
 
     /**

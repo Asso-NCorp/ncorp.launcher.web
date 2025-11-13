@@ -1,7 +1,7 @@
 import { toast } from "svelte-sonner";
 import { FetchError } from "../shared-models";
 import type { InstallableGameExtended } from "../types";
-import type { DetectedServer, UserActivity } from "../shared-models";
+import type { DetectedServer, RConServer, UserActivity } from "../shared-models";
 import { global } from "../states/global.svelte";
 import { liveUsers } from "../states/live-users.svelte";
 import { getLocalApi, getServerApi, syncArrayInPlace } from "../utils";
@@ -9,13 +9,19 @@ import { liveAgentConnection } from "../states/live-agent.svelte";
 import { extendGames } from "../utils/games";
 
 class GameStore {
+    findServerPlayers(gameSlug: string): RConServer | undefined {
+        return this.serverPlayers[gameSlug];
+    }
+    updateServerConnectedPlayers(serverInfo: RConServer) {
+        this.serverPlayers[serverInfo.gameSlug!] = serverInfo;
+    }
     games: InstallableGameExtended[] = $state([]);
     selected: InstallableGameExtended[] = $derived(this.games.filter((g) => g.isSelected));
     isLoading = $state(false);
     installedGames: InstallableGameExtended[] = $derived(this.games.filter((g) => g.isInstalled));
     recentlyAddedGames: InstallableGameExtended[] = $derived(this.getAllRecentlyAddedGames());
     allGames: InstallableGameExtended[] = $state([]);
-
+    serverPlayers: Record<string, RConServer> = $state({});
     availableServers: DetectedServer[] = $state([]);
 
     lastGameFetchAt: number = $state(0); // ms epoch (info)

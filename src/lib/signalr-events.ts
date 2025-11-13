@@ -2,7 +2,7 @@ import { goto } from '$app/navigation';
 import { browser } from '$app/environment';
 import * as signalR from '@microsoft/signalr';
 import { GamesStore } from "./states/games.svelte";
-import type { DetectedServer, InstallableGame, LiveUser, UserActivity } from "./shared-models";
+import type { DetectedServer, InstallableGame, LiveUser, RConServer, UserActivity } from "./shared-models";
 
 import { toast } from "svelte-sonner";
 import { liveUsers } from "./states/live-users.svelte";
@@ -70,6 +70,10 @@ export class SignalREventBinder {
 
         this.offAndOn(liveServerConnection, "AvailableServersUpdate", (servers: DetectedServer[]) => {
             GamesStore.availableServers = servers;
+        });
+
+        this.offAndOn(liveServerConnection, "ConnectedPlayersUpdate", (serverInfo: RConServer) => {
+            GamesStore.updateServerConnectedPlayers(serverInfo);
         });
 
         this.offAndOn(
