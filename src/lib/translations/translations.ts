@@ -144,6 +144,7 @@ export default {
         add_to_favorites: "Ajouter aux favoris",
         remove_from_favorites: "Retirer des favoris",
         favorite: "Favori",
+        start_agent: "Démarrer l'agent",
     },
     en: {
         lang,
@@ -288,5 +289,6 @@ export default {
         add_to_favorites: "Add to favorites",
         remove_from_favorites: "Remove from favorites",
         favorite: "Favorite",
+        start_agent: "Start agent",
     },
 };

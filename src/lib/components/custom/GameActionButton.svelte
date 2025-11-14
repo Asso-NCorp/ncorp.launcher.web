@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, buttonVariants } from "../ui/icon-button";
+    import { Button } from "../ui/icon-button";
     import {
         ArrowBigDownDash,
         ArrowBigUpDash,
@@ -7,7 +7,6 @@
         Play,
         RefreshCw,
         Server,
-        StopCircle,
         Trash2Icon,
         ZapIcon,
     } from "@lucide/svelte";
@@ -20,8 +19,7 @@
     import type { InstallableGameExtended } from "$src/lib/types";
     import { toast } from "svelte-sonner";
     import { Progress } from "../ui/progress";
-    import { fi } from "zod/v4/locales";
-
+    
     let {
         game: installableGame,
         class: klazz,
@@ -44,6 +42,16 @@
     let downloadIcon = game.isCompressedAvailable ? ZapIcon : ArrowBigDownDash;
     const localApi = getLocalApi();
     let isGameQuitting = $state(false);
+
+
+    const handleStartAgentClick = async () => {
+        try {
+            window.open("nagent://start", "_self");
+            GamesStore.isLoading = false;
+        } catch (error) {
+            toast.error("Erreur lors du démarrage de l'agent");
+        }
+    };
 
     const handlePlayClick = async () => {
         if (game.isInstalled) {
@@ -200,8 +208,8 @@
             </Button>
         {/if}
     {:else}
-        <Button disabled={true} class={cn("w-auto", klazz)} icon={ArrowBigUpDash}>
-            {$t("agent_not_connected")}
+        <Button onclick={handleStartAgentClick} class={cn("w-auto", klazz)} icon={ArrowBigUpDash}>
+            {$t("start_agent")}
         </Button>
     {/if}
 </div>
