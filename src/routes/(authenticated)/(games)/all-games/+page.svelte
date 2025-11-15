@@ -57,10 +57,10 @@
             <div transition:fly={{ x: -20, duration: 250 }} class="flex gap-4 overflow-x-auto pb-2">
                 {#each GamesStore.availableServers as server, index (server.gameSlug + "_" + server.pid)}
                     {@const serverGame = GamesStore.games.find((game) => game.folderSlug === server.gameSlug)}
-
+                    {@const serverData = data.gameServers.find((gs) => gs.game_slug === server.gameSlug)}
                     <div transition:fly={{ x: -20, duration: 200, delay: 50 * index }}>
                         {#if serverGame}
-                            <LiveServerCard {server} game={serverGame} roles={data.roles} />
+                            <LiveServerCard {server} game={serverGame} roles={data.roles} serverData={serverData} />
                         {/if}
                     </div>
                 {/each}

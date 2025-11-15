@@ -12,7 +12,11 @@ export const load = async () => {
         rolesCacheTime = now;
     }
 
+    // Get game_servers
+    const gameServers = await db.game_server.findMany();
+
     return {
         roles: rolesCache,
+        gameServers,
     };
 };

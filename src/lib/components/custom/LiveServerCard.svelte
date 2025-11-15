@@ -11,7 +11,7 @@
     import type { DetectedServer } from "$src/lib/shared-models";
     import * as Tooltip from "$src/lib/components/ui/tooltip";
     import AvatarDiscord from "$src/lib/components/custom/AvatarDiscord.svelte";
-    import type { role } from "@prisma/client";
+    import type { game_server, role } from "@prisma/client";
 
     dayjs.extend(duration);
 
@@ -20,7 +20,8 @@
         game,
         disabled = false,
         roles = [],
-    }: { server: DetectedServer; game: InstallableGameExtended; disabled?: boolean; roles?: role[] } = $props();
+        serverData,
+    }: { server: DetectedServer; game: InstallableGameExtended; disabled?: boolean; roles?: role[]; serverData?: game_server } = $props();
 
     let serverPlayers = $derived(GamesStore.findServerPlayers(server.gameSlug!));
 
@@ -142,8 +143,7 @@
                             onerror={() => (logoError = true)}
                             class="h-10 w-auto max-w-xs object-contain drop-shadow-md" />
                     {/if}
-                    <h3 class="text-lg font-bold text-white">{game.title}</h3>
-
+                
                     <div class="ml-auto flex flex-col items-end gap-0.5">
                         <p class="inline-flex items-center gap-2 text-xs text-white/90">
                             <TimerIcon size={16} />
@@ -153,6 +153,10 @@
                         </p>
                     </div>
                 </div>
+
+                {#if game.title !== serverData?.name}
+                    <h3 class="text-lg font-bold text-white">{game.title}</h3>
+                {/if}
 
                 <!-- Player Avatars -->
                 {#if enrichedPlayers && enrichedPlayers.length > 0}
