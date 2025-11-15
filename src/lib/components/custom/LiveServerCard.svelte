@@ -34,13 +34,14 @@
     // Match server players with live users store
     let enrichedPlayers = $derived.by(() => {
         if (!serverPlayers?.players) return [];
-        
+
         return serverPlayers.players.map((player) => {
-            const liveUser = liveUsers.users.find((u) => 
-                u.name?.toLowerCase() === player.name?.toLowerCase() ||
-                u.displayName?.toLowerCase() === player.name?.toLowerCase()
+            const liveUser = liveUsers.users.find(
+                (u) =>
+                    u.name?.toLowerCase() === player.name?.toLowerCase() ||
+                    u.displayName?.toLowerCase() === player.name?.toLowerCase(),
             );
-            
+
             return {
                 ...player,
                 liveUser: liveUser,
@@ -93,11 +94,14 @@
     const logoImage = (g: InstallableGameExtended) => (g.logo ? getGameResourceUrl(g, g.logo) : "");
 
     let logoError = $state(false);
+    let showDescription = $state(false);
 </script>
 
 <button
     onclick={() => goto(`/games/${server.gameSlug}`)}
     {disabled}
+    onmouseenter={() => (showDescription = true)}
+    onmouseleave={() => (showDescription = false)}
     class="group relative shrink-0 cursor-pointer overflow-hidden rounded-lg transition-transform disabled:cursor-not-allowed disabled:opacity-50">
     <!-- Game Poster (Rectangle) -->
     <div class="relative h-48 w-80">
@@ -137,9 +141,8 @@
                             alt={game.title + " logo"}
                             onerror={() => (logoError = true)}
                             class="h-10 w-auto max-w-xs object-contain drop-shadow-md" />
-                    {:else}
-                        <h3 class="text-lg font-bold text-white">{game.title}</h3>
                     {/if}
+                    <h3 class="text-lg font-bold text-white">{game.title}</h3>
 
                     <div class="ml-auto flex flex-col items-end gap-0.5">
                         <p class="inline-flex items-center gap-2 text-xs text-white/90">
@@ -162,7 +165,9 @@
                                 <Tooltip.Root>
                                     <Tooltip.Trigger>
                                         <div
-                                            style="z-index: {10 - playerIndex}; margin-left: {playerIndex > 0 ? '-4px' : '0'}"
+                                            style="z-index: {10 - playerIndex}; margin-left: {playerIndex > 0
+                                                ? '-4px'
+                                                : '0'}"
                                             class="transition-all duration-200 hover:scale-110">
                                             <AvatarDiscord
                                                 size={20}
@@ -202,6 +207,13 @@
                                 </Tooltip.Root>
                             {/if}
                         </div>
+                    </div>
+                {/if}
+
+                <!-- Game Description (shown on hover) -->
+                {#if game.description && showDescription}
+                    <div class="mt-1 line-clamp-2 text-xs text-white/80">
+                        {game.description}
                     </div>
                 {/if}
             </div>
