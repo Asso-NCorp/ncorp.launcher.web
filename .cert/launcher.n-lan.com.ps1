@@ -1,6 +1,6 @@
 # Configuration
 $caPfx = "NCORP_ROOT_CA.pfx"
-$caPassword = "F0ll0wM3%%%%%%%%!"
+$caPassword = "CHOOSE_PASSWORD"
 $domain = "launcher.n-lan.com"
 
 # Extrait certificat et clé privée depuis ta Root CA .pfx

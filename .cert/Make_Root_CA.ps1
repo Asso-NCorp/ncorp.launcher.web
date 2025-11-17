@@ -12,7 +12,7 @@ $rootCA = New-SelfSignedCertificate `
     -Type Custom
 
 # Exporte l'autorité racine au format PFX (optionnel mais conseillé)
-$passwordCA = ConvertTo-SecureString -String "F0ll0wM3%%%%%%%%!" -Force -AsPlainText
+$passwordCA = ConvertTo-SecureString -String "CHOOSE_PASSWORD" -Force -AsPlainText
 Export-PfxCertificate `
     -Cert $rootCA `
     -FilePath ".\NCORP_ROOT_CA.pfx" `
