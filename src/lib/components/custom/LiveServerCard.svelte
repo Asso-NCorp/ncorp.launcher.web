@@ -154,8 +154,8 @@
                     </div>
                 </div>
 
-                {#if game.title !== serverData?.name}
-                    <h3 class="text-lg font-bold text-white">{game.title}</h3>
+                {#if game.title !== serverData?.name && serverData?.name}
+                    <h3 class="text-lg font-bold text-white">{serverData?.name}</h3>
                 {/if}
 
                 <!-- Player Avatars -->
