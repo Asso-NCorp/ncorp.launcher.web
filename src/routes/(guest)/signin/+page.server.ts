@@ -97,6 +97,8 @@ export const actions: Actions = {
             });
         }
 
+        let session: Awaited<ReturnType<typeof auth.api.getSession>> | undefined;
+
         try {
             const endSignIn = startStep("auth.api.signInUsername");
             const authResponse = await withTimeout(
@@ -195,7 +197,7 @@ export const actions: Actions = {
             logger.info({ username: form.data.username }, "User logged in successfully");
 
             const endSession = startStep("auth.api.getSession");
-            const session = await withTimeout(
+            session = await withTimeout(
                 auth.api.getSession({
                     headers: new Headers({ Cookie: `${bearerCookie}` }),
                 }),
@@ -203,7 +205,7 @@ export const actions: Actions = {
                 "auth.api.getSession",
             );
             endSession({ userId: session?.user?.id });
-            if (!session) {
+            if (!session || !session.user) {
                 logger.error({ username: form.data.username }, "Session retrieval failed for user");
                 return fail(500, { form, response: "Session retrieval failed" });
             }
@@ -220,7 +222,7 @@ export const actions: Actions = {
             ).catch((e) => {
                 logger.error(
                     {
-                        userId: session.user.id,
+                        userId: session?.user?.id,
                         error: e instanceof Error ? e.message : e,
                     },
                     "Failed to update lastLogin (continuing)",
@@ -241,7 +243,12 @@ export const actions: Actions = {
             throw error(500, "Internal Server Error");
         }
 
-        logger.info({ username: form.data.username }, "User logged in successfully");
+        if (!session) {
+            logger.error({ username: form.data.username }, "Session is undefined after login attempt");
+            throw error(500, "Internal Server Error");
+        }
+
+        logger.info({ username: form.data.username, userId: session.user.id }, "User login completed, redirecting");
 
         // Login successful
         throw redirect(302, "/");
