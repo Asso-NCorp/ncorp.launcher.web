@@ -147,7 +147,7 @@ export const actions: Actions = {
             }
 
             const [betterAuthTokenName, betterAuthTokenOptions] = betterAuthTokenEntry;
-            const betterAuthToken = betterAuthTokenOptions.value;
+            const betterAuthToken = decodeURIComponent(betterAuthTokenOptions.value);
 
             // Important : reencode the cookie value because it is decoded by the browser
             const bearerCookie = `${betterAuthTokenName}=${encodeURIComponent(betterAuthToken)}`;
