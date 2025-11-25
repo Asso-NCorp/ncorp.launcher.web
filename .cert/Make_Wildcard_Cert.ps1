@@ -1,7 +1,7 @@
 # Configuration
 $caPfx = "NCORP_ROOT_CA.pfx"
-$caPassword = "CHOOSE_PASSWORD"
-$domain = "*.n-lan.com"
+$caPassword = Read-Host "Enter the password for the CA .pfx file:"
+$domain = "*.n-corp.fr"
 
 # Extrait certificat et clé privée depuis ta Root CA .pfx
 openssl pkcs12 -in $caPfx -nocerts -nodes -out ca.key -passin pass:$caPassword

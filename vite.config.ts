@@ -24,8 +24,8 @@ export default defineConfig(({ mode }) => {
             host: process.env.PUBLIC_FRONTEND_HOST,
             port: 443,
             https: {
-                key: fs.readFileSync(`./.cert/wildcard.n-lan.com.key`),
-                cert: fs.readFileSync(`./.cert/wildcard.n-lan.com.pem`),
+                key: fs.readFileSync(`./.cert/wildcard.n-corp.fr.key`),
+                cert: fs.readFileSync(`./.cert/wildcard.n-corp.fr.pem`),
             },
         },
         plugins: [tailwindcss(), sveltekit()],

@@ -1,7 +1,7 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.126",
+  "version": "1.5.127",
   "type": "module",
   "packageManager": "pnpm@10.20.0",
   "scripts": {
@@ -16,9 +16,9 @@
     "lint": "prettier --check . && eslint .",
     "db:full": "bunx @better-auth/cli migrate --config ./src/lib/auth/server.ts && bunx @better-auth/cli generate --config ./src/lib/auth/server.ts",
     "prod": "bun run build && npm run deploy",
-    "genmodels": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-lan.com:3213/swagger/v1/swagger.json -o src/lib/shared-models -g typescript-fetch --additional-properties=SupportsES6=true,generateApis=false",
-    "genserver": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-lan.com:3213/swagger/v1/swagger.json -o src/lib/api/server -g typescript-fetch --additional-properties=supportsES6=true,withSeparateModelsAndApi=true,modelPackage=../../common/models,apiPackage=apis,apiPackagePrefix=server",
-    "genagent": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-lan.com:3214/swagger/v1/swagger.json -o src/lib/api/agent -g typescript-fetch --additional-properties=supportsES6=true,withSeparateModelsAndApi=true,modelPackage=../../common/models,apiPackage=apis,apiPackagePrefix=agent",
+    "genmodels": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-corp.fr:3213/swagger/v1/swagger.json -o src/lib/shared-models -g typescript-fetch --additional-properties=SupportsES6=true,generateApis=false",
+    "genserver": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-corp.fr:3213/swagger/v1/swagger.json -o src/lib/api/server -g typescript-fetch --additional-properties=supportsES6=true,withSeparateModelsAndApi=true,modelPackage=../../common/models,apiPackage=apis,apiPackagePrefix=server",
+    "genagent": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-corp.fr:3214/swagger/v1/swagger.json -o src/lib/api/agent -g typescript-fetch --additional-properties=supportsES6=true,withSeparateModelsAndApi=true,modelPackage=../../common/models,apiPackage=apis,apiPackagePrefix=agent",
     "genall": "bun genmodels && bun genserver && bun genagent",
     "genapi": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 openapi-ts",
     "prepare": "husky",

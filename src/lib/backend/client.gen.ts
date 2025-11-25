@@ -13,6 +13,8 @@ import type { ClientOptions as ClientOptions2 } from './types.gen';
  */
 export type CreateClientConfig<T extends ClientOptions = ClientOptions2> = (override?: Config<ClientOptions & T>) => Config<Required<ClientOptions> & T>;
 
-export const client = createClient(createConfig<ClientOptions2>({
-    baseUrl: 'https://dev-server.n-lan.com:3213'
-}));
+export const client = createClient(
+    createConfig<ClientOptions2>({
+        baseUrl: "https://dev-server.n-corp.fr:3213",
+    }),
+);

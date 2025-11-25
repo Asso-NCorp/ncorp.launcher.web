@@ -9,7 +9,7 @@ const CACHE = `cache-${version}`;
 const ASSETS = new Set<string>([...build, ...files, ...prerendered]);
 
 // back ressources (LAN/offline)
-const RESOURCE_HOSTS = new Set(["server.n-lan.com"]);
+const RESOURCE_HOSTS = new Set(["server.n-corp.fr"]);
 const RESOURCES_PREFIX = "/resources/";
 const LEGACY_API_PREFIX = "/api/Server/Resource";
 
@@ -43,7 +43,7 @@ const isCacheableResponse = (res: Response) => {
 const isNeverCacheRequest = (req: Request) => {
     try {
         const u = new URL(req.url);
-        return u.hostname === "agent.n-lan.com" && u.pathname === "/api/Local/InstalledGames";
+        return u.hostname === "agent.n-corp.fr" && u.pathname === "/api/Local/InstalledGames";
     } catch {
         return false;
     }
@@ -112,7 +112,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
                 }
             }
 
-            // 3) Ressources backend (images/docs) depuis server.n-lan.com : cache-first + revalidate
+            // 3) Ressources backend (images/docs) depuis server.n-corp.fr : cache-first + revalidate
             if (resourceHost) {
                 const cached = await cache.match(request);
 

@@ -4,8 +4,8 @@ import fs from 'fs';
 import https from 'https';
 import http from 'http';
 
-const key = fs.readFileSync('./.cert/launcher.n-lan.com.key', 'utf-8');
-const cert = fs.readFileSync('./.cert/launcher.n-lan.com.pem', 'utf-8');
+const key = fs.readFileSync("./.cert/launcher.n-corp.fr.key", "utf-8");
+const cert = fs.readFileSync("./.cert/launcher.n-corp.fr.pem", "utf-8");
 const credentials = { key, cert };
 
 // Set NODE_TLS_REJECT_UNAUTHORIZED=0 to ignore self-signed certificate

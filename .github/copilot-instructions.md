@@ -33,7 +33,7 @@ This is a SvelteKit app (Node adapter) with Better Auth, Prisma (MySQL), and gen
     ```cmd
     bun run dev
     ```
-    Loads `.env.development` (copied to `.env`), uses Vite with TLS keys from `.cert/wildcard.n-lan.com.*` (see `vite.config.ts`).
+    Loads `.env.development` (copied to `.env`), uses Vite with TLS keys from `.cert/wildcard.n-corp.fr.*` (see `vite.config.ts`).
 - Build/Start:
     ```cmd
     bun run build

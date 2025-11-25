@@ -121,7 +121,7 @@
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
                         icon={CloudDownload}
-                        href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
+                        href="https://dl.n-corp.fr/agent/updates/NCorp.Agent-win-Setup.exe"
                         label="Télécharger l'agent"
                         iconOnly={global.sidebarCollapsed} />
 

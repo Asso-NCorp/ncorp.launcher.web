@@ -118,7 +118,7 @@
         <Separator class="my-4" />
         <div class="px-4 pb-2 text-center">
             <a
-                href="https://dl.n-lan.com/agent/updates/NCorp.Agent-win-Setup.exe"
+                href="https://dl.n-corp.fr/agent/updates/NCorp.Agent-win-Setup.exe"
                 class="mx-auto w-full text-center text-sm text-primary underline">
                 <CloudDownload class="mr-1 inline-block" />
                 Télécharger l'agent
