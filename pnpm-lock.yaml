@@ -95,6 +95,9 @@ importers:
       dayjs:
         specifier: ^1.11.19
         version: 1.11.19
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       google-translate-api-x:
         specifier: ^10.7.2
         version: 10.7.2
