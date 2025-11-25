@@ -1,7 +1,7 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.134",
+  "version": "1.5.135",
   "type": "module",
   "packageManager": "pnpm@10.23.0",
   "scripts": {
