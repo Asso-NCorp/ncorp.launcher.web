@@ -98,6 +98,7 @@ export const auth = betterAuth({
                 logger.info("Sign-out detected, clearing cookies");
                 ctx.setCookie("token", "", {
                     httpOnly: true,
+                    path: "/",
                     maxAge: 0,
                     domain: AUTH_DOMAIN,
                 });

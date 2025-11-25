@@ -18,22 +18,17 @@ jobs:
           node-version: '22'
           check-latest: true
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
       - name: Install dependencies
-        run: pnpm install
+        run: npm install
 
       - name: Inject .env from secrets
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Generate Prisma client
-        run: pnpm exec prisma generate
+        run: npx prisma generate
 
       - name: Build app
-        run: NODE_ENV=production pnpm exec vite build
+        run: NODE_ENV=production npx vite build
 
       - name: Install 7-Zip
         run: sudo apt update && sudo apt install -y p7zip-full
@@ -72,11 +67,11 @@ jobs:
             7z x ncorp.launcher.7z -y
 
             # Installer uniquement les deps de prod
-            pnpm install
+            npm install
 
             # Prisma : appliquer migrations + regénérer client
-            pnpm exec prisma migrate deploy
-            pnpm exec prisma generate
+            npx prisma migrate deploy
+            npx prisma generate
 
             /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
             rm ncorp.launcher.7z
