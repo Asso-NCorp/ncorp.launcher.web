@@ -119,6 +119,8 @@ export const actions: Actions = {
                 return setError(form, "", "Identifiants incorrects");
             }
 
+            logger.info("Cookie string received: " + cookieString);
+
             logger.info("Cookies received");
             // Manually set the cookies as we login with a server action
             const parsed = parseSetCookieHeader(cookieString);
@@ -127,14 +129,16 @@ export const actions: Actions = {
                     maxAge: options["max-age"] ? options["max-age"] : undefined,
                     path: options.path ?? "/",
                     httpOnly: options.httponly,
+                    secure: options.secure ?? true,
                     sameSite: "none",
                     ...(apexDomain && { domain: apexDomain }),
                 });
             }
 
-            const betterAuthToken =
-                event.cookies.get("__Secure-better-auth.session_token") ??
-                event.cookies.get("better-auth.session_token");
+            // Get the cookie whos name contains "better-auth.session_token"
+            const betterAuthToken = [...parsed.entries()]
+                .filter(([name]) => name.includes("better-auth.session_token"))
+                .map(([, options]) => options.value)[0];
             if (!betterAuthToken) {
                 logger.error(`No betterAuthToken found for user ${form.data.username}`);
                 return fail(500, { form });
