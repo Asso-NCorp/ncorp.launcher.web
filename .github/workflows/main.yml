@@ -24,11 +24,11 @@ jobs:
       - name: Inject .env from secrets
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
-      - name: Generate Prisma client
-        run: npx prisma generate
-
       - name: Build app
         run: NODE_ENV=production npx vite build
+
+      - name: Generate Prisma client
+        run: npx prisma generate
 
       - name: Install 7-Zip
         run: sudo apt update && sudo apt install -y p7zip-full
