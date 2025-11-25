@@ -131,14 +131,19 @@ export const actions: Actions = {
                     });
                 }
 
-                const betterAuthToken = event.cookies.get("__Secure-better-auth.session_token");
-                if (!betterAuthToken) {
+                const betterAuthTokenEntry = [...parsed.entries()].find(([name]) =>
+                    name.includes("better-auth.session_token"),
+                );
+                if (!betterAuthTokenEntry) {
                     logger.error({ phase: "betterAuthToken" }, "signup: missing session token cookie");
                     return fail(500, { form });
                 }
 
+                const [betterAuthTokenName, betterAuthTokenOptions] = betterAuthTokenEntry;
+                const betterAuthToken = betterAuthTokenOptions.value;
+
                 // Important : reencode the cookie value because it is decoded by the browser
-                const bearerCookie = `__Secure-better-auth.session_token=${encodeURIComponent(betterAuthToken)}`;
+                const bearerCookie = `${betterAuthTokenName}=${encodeURIComponent(betterAuthToken)}`;
 
                 // Get the JWT token
                 let jwtTokenResponse: Response | null = null;

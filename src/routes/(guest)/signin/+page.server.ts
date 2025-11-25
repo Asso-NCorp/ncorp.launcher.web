@@ -138,16 +138,19 @@ export const actions: Actions = {
             }
 
             // Get the cookie whos name contains "better-auth.session_token"
-            const betterAuthToken = [...parsed.entries()]
-                .filter(([name]) => name.includes("better-auth.session_token"))
-                .map(([, options]) => options.value)[0];
-            if (!betterAuthToken) {
+            const betterAuthTokenEntry = [...parsed.entries()].find(([name]) =>
+                name.includes("better-auth.session_token"),
+            );
+            if (!betterAuthTokenEntry) {
                 logger.error(`No betterAuthToken found for user ${form.data.username}`);
                 return fail(500, { form });
             }
 
+            const [betterAuthTokenName, betterAuthTokenOptions] = betterAuthTokenEntry;
+            const betterAuthToken = betterAuthTokenOptions.value;
+
             // Important : reencode the cookie value because it is decoded by the browser
-            const bearerCookie = `__Secure-better-auth.session_token=${encodeURIComponent(betterAuthToken)}`;
+            const bearerCookie = `${betterAuthTokenName}=${encodeURIComponent(betterAuthToken)}`;
 
             // Get the JWT token
             let jwtTokenResponse: Response | null = null;
