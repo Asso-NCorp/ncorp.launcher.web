@@ -33,7 +33,7 @@ export const auth = betterAuth({
             domain: AUTH_DOMAIN,
         },
         defaultCookieAttributes: {
-            secure: PUBLIC_BETTER_AUTH_URL.startsWith("https://"),
+            secure: true,
             sameSite: "none", // obligatoire pour partager entre sous-domaines
             httpOnly: true,
             partitioned: true,

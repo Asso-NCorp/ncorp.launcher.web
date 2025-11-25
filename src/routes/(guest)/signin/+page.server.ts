@@ -132,7 +132,9 @@ export const actions: Actions = {
                 });
             }
 
-            const betterAuthToken = event.cookies.get("__Secure-better-auth.session_token");
+            const betterAuthToken =
+                event.cookies.get("__Secure-better-auth.session_token") ??
+                event.cookies.get("better-auth.session_token");
             if (!betterAuthToken) {
                 logger.error(`No betterAuthToken found for user ${form.data.username}`);
                 return fail(500, { form });
