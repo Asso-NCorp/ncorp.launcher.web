@@ -1,5 +1,4 @@
-import pkg from "$src/../generated/prisma/client";
-const { PrismaClient } = pkg;
+import { PrismaClient } from "../../generated/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { MYSQL_DATABASE, MYSQL_HOST, MYSQL_PASSWORD, MYSQL_PORT, MYSQL_USER } from "$env/static/private";
 
