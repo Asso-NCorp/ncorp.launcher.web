@@ -12,28 +12,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '22'
-          check-latest: true
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
+          bun-version: latest
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Inject .env from secrets
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Build app
-        run: NODE_ENV=production pnpm exec vite build
+        run: NODE_ENV=production bun run build
 
       - name: Generate Prisma client
-        run: pnpm exec prisma generate
+        run: bun x prisma generate
 
       - name: Install 7-Zip
         run: sudo apt update && sudo apt install -y p7zip-full
@@ -61,22 +55,18 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/launcher/front/
-            # Met Node (nvm) dans le PATH pour que "node" soit trouvable par les postinstall
-            export PATH=/home/lan/.nvm/versions/node/v22.14.0/bin:$PATH
+            export PATH=/home/lan/.bun/bin:$PATH
 
-            /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 stop ecosystem.config.json || true
+            /home/lan/.bun/bin/pm2 stop ecosystem.config.json || true
             
-            # Clean up old directories
             rm -rf server client node_modules
             
             7z x ncorp.launcher.7z -y
 
-            # Installer uniquement les deps de prod
-            pnpm install
+            bun install
 
-            # Prisma : appliquer migrations + regénérer client
-            pnpm exec prisma migrate deploy
-            pnpm exec prisma generate
+            bun x prisma migrate deploy
+            bun x prisma generate
 
-            /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
+            /home/lan/.bun/bin/pm2 start ecosystem.config.json
             rm ncorp.launcher.7z
