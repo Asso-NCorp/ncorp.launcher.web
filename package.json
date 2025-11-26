@@ -1,25 +1,25 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.148",
+  "version": "1.5.149",
   "type": "module",
-  "packageManager": "pnpm@10.23.0",
+  "packageManager": "bun@1.2.7",
   "scripts": {
     "dev": "cp .env.development .env && dotenv -e .env.development -- cross-env NODE_ENV=development vite dev",
-    "shade:add": "pnpm x shadcn-svelte@next add",
+    "shade:add": "bun x shadcn-svelte@next add",
     "build": "cp .env.production .env && dotenv -e .env.production -- vite build",
-    "start": "cp .env.production .env && dotenv -e .env.production -- pnpm run index.js",
+    "start": "cp .env.production .env && dotenv -e .env.production -- bun run index.js",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
     "lint": "prettier --check . && eslint .",
-    "db:full": "bunx @better-auth/cli migrate --config ./src/lib/auth/server.ts && bunx @better-auth/cli generate --config ./src/lib/auth/server.ts",
-    "prod": "bun run build && npm run deploy",
+    "db:full": "bun x @better-auth/cli migrate --config ./src/lib/auth/server.ts && bun x @better-auth/cli generate --config ./src/lib/auth/server.ts",
+    "prod": "bun run build && bun run deploy",
     "genmodels": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-corp.fr:3213/swagger/v1/swagger.json -o src/lib/shared-models -g typescript-fetch --additional-properties=SupportsES6=true,generateApis=false",
     "genserver": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-corp.fr:3213/swagger/v1/swagger.json -o src/lib/api/server -g typescript-fetch --additional-properties=supportsES6=true,withSeparateModelsAndApi=true,modelPackage=../../common/models,apiPackage=apis,apiPackagePrefix=server",
     "genagent": "cross-env JAVA_OPTS=\"-Dio.swagger.parser.util.RemoteUrl.trustAll=true -Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true\" openapi-generator-cli generate -i https://agent.n-corp.fr:3214/swagger/v1/swagger.json -o src/lib/api/agent -g typescript-fetch --additional-properties=supportsES6=true,withSeparateModelsAndApi=true,modelPackage=../../common/models,apiPackage=apis,apiPackagePrefix=agent",
-    "genall": "bun genmodels && bun genserver && bun genagent",
+    "genall": "bun run genmodels && bun run genserver && bun run genagent",
     "genapi": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 openapi-ts",
     "prepare": "husky",
     "bump-version": "node scripts/bump-version.js"
@@ -134,15 +134,5 @@
   },
   "trustedDependencies": [
     "@tailwindcss/oxide"
-  ],
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "better-sqlite3",
-      "esbuild",
-      "prisma",
-      "sharp"
-    ]
-  }
+  ]
 }
