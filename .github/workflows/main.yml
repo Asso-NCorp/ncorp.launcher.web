@@ -65,16 +65,16 @@ jobs:
             /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 stop ecosystem.config.json || true
             
             # Clean up old directories
-            rm -rf server client node_modules
+            rm -rf server client node_modules package-lock.json bun.lock
             
             7z x ncorp.launcher.7z -y
 
             # Installer uniquement les deps de prod
-            pnpm install
+            bun install
 
             # Prisma : appliquer migrations + regénérer client
-            pnpx prisma migrate deploy
-            pnpx prisma generate
+            bunx prisma migrate deploy
+            bunx prisma generate
 
             /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
             rm ncorp.launcher.7z

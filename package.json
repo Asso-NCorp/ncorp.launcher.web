@@ -1,9 +1,8 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.152",
+  "version": "1.5.153",
   "type": "module",
-  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "dev": "cp .env.development .env && dotenv -e .env.development -- cross-env NODE_ENV=development vite dev",
     "shade:add": "pnpm x shadcn-svelte@next add",
