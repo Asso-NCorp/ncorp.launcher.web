@@ -12,10 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          check-latest: true
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
       - name: Install dependencies
         run: bun install
@@ -23,18 +27,18 @@ jobs:
       - name: Inject .env from secrets
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
-      - name: Build app
-        run: NODE_ENV=production bun run build
-
       - name: Generate Prisma client
-        run: bun x prisma generate
+        run: bunx prisma generate
+
+      - name: Build app
+        run: NODE_ENV=production bunx vite build
 
       - name: Install 7-Zip
         run: sudo apt update && sudo apt install -y p7zip-full
 
       - name: Create archive
         run: |
-          7z a ncorp.launcher.7z ./build/* ./prisma/ ./generated/ package.json .env ecosystem.config.json
+          7z a ncorp.launcher.7z ./build/* ./prisma/ package.json .env ecosystem.config.json
 
       - name: Upload via SFTP
         uses: appleboy/scp-action@v0.1.7
@@ -55,18 +59,22 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/launcher/front/
-            export PATH=/home/lan/.bun/bin:$PATH
+            # Met Node (nvm) dans le PATH pour que "node" soit trouvable par les postinstall
+            export PATH=/home/lan/.nvm/versions/node/v22.14.0/bin:$PATH
 
-            /home/lan/.bun/bin/pm2 stop ecosystem.config.json || true
+            /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 stop ecosystem.config.json || true
             
+            # Clean up old directories
             rm -rf server client node_modules
             
             7z x ncorp.launcher.7z -y
 
-            bun install
+            # Installer uniquement les deps de prod
+            pnpm install
 
-            bun x prisma migrate deploy
-            bun x prisma generate
+            # Prisma : appliquer migrations + regénérer client
+            pnpx prisma migrate deploy
+            pnpx prisma generate
 
-            /home/lan/.bun/bin/pm2 start ecosystem.config.json
+            /home/lan/.nvm/versions/node/v22.14.0/bin/pm2 start ecosystem.config.json
             rm ncorp.launcher.7z
