@@ -1,9 +1,9 @@
 import type { Actions, PageServerLoad } from './$types';
-import { auth } from '$src/lib/auth/server';
-import { logger } from '$src/lib/stores/loggerStore';
-import { superValidate, fail } from 'sveltekit-superforms';
+import { auth } from "$src/lib/auth/server";
+import { superValidate, fail } from "sveltekit-superforms";
 import { zod4 } from "sveltekit-superforms/adapters";
 import { profileFormSchema } from "./schema";
+import { logger } from "better-auth";
 
 // Helper function to clean form data for serialization
 function cleanFormData(form: any) {
