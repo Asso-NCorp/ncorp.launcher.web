@@ -71,6 +71,7 @@ jobs:
 
             # Installer uniquement les deps de prod
             /home/lan/.bun/bin/bun install
+            /home/lan/.bun/bin/bun pm trust --all
 
             # Prisma : appliquer migrations + regénérer client
             /home/lan/.bun/bin/bunx prisma migrate deploy
