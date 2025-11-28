@@ -41,6 +41,7 @@
     import { toast } from "svelte-sonner";
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
     import { getLiveServers } from "./(games)/liveServers.remote";
+    import Lights from "$src/lib/components/custom/Lights.svelte";
 
     let loading = $state(false);
     let showAdminModal = $state(false);
