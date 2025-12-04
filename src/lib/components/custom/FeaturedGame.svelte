@@ -7,6 +7,7 @@
 	import { cn, getGameResourceUrl } from "$src/lib/utils";
 	import { getGameTrailer } from "$src/lib/backend";
     import { PUBLIC_BACKEND_API_URL, PUBLIC_MEDIAS_URL } from "$env/static/public";
+	import HLS from "hls.js";
 
 	let {
 		games = [],
@@ -33,6 +34,7 @@
 	let trailers: Record<number, string | null> = {};
 	let playingVideo = $state(false);
 	let videoProgress = $state(0); // ✅ progression de la vidéo
+	let hlsInstances: Record<number, HLS> = {}; // Track HLS instances
 
 	const playedTrailers = new Set<number>(
 		JSON.parse(localStorage.getItem("playedTrailers") || "[]")
@@ -63,14 +65,23 @@
 		return ((i % len) + len) % len;
 	}
 
+	function isHlsUrl(url: string): boolean {
+		return url.includes(".m3u8") || url.includes(".m3u");
+	}
+
 	async function goto(i: number) {
 		if (!games.length) return;
-		// Stop any currently playing video
+		// Stop any currently playing video and cleanup HLS
 		const currentVideo = document.querySelector<HTMLVideoElement>(`#slide-video-${current}`);
 		if (currentVideo) {
 			currentVideo.pause();
 			currentVideo.removeAttribute("src");
 			currentVideo.load();
+			// Cleanup HLS instance
+			if (hlsInstances[current]) {
+				hlsInstances[current].destroy();
+				delete hlsInstances[current];
+			}
 		}
 		
 		current = wrapIndex(i, games.length);
@@ -96,13 +107,65 @@
 		const img = document.querySelector<HTMLDivElement>(`#slide-image-${current}`);
 		if (!video || !img) return;
 
-		if (!video.querySelector("source")) {
-			const src = document.createElement("source");
-			src.src = url;
-			src.type = "video/webm";
-			video.appendChild(src);
-		}
+		const isHls = isHlsUrl(url);
 
+		if (isHls) {
+			// Handle HLS stream
+			if (HLS.isSupported()) {
+				// Cleanup any existing HLS instance for this video
+				if (hlsInstances[current]) {
+					hlsInstances[current].destroy();
+					delete hlsInstances[current];
+				}
+
+				const hls = new HLS({
+					maxBufferLength: 30,
+					maxMaxBufferLength: 60,
+					maxBufferSize: 60 * 1000 * 1000,
+				});
+
+				hlsInstances[current] = hls;
+				hls.loadSource(url);
+				hls.attachMedia(video);
+
+				hls.on(HLS.Events.MANIFEST_PARSED, async () => {
+					await playVideoWithHandler(video, img, id, isHls);
+				});
+
+				hls.on(HLS.Events.ERROR, (event, data) => {
+					if (data.fatal) {
+						console.error("Fatal HLS error:", data);
+						// Fallback to native playback if available
+						if (!video.querySelector("source")) {
+							const src = document.createElement("source");
+							src.src = url;
+							video.appendChild(src);
+						}
+					}
+				});
+			} else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+				// Native HLS support (Safari, iOS)
+				video.src = url;
+				await playVideoWithHandler(video, img, id, isHls);
+			}
+		} else {
+			// Handle regular video
+			if (!video.querySelector("source")) {
+				const src = document.createElement("source");
+				src.src = url;
+				src.type = "video/webm";
+				video.appendChild(src);
+			}
+			await playVideoWithHandler(video, img, id, isHls);
+		}
+	}
+
+	async function playVideoWithHandler(
+		video: HTMLVideoElement,
+		img: HTMLDivElement,
+		id: number,
+		isHls: boolean
+	) {
 		video.onended = () => {
 			playedTrailers.add(id);
 			savePlayed();
@@ -114,6 +177,12 @@
 			video.load();
 			video.remove();
 			img.style.opacity = "1";
+
+			// Cleanup HLS instance if needed
+			if (hlsInstances[current]) {
+				hlsInstances[current].destroy();
+				delete hlsInstances[current];
+			}
 
 			next();
 		};
@@ -155,7 +224,12 @@
 		raf = requestAnimationFrame(frame);
 	});
 
-	onDestroy(() => raf && cancelAnimationFrame(raf));
+	onDestroy(() => {
+		raf && cancelAnimationFrame(raf);
+		// Cleanup all HLS instances
+		Object.values(hlsInstances).forEach(hls => hls?.destroy());
+		hlsInstances = {};
+	});
 
 	const key = (e: KeyboardEvent) => {
 		if (e.key === "ArrowRight") next();
