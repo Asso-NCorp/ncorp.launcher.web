@@ -65,6 +65,14 @@
 
 	async function goto(i: number) {
 		if (!games.length) return;
+		// Stop any currently playing video
+		const currentVideo = document.querySelector<HTMLVideoElement>(`#slide-video-${current}`);
+		if (currentVideo) {
+			currentVideo.pause();
+			currentVideo.removeAttribute("src");
+			currentVideo.load();
+		}
+		
 		current = wrapIndex(i, games.length);
 		elapsed = 0;
 		startTs = performance.now();
@@ -110,8 +118,10 @@
 			next();
 		};
 
+		// Clear any existing ontimeupdate handler
 		video.ontimeupdate = () => {
-			if (video.duration && !isNaN(video.duration)) {
+			// Only update progress if this video is still the current one
+			if (playingVideo && video.duration && !isNaN(video.duration)) {
 				videoProgress = Math.min(1, video.currentTime / video.duration);
 			}
 		};
