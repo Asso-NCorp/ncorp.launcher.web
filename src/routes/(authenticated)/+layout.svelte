@@ -5,7 +5,7 @@
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import { onDestroy, onMount } from "svelte";
     import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-    import "@fontsource-variable/rubik";
+    import "@fontsource-variable/suse";
     import { fade } from "svelte/transition";
     import { afterNavigate, beforeNavigate, onNavigate } from "$app/navigation";
     import { browser } from "$app/environment";
@@ -34,16 +34,15 @@
     import type { LayoutProps } from "./$types";
     import HeaderMessage from "$src/lib/components/custom/HeaderMessage.svelte";
     import { ScrollArea } from "$src/lib/components/ui/scroll-area";
-    import { logger } from "better-auth";
     import HeaderAdminControls from "$src/lib/components/layout/HeaderAdminControls.svelte";
     import AdminControlsModal from "$src/lib/components/layout/AdminControlsModal.svelte";
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import { toast } from "svelte-sonner";
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
     import UninstallModal from "$src/lib/components/modals/UninstallModal.svelte";
-    import { getLiveServers } from "./(games)/liveServers.remote";
-    import Lights from "$src/lib/components/custom/Lights.svelte";
-
+    import LampEffect from "$src/lib/components/custom/LampEffect.svelte";
+    import Neon from "$src/lib/components/custom/Neon.svelte";
+    
     let loading = $state(false);
     let showAdminModal = $state(false);
     let winnerOverlay: WinnerOverlay | undefined = $state();

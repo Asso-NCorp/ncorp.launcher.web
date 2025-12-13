@@ -1,7 +1,7 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.162",
+  "version": "1.5.163",
   "type": "module",
   "scripts": {
     "dev": "cp .env.development .env && dotenv -e .env.development -- cross-env NODE_ENV=development vite dev",
@@ -83,7 +83,9 @@
     "@dicebear/collection": "^9.2.4",
     "@dicebear/core": "^9.2.4",
     "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/radio-canada-big": "^5.2.7",
     "@fontsource-variable/rubik": "^5.2.8",
+    "@fontsource-variable/suse": "^5.2.9",
     "@fontsource/rubik": "^5.2.8",
     "@friendofsvelte/tipex": "^0.0.9",
     "@iconify/tailwind": "^1.2.0",

@@ -167,7 +167,7 @@
             {#if isRecentlyAdded(game) && !game.isPlaying && !showDetails}
                 <Badge
                     variant="secondary"
-                    class="rounded-lg bg-info text-center text-xs font-bold uppercase text-white">
+                    class="bg-info text-center text-xs font-bold uppercase text-white">
                     <div>{$t?.("new") || "NEW"}</div>
                 </Badge>
             {/if}
@@ -176,7 +176,7 @@
             {/if}
             {#if !showDetails}
                 <div class="flex" transition:fly={{ y: -30, duration: 200 }}>
-                    <Badge variant="secondary" class=" flex items-center text-nowrap rounded-lg px-1">
+                    <Badge variant="secondary" class=" flex items-center text-nowrap px-1">
                         {#if game.sizeGb}
                             {#if game.sizeGb < 1}
                                 {Math.round(game.sizeGb * 1024)} {$t("MB")}

@@ -8,7 +8,9 @@
         "@dicebear/collection": "^9.2.4",
         "@dicebear/core": "^9.2.4",
         "@fontsource-variable/inter": "^5.2.8",
+        "@fontsource-variable/radio-canada-big": "^5.2.7",
         "@fontsource-variable/rubik": "^5.2.8",
+        "@fontsource-variable/suse": "^5.2.9",
         "@fontsource/rubik": "^5.2.8",
         "@friendofsvelte/tipex": "^0.0.9",
         "@iconify/tailwind": "^1.2.0",
@@ -455,7 +457,11 @@
 
     "@fontsource-variable/inter": ["@fontsource-variable/inter@5.2.8", "", {}, "sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ=="],
 
+    "@fontsource-variable/radio-canada-big": ["@fontsource-variable/radio-canada-big@5.2.7", "", {}, "sha512-fcKOJr81utVytGqer+B4CsZijCX+LS2z7IRaq28eZtT0fyxR2b8kM5JCj+7BocBznnEIxsHfGbp5HTBNEuGekQ=="],
+
     "@fontsource-variable/rubik": ["@fontsource-variable/rubik@5.2.8", "", {}, "sha512-vGDExLzB4a2Fj9mca5LqNoA2ZKcU9o+x5FEBLte/nxYkCB9hOQwZS6ZlItUv+Ssn7YMzKauGuI/Po+YueFuZbg=="],
+
+    "@fontsource-variable/suse": ["@fontsource-variable/suse@5.2.9", "", {}, "sha512-xoLO+j2DqmSqdvB9b8/60wrgXdwWIhCKOSXzX+GDrFCb5Ab6XoEhpOos2ZDXDjr7/Th2kTvhWsa8/M35OpJ6qA=="],
 
     "@fontsource/rubik": ["@fontsource/rubik@5.2.8", "", {}, "sha512-PIc8QR7FqWPcYhbdRiGff56vQlKqg/ytES1YqecSq1GkgxiH4TBshrFvDEOZ9JonUF9m1qQ+qXxJj7wD5zgXEw=="],
 

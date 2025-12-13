@@ -142,7 +142,7 @@
             <!-- Nom -->
             <span
                 class:text-primary={user.role === "admin"}
-                class="max-w-[90%] self-center truncate font-ggsans-medium text-base font-thin leading-tight">
+                class="max-w-[90%] self-center truncate text-base leading-tight">
                 {user.name}
             </span>
 

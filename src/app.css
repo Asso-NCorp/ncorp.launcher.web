@@ -1,7 +1,6 @@
 /* --- Imports doivent être en tout premier --- */
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@fontsource/rubik";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -40,8 +39,8 @@
   --warning: hsl(40 90% 52%);
   --danger: hsl(0 85% 52%);
   --background-subtle: hsl(260 40% 6%);
-  --radius: 0px;
-  --font-rubik: "Rubik", sans-serif;
+  --radius: 0.25rem;
+  --font-rubik: "Suse Variable", sans-serif;
 
   --sidebar: hsl(260 40% 11%);
   --sidebar-foreground: hsl(250 25% 95%);
