@@ -40,6 +40,7 @@
     import WinnerOverlay from "$src/lib/components/custom/WinnerOverlay.svelte";
     import { toast } from "svelte-sonner";
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
+    import UninstallModal from "$src/lib/components/modals/UninstallModal.svelte";
     import { getLiveServers } from "./(games)/liveServers.remote";
     import Lights from "$src/lib/components/custom/Lights.svelte";
 
@@ -365,6 +366,7 @@
 <WinnerOverlay bind:this={winnerOverlay} />
 
 <ReinstallModal />
+<UninstallModal />
 
 <style>
     :root {

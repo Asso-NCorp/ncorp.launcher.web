@@ -16,6 +16,7 @@
     import { liveAgentConnection } from "$src/lib/states/live-agent.svelte";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
     import { reinstallModalStore } from "$src/lib/states/reinstall-modal.svelte";
+    import { uninstallModalStore } from "$src/lib/states/uninstall-modal.svelte";
     import type { InstallableGameExtended } from "$src/lib/types";
     import { toast } from "svelte-sonner";
     import { Progress } from "../ui/progress";
@@ -87,7 +88,7 @@
     };
 
     const handleUninstallClick = async () => {
-        await GamesStore.uninstallGame(game);
+        uninstallModalStore.open(game);
     };
 
     const handleCancelClick = async () => {
