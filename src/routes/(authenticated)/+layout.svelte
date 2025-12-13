@@ -40,9 +40,7 @@
     import { toast } from "svelte-sonner";
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
     import UninstallModal from "$src/lib/components/modals/UninstallModal.svelte";
-    import LampEffect from "$src/lib/components/custom/LampEffect.svelte";
-    import Neon from "$src/lib/components/custom/Neon.svelte";
-    
+        
     let loading = $state(false);
     let showAdminModal = $state(false);
     let winnerOverlay: WinnerOverlay | undefined = $state();
