@@ -88,13 +88,16 @@
         <div class="relative">
             <!-- Reordered: image first, overlay second so no z-index needed -->
             {#if showDetails}
-                <LazyImage
-                    placeholderHeight="220px"
-                    placeholderWidth="320px"
-                    class="h-30 max-h-30 w-full overflow-hidden object-cover object-center"
-                    src={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/${currentScreenshot}`}>
-                    <Loader size={20} />
-                </LazyImage>
+                <div class="relative">
+                    <LazyImage
+                        placeholderHeight="220px"
+                        placeholderWidth="320px"
+                        class="h-30 max-h-30 w-full overflow-hidden object-cover object-center"
+                        src={`${PUBLIC_MEDIAS_URL}/games/${game.folderSlug}/${currentScreenshot}`}>
+                        <Loader size={20} />
+                    </LazyImage>
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/40"></div>
+                </div>
             {:else}
                 <div class="h-30 max-h-30 w-full overflow-hidden bg-subtle/20"></div>
             {/if}
@@ -203,8 +206,8 @@
         <div
             role="heading"
             aria-level="3"
-            class="flex items-center gap-2 pb-2 text-xl font-semibold leading-none tracking-tight">
-            <a href="/games/{game.folderSlug}" class="hover:underline">{game.title}</a>
+            class="flex items-center gap-2 pb-2 text-xl font-semibold leading-none tracking-tight min-w-0">
+            <a href="/games/{game.folderSlug}" class="hover:underline truncate">{game.title}</a>
             {#if game.isInstalled && !game.isInstalling && showDetails}
                 <div title={$t("installed")} class="flex items-center">
                     <VerifiedIcon class="h-4 w-4 text-green-500" />
@@ -214,32 +217,33 @@
         {#if showDetails}
             <div
                 in:fly={{ y: 50 }}
-                class="flex flex-1 flex-col space-y-2 {canScroll ? 'overflow-y-auto' : 'overflow-hidden'}">
-                <div class="text-sm font-medium leading-none tracking-tight">
-                    {game.description}
-                </div>
-                <div class="flex flex-col">
-                    <div class="text-sm text-gray-500">
-                        <span>
-                            {$t("size")}: {game.sizeGb
-                                ? game.sizeGb < 1
-                                    ? Math.round(game.sizeGb * 1024) + " MB"
-                                    : Math.round(game.sizeGb) + " GB"
-                                : "N/A"}
-                        </span>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        <span>{$t("genres")}: {game.genresStr}</span>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        <span>{$t("game_modes")}: {game.gameModes?.join(", ")}</span>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        <span>{$t("max_players")}: {game.maxPlayers}</span>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        <span>{$t("total_installs_count")}: {game.totalInstallations}</span>
-                    </div>
+                class="flex flex-1 flex-col gap-3 {canScroll ? 'overflow-y-auto' : 'overflow-hidden'} overflow-x-hidden px-1">
+                <div class="flex flex-wrap gap-2 w-full">
+                    {#if game.genresStr}
+                        <div class="text-xs text-gray-400 w-full">
+                            {game.genresStr}
+                        </div>
+                    {/if}
+                    <Badge variant="outline" class="text-xs">
+                        📦 {game.sizeGb
+                            ? game.sizeGb < 1
+                                ? Math.round(game.sizeGb * 1024) + " MB"
+                                : Math.round(game.sizeGb) + " GB"
+                            : "N/A"}
+                    </Badge>
+                    {#if game.gameModes}
+                        {#each game.gameModes as mode}
+                            <Badge variant="outline" class="text-xs">
+                                {mode}
+                            </Badge>
+                        {/each}
+                    {/if}
+                    <Badge variant="outline" class="text-xs">
+                        👥 {game.maxPlayers}
+                    </Badge>
+                    <Badge variant="outline" class="text-xs">
+                        ⬇️ {game.totalInstallations}
+                    </Badge>
                 </div>
             </div>
         {/if}
