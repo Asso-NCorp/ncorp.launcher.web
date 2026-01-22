@@ -22,11 +22,44 @@ export const load = (async ({ request }) => {
         usersResult.users.map(async (user) => {
             const dbUser = await db.user.findUnique({
                 where: { id: user.id },
-                select: { approvalStatus: true },
+                select: {
+                    approvalStatus: true,
+                    approvedBy: true,
+                    approvedAt: true,
+                    rejectedBy: true,
+                    rejectedAt: true,
+                },
             });
+
+            // Fetch admin names if approval/rejection info exists
+            let approvedByName: string | undefined;
+            let rejectedByName: string | undefined;
+
+            if (dbUser?.approvedBy) {
+                const approver = await db.user.findUnique({
+                    where: { id: dbUser.approvedBy },
+                    select: { name: true, username: true },
+                });
+                approvedByName = approver?.name || approver?.username || undefined;
+            }
+
+            if (dbUser?.rejectedBy) {
+                const rejecter = await db.user.findUnique({
+                    where: { id: dbUser.rejectedBy },
+                    select: { name: true, username: true },
+                });
+                rejectedByName = rejecter?.name || rejecter?.username || undefined;
+            }
+
             return {
                 ...user,
                 approvalStatus: dbUser?.approvalStatus || "approved",
+                approvedBy: dbUser?.approvedBy,
+                approvedAt: dbUser?.approvedAt,
+                rejectedBy: dbUser?.rejectedBy,
+                rejectedAt: dbUser?.rejectedAt,
+                approvedByName,
+                rejectedByName,
             };
         }),
     );
@@ -105,27 +138,67 @@ export const actions: Actions = {
         }
 
         try {
-            // Prepare the update data
-            const updateData = {
-                id: form.data.id,
+            // Prepare the update data for Better Auth
+            const authUpdateData = {
                 name: form.data.name,
                 role: form.data.role,
-                // Only include password if it's provided and not empty
-                ...(form.data.password ? { password: form.data.password } : {}),
-                // Only include approvalStatus if it's provided
-                ...(form.data.approvalStatus ? { approvalStatus: form.data.approvalStatus } : {}),
             };
+
+            // Prepare Prisma update data for approval tracking
+            const prismaUpdateData: Record<string, any> = {
+                name: form.data.name,
+                role: form.data.role,
+            };
+
+            // Handle approval status and tracking fields
+            if (form.data.approvalStatus) {
+                const currentUser = await db.user.findUnique({
+                    where: { id: form.data.id },
+                    select: { approvalStatus: true },
+                });
+
+                if (currentUser?.approvalStatus !== form.data.approvalStatus) {
+                    // Status is changing
+                    prismaUpdateData["approvalStatus"] = form.data.approvalStatus;
+
+                    if (form.data.approvalStatus === "rejected") {
+                        // Setting to rejected
+                        prismaUpdateData["rejectedBy"] = event.locals.user.id;
+                        prismaUpdateData["rejectedAt"] = new Date();
+                        prismaUpdateData["approvedBy"] = null;
+                        prismaUpdateData["approvedAt"] = null;
+                    } else if (form.data.approvalStatus === "approved") {
+                        // Setting to approved, clear rejection info
+                        prismaUpdateData["approvedBy"] = event.locals.user.id;
+                        prismaUpdateData["approvedAt"] = new Date();
+                        prismaUpdateData["rejectedBy"] = null;
+                        prismaUpdateData["rejectedAt"] = null;
+                    } else if (form.data.approvalStatus === "pending") {
+                        // Setting to pending, clear all tracking
+                        prismaUpdateData["approvedBy"] = null;
+                        prismaUpdateData["approvedAt"] = null;
+                        prismaUpdateData["rejectedBy"] = null;
+                        prismaUpdateData["rejectedAt"] = null;
+                    }
+                }
+            }
+
             const ctx = await auth.$context;
 
-            if (updateData.id) {
-                if (updateData.password) {
-                    const hash = await ctx.password.hash(updateData.password);
-                    await ctx.internalAdapter.updatePassword(updateData.id, hash);
+            if (form.data.id) {
+                if (form.data.password) {
+                    const hash = await ctx.password.hash(form.data.password);
+                    await ctx.internalAdapter.updatePassword(form.data.id, hash);
                 }
 
-                // Call the API with the correct parameters
-                // Use the auth.api.updateUser method with the user ID
-                await ctx.internalAdapter.updateUser(updateData.id, updateData);
+                // Update user via Better Auth
+                await ctx.internalAdapter.updateUser(form.data.id, authUpdateData);
+
+                // Update approval tracking via Prisma (which Better Auth doesn't handle)
+                await db.user.update({
+                    where: { id: form.data.id },
+                    data: prismaUpdateData,
+                });
             }
 
             return { form };

@@ -25,7 +25,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         const updatedUser = await db.user.update({
             where: { id: userId },
-            data: { approvalStatus },
+            data: {
+                approvalStatus,
+                ...(action === "approve"
+                    ? { approvedBy: locals.user.id, approvedAt: new Date(), rejectedBy: null, rejectedAt: null }
+                    : { rejectedBy: locals.user.id, rejectedAt: new Date(), approvedBy: null, approvedAt: null }),
+            },
             select: {
                 id: true,
                 email: true,

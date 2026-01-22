@@ -87,6 +87,10 @@ model user {
   lastLogin           DateTime?          @db.DateTime(0)
   approvalStatus      String             @default("pending") @db.VarChar(20)
   referralSource      String?            @db.VarChar(100)
+  approvedBy          String?            @db.VarChar(36)
+  approvedAt          DateTime?          @db.DateTime(0)
+  rejectedBy          String?            @db.VarChar(36)
+  rejectedAt          DateTime?          @db.DateTime(0)
   channel_memberships channel_member[]
   event_created       event[]            @relation("event_created_by")
   event_updated       event[]            @relation("event_updated_by")

@@ -19,6 +19,8 @@
         image: string | null;
         role: string | null;
         referralSource: string | null;
+        rejectedBy?: string;
+        rejectedAt?: Date;
     }
 
     let { data }: { data: PageData } = $props();
@@ -209,6 +211,20 @@
                                 <div class="flex-1 min-w-0">
                                     <p class="font-medium truncate">{user.name || user.username || "No name"}</p>
                                     <p class="text-sm text-muted-foreground truncate">{user.email}</p>
+                                    {#if user.rejectedAt}
+                                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">
+                                            Rejeté le {new Date(user.rejectedAt).toLocaleDateString("fr-FR", {
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                            })}
+                                            {#if user.rejectedByName}
+                                                par <span class="font-semibold">{user.rejectedByName}</span>
+                                            {/if}
+                                        </p>
+                                    {/if}
                                     {#if user.referralSource}
                                         <p class="text-xs text-primary/70 mt-1">
                                             {$t("heard_from")}: <span class="font-medium">{user.referralSource}</span>

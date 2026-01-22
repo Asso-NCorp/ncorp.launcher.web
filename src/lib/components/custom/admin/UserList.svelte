@@ -11,9 +11,16 @@
     import { Badge } from "$lib/components/ui/badge";
     import AvatarWithStatus from "$lib/components/custom/AvatarWithStatus.svelte";
     import type { role } from "@prisma/client";
+    import * as Tooltip from "$lib/components/ui/tooltip";
 
     interface UserWithApproval extends User {
         approvalStatus?: string;
+        approvedBy?: string;
+        approvedAt?: Date | string;
+        rejectedBy?: string;
+        rejectedAt?: Date | string;
+        approvedByName?: string;
+        rejectedByName?: string;
     }
 
     let {
@@ -130,11 +137,48 @@
                             </Table.Cell>
                             <Table.Cell class="text-center text-sm">
                                 {#if user.approvalStatus === "pending"}
-                                    <Badge variant="outline" class="bg-yellow-500/10 text-yellow-700 border-yellow-200">En attente</Badge>
+                                    <Tooltip.Root>
+                                        <Tooltip.Trigger>
+                                            <Badge variant="outline" class="bg-yellow-500/10 text-yellow-700 border-yellow-200 cursor-help">En attente</Badge>
+                                        </Tooltip.Trigger>
+                                        <Tooltip.Content>
+                                            <div class="space-y-1">
+                                                <p>{new Date(user.createdAt).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                                            </div>
+                                        </Tooltip.Content>
+                                    </Tooltip.Root>
                                 {:else if user.approvalStatus === "approved"}
-                                    <Badge variant="outline" class="bg-green-500/10 text-green-700 border-green-200">Approuvé</Badge>
+                                    <Tooltip.Root>
+                                        <Tooltip.Trigger>
+                                            <Badge variant="outline" class="bg-green-500/10 text-green-700 border-green-200 cursor-help">Approuvé</Badge>
+                                        </Tooltip.Trigger>
+                                        <Tooltip.Content>
+                                            <div class="space-y-1">
+                                                {#if user.approvedAt}
+                                                    <p>{new Date(user.approvedAt).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                                                {/if}
+                                                {#if user.approvedByName}
+                                                    <p class="text-xs">par {user.approvedByName}</p>
+                                                {/if}
+                                            </div>
+                                        </Tooltip.Content>
+                                    </Tooltip.Root>
                                 {:else if user.approvalStatus === "rejected"}
-                                    <Badge variant="outline" class="bg-red-500/10 text-red-700 border-red-200">Rejeté</Badge>
+                                    <Tooltip.Root>
+                                        <Tooltip.Trigger>
+                                            <Badge variant="outline" class="bg-red-500/10 text-red-700 border-red-200 cursor-help">Rejeté</Badge>
+                                        </Tooltip.Trigger>
+                                        <Tooltip.Content>
+                                            <div class="space-y-1">
+                                                {#if user.rejectedAt}
+                                                    <p>{new Date(user.rejectedAt).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                                                {/if}
+                                                {#if user.rejectedByName}
+                                                    <p class="text-xs">par {user.rejectedByName}</p>
+                                                {/if}
+                                            </div>
+                                        </Tooltip.Content>
+                                    </Tooltip.Root>
                                 {/if}
                             </Table.Cell>
                             <Table.Cell class="text-center text-sm">
