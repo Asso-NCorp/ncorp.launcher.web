@@ -12,7 +12,7 @@
 	// Admin users (all, connected or not)
 	let adminUsers: LiveUser[] = $derived(
 		liveUsers.users
-			.filter((user) => user.role === "admin")
+			.filter((user) => user.role === "admin" && user.approvalStatus === "approved")
 			.sort((a, b) => (a.name || "").localeCompare(b.name || "")),
 	);
 
@@ -21,6 +21,7 @@
 		Array.from(
 			new Set(
 				liveUsers.users
+					.filter((u) => u.approvalStatus === "approved")
 					.map((u) => u.role)
 					.filter(
 						(r): r is string =>
@@ -37,7 +38,7 @@
 	let roleGroups = $derived(
 		middleRoleNames.map((roleName) => {
 			const users = liveUsers.users
-				.filter((u) => u.role === roleName)
+				.filter((u) => u.role === roleName && u.approvalStatus === "approved")
 				.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 			const connectedCount = users.filter((u) => u.status !== "Disconnected").length;
 			return { roleName, users, connectedCount };
@@ -48,7 +49,7 @@
 	let baseUsers = $derived(
 		liveUsers.users
 			.filter(
-				(u) => !u.role || u.role === "user" || u.role === "beta_tester" // <- include beta testers
+				(u) => (!u.role || u.role === "user" || u.role === "beta_tester") && u.approvalStatus === "approved"
 			)
 			.sort((a, b) => (a.name || "").localeCompare(b.name || ""))
 	);
