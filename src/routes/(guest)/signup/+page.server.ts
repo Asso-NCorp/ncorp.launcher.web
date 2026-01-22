@@ -210,12 +210,15 @@ export const actions: Actions = {
                     logger.debug({ error }, "signup: avatar generation (user.id) failed");
                 }
 
-                // Update lastLogin
-                const endDb = startStep("db.user.update(lastLogin)");
+                // Update lastLogin and referralSource
+                const endDb = startStep("db.user.update(lastLogin, referralSource)");
                 await withTimeout(
                     db.user.update({
                         where: { id: session.user.id },
-                        data: { lastLogin: new Date() },
+                        data: {
+                            lastLogin: new Date(),
+                            referralSource: $formData.referralSource || null,
+                        },
                     }),
                     DB_UPDATE_TIMEOUT_MS,
                     "db.user.update(lastLogin)",

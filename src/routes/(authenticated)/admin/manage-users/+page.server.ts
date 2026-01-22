@@ -17,10 +17,28 @@ export const load = (async ({ request }) => {
         headers: request.headers,
     });
 
+    // Fetch additional user data from database (approvalStatus)
+    const usersWithApproval = await Promise.all(
+        usersResult.users.map(async (user) => {
+            const dbUser = await db.user.findUnique({
+                where: { id: user.id },
+                select: { approvalStatus: true },
+            });
+            return {
+                ...user,
+                approvalStatus: dbUser?.approvalStatus || "approved",
+            };
+        }),
+    );
+
+    // Fetch roles for avatar decorations
+    const roles = await db.role.findMany();
+
     return {
         addForm: await superValidate(zod4(userFormSchema)),
         editForm: await superValidate(zod4(editUserFormSchema)),
-        users: usersResult.users.sort((a, b) => a.name.localeCompare(b.name)),
+        users: usersWithApproval.sort((a, b) => a.name.localeCompare(b.name)),
+        roles,
     };
 }) satisfies PageServerLoad;
 
@@ -94,6 +112,8 @@ export const actions: Actions = {
                 role: form.data.role,
                 // Only include password if it's provided and not empty
                 ...(form.data.password ? { password: form.data.password } : {}),
+                // Only include approvalStatus if it's provided
+                ...(form.data.approvalStatus ? { approvalStatus: form.data.approvalStatus } : {}),
             };
             const ctx = await auth.$context;
 

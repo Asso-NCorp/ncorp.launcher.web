@@ -149,6 +149,22 @@ export const load: LayoutServerLoad = async ({ locals, url, depends }) => {
         logger.debug("Skipping available games fetch for this route");
     }
 
+    // Fetch pending users for admins
+    let pendingUsers: Array<{ id: string; username: string; email: string; createdAt: Date }> = [];
+    const userRoles = Array.isArray(user?.role) ? user.role : user?.role ? [user.role] : [];
+    if (userRoles.includes("admin")) {
+        pendingUsers = await db.user.findMany({
+            where: { approvalStatus: "pending" },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                createdAt: true,
+            },
+            orderBy: { createdAt: "asc" },
+        });
+    }
+
     return {
         user,
         liveUsers,
@@ -158,5 +174,6 @@ export const load: LayoutServerLoad = async ({ locals, url, depends }) => {
         winnersGifsFiles: globalCache?.winnersGifsFiles ?? [],
         availableGames,
         roles: globalCache?.roles ?? [],
+        pendingUsers,
     };
-};
+};;

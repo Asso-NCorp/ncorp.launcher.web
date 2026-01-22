@@ -40,6 +40,7 @@
     import { toast } from "svelte-sonner";
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
     import UninstallModal from "$src/lib/components/modals/UninstallModal.svelte";
+    import PendingApprovalsDialog from "$src/lib/components/custom/PendingApprovalsDialog.svelte";
         
     let loading = $state(false);
     let showAdminModal = $state(false);
@@ -358,6 +359,7 @@
 <!-- Admin Controls Modal -->
 {#if user?.role === "admin"}
     <AdminControlsModal bind:open={showAdminModal} />
+    <PendingApprovalsDialog pendingUsers={data.pendingUsers} />
 {/if}
 
 <WinnerOverlay bind:this={winnerOverlay} />

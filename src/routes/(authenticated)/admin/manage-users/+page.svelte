@@ -108,7 +108,7 @@
                     </div>
                 </Card.Header>
                 <Card.Content class="flex-1 overflow-auto p-0">
-                    <UserList bind:users loading={false} onSelect={handleSelectUser} />
+                    <UserList bind:users loading={false} onSelect={handleSelectUser} roles={data.roles} />
                 </Card.Content>
             </Card.Root>
         </div>

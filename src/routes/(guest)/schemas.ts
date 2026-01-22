@@ -10,6 +10,7 @@ export const signupFormSchema = z.object({
     password: z.string().min(8).max(50),
     name: z.string(),
     email: z.string().email(),
+    referralSource: z.string().min(1).max(200),
 });
 
 export const forgotPasswordSchema = z.object({

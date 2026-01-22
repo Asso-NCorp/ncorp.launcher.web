@@ -97,6 +97,10 @@ const isAdminRoute = (routeId: string | null, pathname: string): boolean => {
     return false;
 };
 
+const isPendingApprovalPage = (pathname: string): boolean => {
+    return pathname === "/pending-approval";
+};
+
 export const handle: Handle = async ({ event, resolve }) => {
     const session = await auth.api.getSession(event.request);
     const pathname = event.url.pathname;
@@ -122,6 +126,18 @@ export const handle: Handle = async ({ event, resolve }) => {
         logger.info(`[HOOKS] Token set successfully for ${pathname}`, {
             userId: session?.user?.id,
         });
+
+        // CHECK APPROVAL STATUS - allow admin and pending approval page bypass
+        if (!isPendingApprovalPage(pathname) && !isAdminRoute(event.route.id, pathname)) {
+            const approvalStatus = session?.user?.approvalStatus || "pending";
+            if (approvalStatus !== "approved") {
+                logger.warn(`[HOOKS] User not approved - redirecting to pending approval page`, {
+                    userId: session?.user?.id,
+                    approvalStatus,
+                });
+                redirect(302, "/pending-approval");
+            }
+        }
 
         // CHECK ADMIN - for both page routes and API routes
         if (isAdminRoute(event.route.id, pathname)) {

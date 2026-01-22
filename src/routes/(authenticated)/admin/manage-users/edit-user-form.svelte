@@ -19,11 +19,19 @@
     import type { User } from "$src/lib/auth/client";
     import type { role } from "@prisma/client";
     import { page } from "$app/state";
+    import { t } from "$lib/translations";
     
     const roles = (page.data["roles"] as role[]) || [];
     
     // Available roles for the select dropdown
     const availableRoles = [...roles.map(r => r.name)];
+
+    // Approval status labels
+    const approvalStatusLabels = {
+        pending: $t("approval_status_pending"),
+        approved: $t("approval_status_approved"),
+        rejected: $t("approval_status_rejected"),
+    };
 
     const {
         data,
@@ -94,6 +102,7 @@
             $form.id = user.id; // Set the id for updates
             $form.username = user.username!; // Use ID as username for display
             $form.password = ""; // Don't populate password for security reasons
+            $form.approvalStatus = (user as any).approvalStatus || "pending"; // Set approval status from user data
         }
     });
 </script>
@@ -175,6 +184,35 @@
                                     {#each availableRoles as role}
                                         <Select.Item value={role}>{role}</Select.Item>
                                     {/each}
+                                </Select.Content>
+                            </Select.Root>
+                        {/snippet}
+                    </Form.Control>
+                    <Form.FieldErrors />
+                </Form.Field>
+
+                <Form.Field form={editForm} name="approvalStatus">
+                    <Form.Control>
+                        {#snippet children({ props })}
+                            <Label for="approvalStatus">{$t("approval_status")}</Label>
+                            <Select.Root type="single" bind:value={$form.approvalStatus} {...props}>
+                                <Select.Trigger class="w-full">
+                                    <span>
+                                        {#if $form.approvalStatus === "pending"}
+                                            {approvalStatusLabels.pending}
+                                        {:else if $form.approvalStatus === "approved"}
+                                            {approvalStatusLabels.approved}
+                                        {:else if $form.approvalStatus === "rejected"}
+                                            {approvalStatusLabels.rejected}
+                                        {:else}
+                                            Sélectionner un statut
+                                        {/if}
+                                    </span>
+                                </Select.Trigger>
+                                <Select.Content>
+                                    <Select.Item value="pending">{approvalStatusLabels.pending}</Select.Item>
+                                    <Select.Item value="approved">{approvalStatusLabels.approved}</Select.Item>
+                                    <Select.Item value="rejected">{approvalStatusLabels.rejected}</Select.Item>
                                 </Select.Content>
                             </Select.Root>
                         {/snippet}

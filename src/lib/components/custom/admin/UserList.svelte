@@ -8,15 +8,30 @@
     import { Input } from "$lib/components/ui/input/index.js";
     import { Trash2 } from "@lucide/svelte";
     import { toast } from "svelte-sonner";
+    import { Badge } from "$lib/components/ui/badge";
+    import AvatarWithStatus from "$lib/components/custom/AvatarWithStatus.svelte";
+    import type { role } from "@prisma/client";
+
+    interface UserWithApproval extends User {
+        approvalStatus?: string;
+    }
 
     let {
         loading,
         users = $bindable(),
         onSelect,
-    }: { loading: boolean; users: User[]; onSelect: (user: User) => void } = $props();
+        roles = [],
+    }: { loading: boolean; users: UserWithApproval[]; onSelect: (user: UserWithApproval) => void; roles: role[] } = $props();
 
     let searchQuery = $state("");
     let popoverStates: Record<string, boolean> = {};
+
+    // Helper to get avatar decoration
+    const getAvatarDecoration = (userRole: string | null | undefined): string | undefined => {
+        if (!userRole) return undefined;
+        const roleData = roles.find((r) => r.name === userRole);
+        return roleData?.avatar_decoration_static ?? roleData?.avatar_decoration_animated ?? undefined;
+    };
 
     const filteredUsers = $derived(
         users.filter((user) =>
@@ -58,12 +73,6 @@
             });
         }
     };
-
-    const localDateTime = (date: string) => {
-        const d = new Date(date);
-        d.setHours(d.getHours() + 2);
-        return d.toLocaleString();
-    };
 </script>
 
 {#if loading}
@@ -84,12 +93,12 @@
             <Table.Root class="border">
                 <Table.Header class="bg-muted/30 sticky top-0">
                     <Table.Row>
-                        <Table.Head class="w-10"></Table.Head>
-                        <Table.Head class="w-2/5">Utilisateur</Table.Head>
-                        <Table.Head class="w-1/6 text-center">Rôle</Table.Head>
-                        <Table.Head class="w-1/6 text-center">Date d'inscription</Table.Head>
-                        <Table.Head class="w-1/6 text-center">Dernière connexion</Table.Head>
-                        <Table.Head class="w-12 text-right">Actions</Table.Head>
+                        <Table.Head class="w-[50px]"></Table.Head>
+                        <Table.Head class="w-[35%]">Utilisateur</Table.Head>
+                        <Table.Head class="w-[12%] text-center">Rôle</Table.Head>
+                        <Table.Head class="w-[18%] text-center">Approbation</Table.Head>
+                        <Table.Head class="w-[20%] text-center">Date d'inscription</Table.Head>
+                        <Table.Head class="w-[50px] text-right">Actions</Table.Head>
                     </Table.Row>
                 </Table.Header>
                 <Table.Body class="divide-y divide-border">
@@ -98,11 +107,18 @@
                             class="cursor-pointer hover:bg-muted/50 transition-colors group"
                             onclick={() => onSelect(user)}
                         >
-                            <Table.Cell class="p-2">
-                                <img
-                                    src="/api/avatars/{user.id}"
-                                    alt={user.name}
-                                    class="size-8 rounded-full ring-2 ring-primary object-cover"
+                            <Table.Cell class="w-[50px] p-2">
+                                <AvatarWithStatus
+                                    user={{
+                                        ...user,
+                                        status: "Disconnected" as const,
+                                        isSpeaking: false,
+                                        activity: undefined,
+                                        gameInstallProgress: 0,
+                                    } as any}
+                                    decorationSrc={getAvatarDecoration(user.role)}
+                                    showStatusDot={false}
+                                    size={32}
                                 />
                             </Table.Cell>
                             <Table.Cell class="font-medium">
@@ -113,10 +129,16 @@
                                 {user.role}
                             </Table.Cell>
                             <Table.Cell class="text-center text-sm">
-                                {new Date(user.createdAt).toLocaleDateString()}
+                                {#if user.approvalStatus === "pending"}
+                                    <Badge variant="outline" class="bg-yellow-500/10 text-yellow-700 border-yellow-200">En attente</Badge>
+                                {:else if user.approvalStatus === "approved"}
+                                    <Badge variant="outline" class="bg-green-500/10 text-green-700 border-green-200">Approuvé</Badge>
+                                {:else if user.approvalStatus === "rejected"}
+                                    <Badge variant="outline" class="bg-red-500/10 text-red-700 border-red-200">Rejeté</Badge>
+                                {/if}
                             </Table.Cell>
                             <Table.Cell class="text-center text-sm">
-                                {user.lastLogin ? localDateTime(user.lastLogin) : "Jamais"}
+                                {new Date(user.createdAt).toLocaleDateString()}
                             </Table.Cell>
                             <Table.Cell class="text-right p-2">
                                 <Popover.Root

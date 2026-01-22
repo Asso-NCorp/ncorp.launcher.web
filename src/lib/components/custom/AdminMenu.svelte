@@ -56,6 +56,12 @@
         iconOnly={global.sidebarCollapsed} />
     
     <SideMenuSubItem
+        href="/admin/user-approvals"
+        label={$t("user_approvals")}
+        icon={Users}
+        iconOnly={global.sidebarCollapsed} />
+    
+    <SideMenuSubItem
         href="/admin/manage-game-servers"
         label="Serveurs de jeux"
         icon={Server}

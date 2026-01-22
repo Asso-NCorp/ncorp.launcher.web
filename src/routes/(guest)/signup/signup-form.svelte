@@ -4,6 +4,7 @@
     import * as Alert from "$lib/components/ui/alert";
     import * as Card from "$lib/components/ui/card/index.js";
     import { Input } from "$lib/components/ui/input/index.js";
+    import { Textarea } from "$lib/components/ui/textarea/index.js";
     import { Label } from "$lib/components/ui/label/index.js";
     import { signupFormSchema, type SignupFormSchema } from "$src/routes/(guest)/schemas";
     import GlowBar from "../../../lib/components/custom/GlowBar.svelte";
@@ -135,6 +136,29 @@
                             id="email"
                             type="email"
                             required />
+                    {/snippet}
+                </Form.Control>
+                <Form.FieldErrors />
+            </Form.Field>
+
+            <Form.Field {form} name="referralSource">
+                <Form.Control>
+                    {#snippet children({ props })}
+                        <Label for="referralSource">{$t("heard_from")}</Label>
+                        <Textarea
+                            {...props}
+                            bind:value={$formData.referralSource}
+                            id="referralSource"
+                            placeholder={$t("select_referral_source")}
+                            maxlength={200}
+                            required
+                            class="resize-none" />
+                        <p class="text-xs text-muted-foreground mt-1">
+                            {$t("referral_source_hint")}
+                        </p>
+                        <p class="text-xs text-muted-foreground mt-1">
+                            {$formData.referralSource?.length || 0}/200
+                        </p>
                     {/snippet}
                 </Form.Control>
                 <Form.FieldErrors />

@@ -49,6 +49,9 @@ export const auth = betterAuth({
             lastLogin: {
                 type: "date",
             },
+            approvalStatus: {
+                type: "string",
+            },
         },
     },
     emailAndPassword: {

@@ -85,6 +85,8 @@ model user {
   banExpires          DateTime?          @db.DateTime(0)
   displayUsername     String?            @db.Text
   lastLogin           DateTime?          @db.DateTime(0)
+  approvalStatus      String             @default("pending") @db.VarChar(20)
+  referralSource      String?            @db.VarChar(100)
   channel_memberships channel_member[]
   event_created       event[]            @relation("event_created_by")
   event_updated       event[]            @relation("event_updated_by")

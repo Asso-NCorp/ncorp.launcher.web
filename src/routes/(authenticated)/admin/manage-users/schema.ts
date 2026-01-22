@@ -17,6 +17,9 @@ export const editUserFormSchema = z.object({
     role: z.string().min(1, "Le rôle est requis").max(50),
     email: z.email("L'email est requis et doit être valide"),
     name: z.string().min(2, "Le pseudo est requis").max(50),
+    approvalStatus: z
+        .enum(["pending", "approved", "rejected"], { message: "Le statut d'approbation est invalide" })
+        .optional(),
     password: z
         .string()
         .min(8, "Le mot de passe doit contenir au moins 8 caractères")
