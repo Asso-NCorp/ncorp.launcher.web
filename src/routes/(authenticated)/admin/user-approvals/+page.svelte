@@ -68,14 +68,14 @@
             }
         } catch (error) {
             console.error("Error:", error);
-            toast.error(`An error occurred while ${action}ing the user`);
+            toast.error(`Une erreur est survenue lors de la ${action} de l'utilisateur`);
         } finally {
             loading[userId] = false;
         }
     };
 
     const formatDate = (date: Date) => {
-        return new Date(date).toLocaleDateString("en-US", {
+        return new Date(date).toLocaleDateString("fr-FR", {
             year: "numeric",
             month: "long",
             day: "numeric",
@@ -102,7 +102,7 @@
                 <div class="flex items-center justify-between">
                     <CardTitle class="flex items-center gap-2">
                         <AlertCircle class="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
-                        Approvations en attente
+                        Approbations en attente
                         <Badge variant="secondary">{pendingUsers.length}</Badge>
                     </CardTitle>
                 </div>
