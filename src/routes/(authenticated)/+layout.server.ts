@@ -75,7 +75,19 @@ export const load: LayoutServerLoad = async ({ locals, url, depends }) => {
                     select: { local_games_dir: true },
                 }),
             ]);
-            liveUsers = usersOnline;
+
+            // Enrich online users with approval status from database
+            const userIds = usersOnline.map((u) => u.id).filter((id): id is string => !!id);
+            const approvalStatuses = await db.user.findMany({
+                where: { id: { in: userIds } },
+                select: { id: true, approvalStatus: true },
+            });
+            const approvalMap = new Map(approvalStatuses.map((u) => [u.id, u.approvalStatus]));
+
+            liveUsers = usersOnline.map((user) => ({
+                ...user,
+                approvalStatus: approvalMap.get(user.id!) || "pending",
+            }));
             localGamesDir = userSettings?.local_games_dir;
         } catch (e) {
             logger.error(`Error fetching user-scoped data: ${e}`);

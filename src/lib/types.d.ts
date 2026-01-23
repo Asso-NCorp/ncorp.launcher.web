@@ -1,5 +1,12 @@
 import { type Icon as IconType } from "@lucide/svelte";
-import type { InstallableGame } from "./shared-models";
+import type { InstallableGame, LiveUser } from "./shared-models";
+
+// Extend LiveUser to include approvalStatus from database
+declare module "./shared-models" {
+    interface LiveUser {
+        approvalStatus?: string;
+    }
+}
 
 export type SideMenuSubItemProps = {
     href?: string;
