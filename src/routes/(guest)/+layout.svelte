@@ -1,17 +1,14 @@
 <script lang="ts">
     import "$src/app.css";
-    import "@fontsource-variable/rubik";
+    import "@fontsource-variable/onest";
     import { Toaster } from "$lib/components/ui/sonner";
-    import LampEffect from "$src/lib/components/custom/LampEffect.svelte";
     import Lights from "$src/lib/components/custom/Lights.svelte";
     import "@fontsource-variable/inter";
     import ThemeProvider from "$src/lib/components/theme/ThemeProvider.svelte";
     import { browser } from "$app/environment";
     import FluidSimulation from "$src/lib/components/custom/FluidSimulation.svelte";
     import type { LayoutProps } from "./$types";
-    import { toast } from "svelte-sonner";
-    import { onMount } from "svelte";
-
+    
     let { data, children }: LayoutProps = $props();
 </script>
 

@@ -106,7 +106,7 @@
                         <button
                             on:click={handleShowAddForm}
                             class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-md px-2 py-1.5 text-xs font-medium transition-colors">
-                            +
+                            + Ajouter un serveur
                         </button>
                     </div>
                 </Card.Header>

@@ -3,6 +3,7 @@
     import * as Avatar from "$lib/components/ui/avatar";
     import { cn } from "$lib/utils";
     import type { ServerItemData } from "$src/lib/types";
+    import { Mail } from "@lucide/svelte";
 
     const {
         server,
@@ -24,24 +25,29 @@
                 aria-current={selected ? "true" : "false"}
                 onclick={() => select(server.id)}
                 aria-label={server.name}>
-                <!-- Notch (only indicator) -->
+                <!-- Notch indicator (ellipse when not selected, notch when selected) -->
                 <span
                     aria-hidden="true"
                     class={cn(
-                        "absolute -left-[6px] top-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 rounded-r-full bg-primary transition-all duration-200",
+                        "absolute top-1/2 -translate-y-1/2 bg-primary transition-all duration-200 rounded-full",
+                        "-left-3",
                         selected
-                            ? "scale-y-100 opacity-100"
-                            : "scale-y-0 opacity-0 group-hover:scale-y-75 group-hover:opacity-60",
+                            ? "h-8 w-1 opacity-100"
+                            : "h-2.5 w-2.5 opacity-100 group-hover:scale-110",
                     )} />
-                <Avatar.Root class="h-9 w-9">
-                    {#if server.icon}
-                        <Avatar.Image src={server.icon} alt={server.name} class="h-9 w-9 rounded-xl object-cover" />
-                    {:else}
-                        <Avatar.Fallback class="h-9 w-9 rounded-xl font-semibold">
-                            {server.name?.slice(0, 2) ?? "SV"}
-                        </Avatar.Fallback>
-                    {/if}
-                </Avatar.Root>
+                {#if server.iconName === "mail"}
+                    <Mail class="h-6 w-6 text-muted-foreground" />
+                {:else}
+                    <Avatar.Root class="h-9 w-9">
+                        {#if server.icon}
+                            <Avatar.Image src={server.icon} alt={server.name} class="h-9 w-9 rounded-xl object-cover" />
+                        {:else}
+                            <Avatar.Fallback class="h-9 w-9 rounded-xl font-semibold">
+                                {server.name?.slice(0, 2) ?? "SV"}
+                            </Avatar.Fallback>
+                        {/if}
+                    </Avatar.Root>
+                {/if}
 
                 {#if unread}
                     <span class="absolute -right-1 top-1 h-2 w-2 rounded-full bg-emerald-500 shadow" />

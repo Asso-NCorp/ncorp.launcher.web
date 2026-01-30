@@ -5,7 +5,7 @@
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import { onDestroy, onMount } from "svelte";
     import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-    import "@fontsource-variable/suse";
+    import "@fontsource-variable/onest";
     import { fade } from "svelte/transition";
     import { afterNavigate, beforeNavigate, onNavigate } from "$app/navigation";
     import { browser } from "$app/environment";
@@ -41,6 +41,8 @@
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
     import UninstallModal from "$src/lib/components/modals/UninstallModal.svelte";
     import PendingApprovalsDialog from "$src/lib/components/custom/PendingApprovalsDialog.svelte";
+    import ChatNotificationBell from "$src/lib/components/custom/ChatNotificationBell.svelte";
+    import { chatStore } from "$src/lib/chat/chat.svelte";
         
     let loading = $state(false);
     let showAdminModal = $state(false);
@@ -162,6 +164,9 @@
 
     onMount(async () => {
         if (browser) {
+            // Initialize chat client globally so we receive notifications everywhere
+            await chatStore.init(() => localStorage.getItem("token") || "");
+
             if (localStorage.getItem("gamesSortOrder")) {
                 global.gamesSortOrder = localStorage.getItem("gamesSortOrder") as "asc" | "desc";
             }
@@ -275,6 +280,9 @@
                     {/if}
                     <Header class="flex-1" />
                     <div class="ml-auto flex h-full">
+                        <!-- Chat Notifications -->
+                        <ChatNotificationBell />
+
                         <!-- Header message -->
                         <HeaderMessage globalSettings={data.globalSettings} />
 
@@ -397,7 +405,7 @@
         }
     }
 
-    :root::view-transition-old(root) {
+    /* :root::view-transition-old(root) {
         animation:
             90ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
             300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;
@@ -406,7 +414,7 @@
         animation:
             210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
             300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
-    }
+    } */
     .header-container {
         view-transition-name: header;
     }

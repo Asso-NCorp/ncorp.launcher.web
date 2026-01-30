@@ -1,14 +1,18 @@
 <script lang="ts">
     import type { LiveUser } from "$src/lib/shared-models";
-    import { ArrowDown, Gamepad2 } from "@lucide/svelte";
+    import { ArrowDown, Gamepad2, MessageCircle } from "@lucide/svelte";
     import { fade, fly } from "svelte/transition";
     import { goto } from "$app/navigation";
+    import { chatStore } from "$src/lib/chat/chat.svelte";
+    import { chatController } from "$src/lib/controllers/ChatController.svelte";
     import Progress from "$lib/components/ui/progress/progress.svelte";
     import { tick } from "svelte";
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { page } from "$app/state";
+    import { global } from "$src/lib/states/global.svelte";
     import type { role } from "@prisma/client";
     import AvatarWithStatus from "./AvatarWithStatus.svelte";
+    import { toast } from "svelte-sonner";
 
     let { user }: { user: LiveUser } = $props();
 
@@ -51,6 +55,8 @@
         (!!user.activity && user.activity.activityType !== "Idle" && user.status !== "Disconnected") ||
             (!!user.downloadingGame && user.status !== "Disconnected"),
     );
+
+    let isCurrentUser = $derived(user.id === global.currentUser?.id);
 
     function waitCanPlay(el: HTMLVideoElement) {
         return new Promise<void>((resolve) => {
@@ -107,6 +113,31 @@
             videoEl.currentTime = 0;
         }
         isPlaying = false;
+    }
+
+    async function handleSendDM() {
+        try {
+            if (!user.id) {
+                toast.error("User ID not available");
+                return;
+            }
+            const dmRoom = await chatStore.ensureDmAndSelect(user.id);
+            if (!dmRoom.id) {
+                toast.error("Failed to create DM room");
+                return;
+            }
+            // Rebuild the server list so the new DM appears in the UI
+            chatController.rebuildServerList();
+            // Select the DM server first, then the channel
+            const dmServerId = "dm_server" as const;
+            await chatController.selectServer(dmServerId);
+            await chatController.selectChannel(dmRoom.id);
+            // Navigate to the new DM
+            await goto(`/chat/channels/@me/${dmRoom.id}`);
+        } catch (error) {
+            console.error("Failed to start DM:", error);
+            toast.error("Impossible de démarrer la conversation privée");
+        }
     }
 </script>
 
@@ -242,6 +273,18 @@
                 <span class="text-[0.65rem] text-blue-600">↓</span>
                 <span>{user.downloadingGame.speedMBps.toFixed(1)} Mo/s</span>
             </div>
+        {/if}
+
+        <!-- DM Button on hover (hide for current user) -->
+        {#if hovering && !isCurrentUser}
+            <button
+                onclick={handleSendDM}
+                class="absolute right-1 rounded-md p-1.5 bg-primary/80 hover:bg-primary text-primary-foreground transition-colors duration-200"
+                title={`Send message to ${user.name}`}
+                in:fade={{ duration: 150 }}
+                out:fade={{ duration: 100 }}>
+                <MessageCircle class="h-4 w-4" />
+            </button>
         {/if}
     </div>
 </div>

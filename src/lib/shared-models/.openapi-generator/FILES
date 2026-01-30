@@ -71,7 +71,6 @@ models/GameVideo.ts
 models/GameVideoIdentitiesOrValues.ts
 models/Genre.ts
 models/GenreIdentitiesOrValues.ts
-models/IRConnectedPlayer.ts
 models/InstallableGame.ts
 models/InvolvedCompany.ts
 models/InvolvedCompanyIdentitiesOrValues.ts
@@ -115,6 +114,7 @@ models/PlatformWebsiteIdentitiesOrValues.ts
 models/PlayerPerspective.ts
 models/PlayerPerspectiveIdentitiesOrValues.ts
 models/RConServer.ts
+models/RConnectedPlayer.ts
 models/ReactRequest.ts
 models/ReactionDeltaDto.ts
 models/ReactionViewDto.ts

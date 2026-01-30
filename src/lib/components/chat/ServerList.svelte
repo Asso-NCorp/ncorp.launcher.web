@@ -49,7 +49,7 @@
     });
 </script>
 
-<aside class="flex h-full flex-col items-center gap-3 border-r bg-background py-3 pr-1">
+<aside class="flex h-full flex-col items-center gap-3 border-r bg-background py-3 pr-1 overflow-visible pl-1">
     {#each servers as server (server.id)}
         <ServerItem {server} selected={server.id === selectedId} select={() => applySelect(server.id)} />
     {/each}

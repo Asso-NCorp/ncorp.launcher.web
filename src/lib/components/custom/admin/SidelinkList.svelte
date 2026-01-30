@@ -66,15 +66,15 @@
         <Table.Root class={cn("", global.sidebarCollapsed && "text-sm")}>
             <Table.Header class="bg-muted/30">
                 <Table.Row>
-                    <Table.Head class="w-10"></Table.Head>
-                    <Table.Head class={cn("", global.sidebarCollapsed && "text-xs")}>Nom</Table.Head>
-                    <Table.Head class={cn("", global.sidebarCollapsed && "hidden text-xs md:table-cell")}>
+                    <Table.Head class="w-10 px-4"></Table.Head>
+                    <Table.Head class={cn("w-40", global.sidebarCollapsed && "text-xs")}>Nom</Table.Head>
+                    <Table.Head class={cn("w-48", global.sidebarCollapsed && "hidden text-xs md:table-cell")}>
                         URL
                     </Table.Head>
-                    <Table.Head class={cn("", global.sidebarCollapsed && "hidden text-xs lg:table-cell")}>
+                    <Table.Head class={cn("w-20", global.sidebarCollapsed && "hidden text-xs lg:table-cell")}>
                         Caché
                     </Table.Head>
-                    <Table.Head class="text-right"></Table.Head>
+                    <Table.Head class="w-16 text-right px-4"></Table.Head>
                 </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -83,14 +83,14 @@
                         <Table.Cell>
                             <Link class={cn("size-5", global.sidebarCollapsed && "size-4")} />
                         </Table.Cell>
-                        <Table.Cell class={cn("font-medium", global.sidebarCollapsed && "text-xs")}>
+                        <Table.Cell class={cn("font-medium truncate", global.sidebarCollapsed && "text-xs")}>
                             {global.sidebarCollapsed
                                 ? sidelink.name.length > 10
                                     ? sidelink.name.substring(0, 10) + "..."
                                     : sidelink.name
                                 : sidelink.name}
                         </Table.Cell>
-                        <Table.Cell class={cn("", global.sidebarCollapsed && "hidden text-xs md:table-cell")}>
+                        <Table.Cell class={cn("truncate", global.sidebarCollapsed && "hidden text-xs md:table-cell")}>
                             {global.sidebarCollapsed
                                 ? sidelink.url.length > 15
                                     ? sidelink.url.substring(0, 15) + "..."

@@ -48,6 +48,10 @@ class ChatClient {
         return this.invoke<RoomDto[]>("MyRooms");
     }
 
+    ensureDm(otherUserId: string) {
+        return this.invoke<RoomDto>("EnsureDm", otherUserId);
+    }
+
     fetchMessages(roomId: string, take = 50, after?: PageCursor | null) {
         return this.invoke<MessagePage>("FetchMessages", roomId, take, after ?? null);
     }

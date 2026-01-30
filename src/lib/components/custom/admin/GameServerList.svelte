@@ -78,14 +78,14 @@
         <Table.Root>
             <Table.Header class="bg-muted/30">
                 <Table.Row>
-                    <Table.Head class="w-12"></Table.Head>
-                    <Table.Head class="w-[200px]">Nom</Table.Head>
-                    <Table.Head class="w-[180px]">Jeu</Table.Head>
+                    <Table.Head class="w-12 px-4"></Table.Head>
+                    <Table.Head class="w-40">Nom</Table.Head>
+                    <Table.Head class="w-48">Jeu</Table.Head>
                     <Table.Head class="w-20 text-center">Type</Table.Head>
                     <Table.Head class="w-24 text-center">Port</Table.Head>
                     <Table.Head class="hidden w-28 text-center lg:table-cell">Monitor</Table.Head>
-                    <Table.Head class="hidden w-[180px] xl:table-cell">Dernière détection</Table.Head>
-                    <Table.Head class="w-20 text-right"></Table.Head>
+                    <Table.Head class="hidden w-40 xl:table-cell">Dernière détection</Table.Head>
+                    <Table.Head class="w-16 text-right px-4"></Table.Head>
                 </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -96,7 +96,7 @@
                         <Table.Cell class="w-12">
                             <Server class="size-5" />
                         </Table.Cell>
-                        <Table.Cell class="w-[200px] font-medium">
+                        <Table.Cell class="w-40 font-medium">
                             <div class="flex flex-col gap-0.5">
                                 <span class="truncate">{server.name}</span>
                                 {#if server.description}
@@ -106,7 +106,7 @@
                                 {/if}
                             </div>
                         </Table.Cell>
-                        <Table.Cell class="w-[180px]">
+                        <Table.Cell class="w-48">
                             <div class="flex flex-col gap-0.5">
                                 <span class="truncate text-sm">{server.game_title}</span>
                                 <span class="text-muted-foreground truncate text-xs">{server.game_slug}</span>
@@ -128,7 +128,7 @@
                                 <Checkbox checked={server.monitor} inert />
                             </div>
                         </Table.Cell>
-                        <Table.Cell class="text-muted-foreground hidden w-[180px] text-sm xl:table-cell">
+                        <Table.Cell class="text-muted-foreground hidden w-40 text-sm xl:table-cell">
                             {formatDate(server.last_detection_at)}
                         </Table.Cell>
                         <Table.Cell class="w-20 text-right">

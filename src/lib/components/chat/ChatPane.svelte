@@ -6,6 +6,7 @@
     import type { MessageDto } from "$lib/shared-models";
     import { liveUsers } from "$lib/states/live-users.svelte";
     import { chatStore } from "$src/lib/chat/chat.svelte";
+    import { chatController } from "$lib/controllers/ChatController.svelte";
     import { global } from "$src/lib/states/global.svelte";
 
     const {
@@ -41,7 +42,6 @@
     );
 </script>
 
-<!-- ICI le fix critique: min-h-0 + overflow-hidden -->
 <section class="relative flex min-h-0 flex-1 flex-col overflow-hidden">
     <ChatHeader {title} {subtitle} />
 
@@ -87,8 +87,8 @@
 
         <MessageInput
             onsend={(msg) => chatStore.send(msg)}
-            ontyping={(state) => chatStore.setTyping(state)}
-            onblur={() => chatStore.setTyping(false)} />
+            ontyping={(state) => chatController.setTyping(state)}
+            onblur={() => chatController.setTyping(false)} />
     {:else}
         <div class="grid flex-1 place-items-center text-muted-foreground">Sélectionner un salon</div>
     {/if}

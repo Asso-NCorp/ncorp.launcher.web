@@ -114,11 +114,11 @@
                         label={$t("chat")}
                         iconOnly={global.sidebarCollapsed} />
 
-                    <SideMenuSubItem
+                    <!-- <SideMenuSubItem
                         icon={MicVocal}
                         onClick={handleStartTeamSpeak}
                         label="Lancer TeamSpeak"
-                        iconOnly={global.sidebarCollapsed} />
+                        iconOnly={global.sidebarCollapsed} /> -->
                     <SideMenuSubItem
                         icon={CloudDownload}
                         href="https://dl.n-corp.fr/agent/updates/NCorp.Agent-win-Setup.exe"

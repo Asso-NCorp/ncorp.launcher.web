@@ -209,9 +209,14 @@
                         {#snippet children({ props })}
                             <div class="flex items-center gap-3">
                                 <Checkbox bind:checked={$formData.monitor} {...props} id="monitor" />
-                                <Label for="monitor" class="cursor-pointer text-sm font-semibold">
-                                    Activer le monitoring
-                                </Label>
+                                <div class="flex flex-col gap-1">
+                                    <Label for="monitor" class="cursor-pointer text-sm font-semibold">
+                                        Activer le monitoring
+                                    </Label>
+                                    <p class="text-xs text-muted-foreground">
+                                        Permet au serveur d'être détecté et affiché dans la liste des serveurs
+                                    </p>
+                                </div>
                             </div>
                         {/snippet}
                     </Form.Control>

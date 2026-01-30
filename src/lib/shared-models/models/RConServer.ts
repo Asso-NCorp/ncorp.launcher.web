@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { IRConnectedPlayer } from './IRConnectedPlayer';
+import type { RConnectedPlayer } from './RConnectedPlayer';
 import {
-    IRConnectedPlayerFromJSON,
-    IRConnectedPlayerFromJSONTyped,
-    IRConnectedPlayerToJSON,
-    IRConnectedPlayerToJSONTyped,
-} from './IRConnectedPlayer';
+    RConnectedPlayerFromJSON,
+    RConnectedPlayerFromJSONTyped,
+    RConnectedPlayerToJSON,
+    RConnectedPlayerToJSONTyped,
+} from './RConnectedPlayer';
 
 /**
  * 
@@ -41,10 +41,10 @@ export interface RConServer {
     name?: string;
     /**
      * 
-     * @type {Array<IRConnectedPlayer>}
+     * @type {Array<RConnectedPlayer>}
      * @memberof RConServer
      */
-    players?: Array<IRConnectedPlayer>;
+    players?: Array<RConnectedPlayer>;
     /**
      * 
      * @type {number}
@@ -72,7 +72,7 @@ export function RConServerFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         
         'gameSlug': json['gameSlug'] == null ? undefined : json['gameSlug'],
         'name': json['name'] == null ? undefined : json['name'],
-        'players': json['players'] == null ? undefined : ((json['players'] as Array<any>).map(IRConnectedPlayerFromJSON)),
+        'players': json['players'] == null ? undefined : ((json['players'] as Array<any>).map(RConnectedPlayerFromJSON)),
         'maxPlayers': json['maxPlayers'] == null ? undefined : json['maxPlayers'],
     };
 }
@@ -90,7 +90,7 @@ export function RConServerToJSONTyped(value?: RConServer | null, ignoreDiscrimin
         
         'gameSlug': value['gameSlug'],
         'name': value['name'],
-        'players': value['players'] == null ? undefined : ((value['players'] as Array<any>).map(IRConnectedPlayerToJSON)),
+        'players': value['players'] == null ? undefined : ((value['players'] as Array<any>).map(RConnectedPlayerToJSON)),
         'maxPlayers': value['maxPlayers'],
     };
 }

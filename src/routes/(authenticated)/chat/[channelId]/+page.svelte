@@ -3,6 +3,8 @@
     import * as signalR from "@microsoft/signalr";
     import { PUBLIC_BACKEND_API_URL } from "$env/static/public";
     import { liveUsers } from "$src/lib/states/live-users.svelte.js";
+    import { chatNotifications } from "$src/lib/states/chat-notifications.svelte";
+    import { page } from "$app/stores";
     import type { User } from "better-auth";
 
     // Define the props type (data from SvelteKit's load function)
@@ -28,6 +30,14 @@
         nickname: string;
         text: string;
     }
+
+    // Clear notification when user enters this channel
+    $effect(() => {
+        const currentPath = $page.url.pathname;
+        if (currentPath === `/chat/${channelId}`) {
+            chatNotifications.clearNotification(channelId);
+        }
+    });
 
     // Initialize microphone permissions and device list on mount
     onMount(async () => {
@@ -143,6 +153,20 @@
 
             hubConnection.on("ReceiveMessage", (msg: string) => {
                 messages = [...messages, { nickname, text: msg }];
+                
+                // Add notification if user is not currently viewing this channel
+                const currentPath = $page.url.pathname;
+                if (currentPath !== `/chat/${channelId}`) {
+                    chatNotifications.addNotification({
+                        channelId,
+                        channelName: channelId,
+                        senderName: nickname,
+                        senderId: localUserId,
+                        lastMessagePreview: msg.substring(0, 100),
+                        timestamp: new Date(),
+                        unreadCount: 1,
+                    });
+                }
             });
 
             hubConnection.on("ReceiveOffer", (fromConnectionId: string, offer: string) => {

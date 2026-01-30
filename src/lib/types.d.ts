@@ -36,6 +36,7 @@ export interface ServerItemData {
     id: string;
     name: string;
     icon?: string | null;
+    iconName?: string; // Lucide icon name (e.g., 'mail')
     active?: boolean;
     unread?: boolean;
 }

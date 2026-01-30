@@ -55,6 +55,12 @@ export interface RoomDto {
      * @memberof RoomDto
      */
     lastMessageAt?: Date | null;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof RoomDto
+     */
+    participantIds?: Array<string>;
 }
 
 /**
@@ -80,6 +86,7 @@ export function RoomDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): R
         'guildId': json['guildId'] == null ? undefined : json['guildId'],
         'channelId': json['channelId'] == null ? undefined : json['channelId'],
         'lastMessageAt': json['lastMessageAt'] == null ? undefined : (new Date(json['lastMessageAt'])),
+        'participantIds': json['participantIds'] == null ? undefined : json['participantIds'],
     };
 }
 
@@ -100,6 +107,7 @@ export function RoomDtoToJSONTyped(value?: RoomDto | null, ignoreDiscriminator: 
         'guildId': value['guildId'],
         'channelId': value['channelId'],
         'lastMessageAt': value['lastMessageAt'] == null ? undefined : ((value['lastMessageAt'] as any).toISOString()),
+        'participantIds': value['participantIds'],
     };
 }
 
