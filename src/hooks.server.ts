@@ -26,12 +26,11 @@ async function ensureTokenFromSession(event: any, session: any): Promise<string 
                 userId: session?.user?.id,
             });
 
-            // Use direct server-side API call instead of HTTP self-fetch
-            // This avoids network round-trip, TLS issues, and connection exhaustion
+            // Use direct server-side API call with the original request headers.
+            // The headers already contain the session cookie that getSession validated,
+            // so the JWT plugin's sessionMiddleware will find the same session.
             const result = await auth.api.getToken({
-                headers: new Headers({
-                    Authorization: `Bearer ${session.session.token}`,
-                }),
+                headers: event.request.headers,
             });
 
             token = result?.token;
@@ -113,27 +112,36 @@ export const handle: Handle = async ({ event, resolve }) => {
     // PROTÉGER PAR DÉFAUT
     if (isProtected) {
         if (!session?.user) {
-            // If getSession threw, it's a transient server error — don't redirect (would kill the session).
-            // Instead return 503 so the client can retry.
+            // If getSession threw, it's a transient server error — return a retryable error,
+            // not a redirect (which would kill the session cookies).
             if (sessionError) {
                 logger.error(`[HOOKS] Returning 503 for ${pathname} (session lookup failed)`);
                 error(503, "Service temporarily unavailable — please retry.");
             }
-            // Genuine "no session" — redirect to sign-in
+
+            // Genuine "no session" — API routes get 401, pages get redirect
+            if (pathname.startsWith("/api/")) {
+                logger.warn(`[HOOKS] No session for API ${pathname} — returning 401`);
+                return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                    status: 401,
+                    headers: { "Content-Type": "application/json" },
+                });
+            }
             logger.warn(`[HOOKS] No session for ${pathname} — redirecting to sign-in`);
             redirect(302, PUBLIC_SIGNIN_PATH);
         }
 
         // Try to get token from cookie, or refresh from session if missing
         const token = await ensureTokenFromSession(event, session);
-        if (!token) {
-            logger.error(`[HOOKS] Access denied - no token available for ${pathname}`, {
+        if (token) {
+            event.locals.token = token;
+        } else {
+            // Session is valid but JWT token couldn't be obtained.
+            // Don't redirect — the page will still load, only backend API calls will lack auth.
+            logger.warn(`[HOOKS] Session valid but JWT token unavailable for ${pathname}`, {
                 userId: session?.user?.id,
             });
-            redirect(302, PUBLIC_SIGNIN_PATH);
         }
-
-        event.locals.token = token;
 
         // CHECK APPROVAL STATUS - allow admin and pending approval page bypass
         if (!isPendingApprovalPage(pathname) && !isAdminRoute(event.route.id, pathname)) {
