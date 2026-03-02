@@ -5,14 +5,19 @@
     import { t } from "$src/lib/translations";
     import { authClient } from "$src/lib/auth/client";
     import { invalidate } from "$app/navigation";
+    import AppLoadingOverlay from "$src/lib/components/custom/AppLoadingOverlay.svelte";
 
     let { data } = $props();
     let isRefreshing = $state(false);
+    let isLoggingOut = $state(false);
 
     const handleSignOut = async () => {
+        isLoggingOut = true;
         await authClient.signOut({
             fetchOptions: {
-                onSuccess: () => {
+                onSuccess: async () => {
+                    // Small delay to ensure overlay is fully visible before redirect
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     window.location.href = "/signin";
                 },
             },
@@ -30,7 +35,7 @@
     };
 </script>
 
-<div class="min-h-screen flex items-center justify-center p-4">
+<div class="min-h-screen flex items-center justify-center p-4" class:invisible={isLoggingOut}>
     <Card class="w-full max-w-md">
         <CardHeader class="text-center pb-3">
             <div class="flex justify-center mb-4">
@@ -106,3 +111,5 @@
         </CardContent>
     </Card>
 </div>
+
+<AppLoadingOverlay visible={isLoggingOut} />

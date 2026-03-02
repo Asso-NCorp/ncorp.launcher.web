@@ -8,6 +8,7 @@
 	import { getGameTrailer } from "$src/lib/backend";
     import { PUBLIC_BACKEND_API_URL, PUBLIC_MEDIAS_URL } from "$env/static/public";
 	import HLS from "hls.js";
+	import { t } from "$src/lib/translations";
 
 	let {
 		games = [],
@@ -330,6 +331,9 @@
 							{g.description}
 						</p>
 					{/if}
+					<Button href="/games/{g.folderSlug}" class="mt-2 w-fit">
+						{$t("view_game")}
+					</Button>
 				</div>
 			</div>
 		{/each}

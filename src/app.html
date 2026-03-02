@@ -21,7 +21,18 @@
                     sans-serif;
                 transition: opacity 0.2s ease;
             }
+            #boot-bg {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.3;
+                mask-image: linear-gradient(to bottom, black 30%, transparent 80%);
+                -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 80%);
+            }
             #boot-wrap {
+                position: relative;
                 display: flex;
                 flex-direction: column;
                 gap: 0.75rem;
@@ -31,7 +42,7 @@
                 width: 40px;
                 height: 40px;
                 border-radius: 50%;
-                border: 3px solid var(--muted-foreground);
+                border: 3px solid color-mix(in srgb, var(--primary) 30%, transparent);
                 border-top-color: var(--primary);
                 animation: spin 1s linear infinite;
             }
@@ -49,6 +60,7 @@
         data-sveltekit-preload-data="hover"
         class="dark">
         <div id="boot-loader">
+            <img id="boot-bg" src="https://medias.n-corp.fr/ncorp/games/hytale/screenshot_full_1.webp" alt="" />
             <div id="boot-wrap" class="relative">
                 <img src="%sveltekit.assets%/logo_small.png" alt="Logo" width="40" height="auto" />
                 <div class="spinner absolute" role="img" aria-label="Chargement"></div>

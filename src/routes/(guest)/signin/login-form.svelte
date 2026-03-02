@@ -16,6 +16,9 @@
     import { t } from "$src/lib/translations";
     import Loader from "$src/lib/components/custom/Loader.svelte";
     import Separator from "$src/lib/components/ui/separator/separator.svelte";
+    import AppLoadingOverlay from "$src/lib/components/custom/AppLoadingOverlay.svelte";
+
+    let isRedirecting = $state(false);
 
     const { data }: { data: SuperValidated<Infer<LoginFormSchema>> } = $props();
     const form = superForm(data, {
@@ -26,6 +29,7 @@
                     class: "bg-green-500",
                 });
             } else if (result.result.type === "redirect") {
+                isRedirecting = true;
                 goto(result.result.location);
             } else if (result.result.type === "error") {
                 toast.error("Erreur lors de la connexion : " + JSON.stringify(result.result.error), {
@@ -126,3 +130,5 @@
         </div>
     </Card.Content>
 </div>
+
+<AppLoadingOverlay visible={isRedirecting} />

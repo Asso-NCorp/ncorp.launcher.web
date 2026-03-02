@@ -15,11 +15,15 @@
     import AdminStatusDot from "../AdminStatusDot.svelte";
     import { getLocalApi } from "$src/lib/utils";
     import { PUBLIC_AGENT_URL } from "$env/static/public";
+    import AppLoadingOverlay from "../AppLoadingOverlay.svelte";
 
     let { user }: { user: LiveUser | undefined } = $props();
     let name = user?.name;
+    let isLoggingOut = $state(false);
 
     const handleDisconnect = async () => {
+        isLoggingOut = true;
+        global.isLoggingOut = true;
         try {
             await authClient.signOut();
             
@@ -36,6 +40,8 @@
         } catch (error) {
             console.error("Error during sign out:", error);
         }finally {
+            // Small delay to ensure overlay is fully visible before redirect
+            await new Promise(resolve => setTimeout(resolve, 1500));
             goto("/signin");
         }
     };
@@ -99,3 +105,5 @@
         </DropdownMenu.Group>
     </DropdownMenu.Content>
 </DropdownMenu.Root>
+
+<AppLoadingOverlay visible={isLoggingOut} />

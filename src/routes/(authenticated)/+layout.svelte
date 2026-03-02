@@ -44,8 +44,10 @@
     import ChatNotificationBell from "$src/lib/components/custom/ChatNotificationBell.svelte";
     import HeaderVoiceWidget from "$src/lib/components/layout/HeaderVoiceWidget.svelte";
     import { chatStore, voiceSession } from "$src/lib/chat/chat.svelte";
+    import AppLoadingOverlay from "$src/lib/components/custom/AppLoadingOverlay.svelte";
         
     let loading = $state(false);
+    let hasNavigated = $state(false); // Track if user has navigated within the app
     let showAdminModal = $state(false);
     let winnerOverlay: WinnerOverlay | undefined = $state();
     // Sidebar visibility handling
@@ -136,6 +138,8 @@
         }
     };
 
+    let loadingTimeout: ReturnType<typeof setTimeout> | undefined;
+
     onNavigate((navigation) => {
         if (!document.startViewTransition) return;
 
@@ -143,6 +147,7 @@
             document.startViewTransition(async () => {
                 resolve();
                 await navigation.complete;
+                clearTimeout(loadingTimeout);
                 loading = false;
             });
         });
@@ -152,12 +157,20 @@
         if (event.to?.url?.pathname) {
             global.currentPath = event.to.url.pathname;
         }
+        clearTimeout(loadingTimeout);
+        loading = false;
+        // Mark that user has navigated, so future navigations show overlay
+        hasNavigated = true;
     });
 
     beforeNavigate((event) => {
         if (!event.to) return;
 
-        loading = true;
+        clearTimeout(loadingTimeout);
+        // Only show overlay if navigation takes longer than 150ms
+        loadingTimeout = setTimeout(() => {
+            loading = true;
+        }, 150);
         global.gamesSearchQuery = "";
     });
 
@@ -251,7 +264,7 @@
 <ConfigGamesDirDialog open={showConfigGamesDirDialog} />
 
 <Toaster richColors position="top-center" />
-{#if global.mainBackgroundImage}
+{#if global.mainBackgroundImage && !global.isLoggingOut}
     <div in:fade={{ duration: 200, delay: 600 }} out:fade={{ duration: 200 }}>
         <LazyImage
             src={global.mainBackgroundImage}
@@ -261,7 +274,7 @@
 {/if}
 <ThemeProvider>
     <TooltipProvider delayDuration={100}>
-        <div class="flex h-screen flex-col">
+        <div class="flex h-screen flex-col" class:invisible={global.isLoggingOut}>
             <!-- Header with Logo Grid -->
             <div
                 id="header"
@@ -281,9 +294,6 @@
                             <ChevronLeft size={18} />
                         {/if}
                     </button>
-                    {#if loading || GamesStore.isLoading}
-                        <Loader size={24} class="text-primary!" />
-                    {/if}
                     <Header class="flex-1" />
                     <div class="ml-auto flex h-full">
                         <!-- Voice channel quick access -->
@@ -383,6 +393,7 @@
 
 <ReinstallModal />
 <UninstallModal />
+<AppLoadingOverlay visible={loading && hasNavigated} />
 
 <style>
     :root {

@@ -5,6 +5,7 @@
 	interface AnimatedGradientBackgroundProps {
 		className?: string;
 		intensity?: 'subtle' | 'medium' | 'strong';
+		paused?: boolean;
 	}
 
 	interface Beam {
@@ -20,7 +21,7 @@
 		pulseSpeed: number;
 	}
 
-	let { className, intensity = 'strong' }: AnimatedGradientBackgroundProps = $props();
+	let { className, intensity = 'strong', paused = false }: AnimatedGradientBackgroundProps = $props();
 
 	let canvasElement: HTMLCanvasElement | null = $state(null);
 	let beams: Beam[] = $state([]);
@@ -103,7 +104,10 @@
 	}
 
 	function animate(): void {
-		if (!canvasElement) return;
+		if (!canvasElement || paused) {
+			animationFrameId = 0;
+			return;
+		}
 		const ctx = canvasElement.getContext('2d');
 		if (!ctx) return;
 
@@ -124,6 +128,20 @@
 
 		animationFrameId = requestAnimationFrame(animate);
 	}
+
+	// Resume animation when unpaused, stop when paused
+	$effect(() => {
+		if (paused) {
+			// Cancel animation when paused
+			if (animationFrameId) {
+				cancelAnimationFrame(animationFrameId);
+				animationFrameId = 0;
+			}
+		} else if (animationFrameId === 0 && canvasElement) {
+			// Resume when unpaused
+			animate();
+		}
+	});
 
 	onMount(() => {
 		if (!canvasElement) return;

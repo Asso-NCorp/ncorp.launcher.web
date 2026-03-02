@@ -103,7 +103,7 @@
         <h1 class="text-4xl font-bold text-primary">Tirage au Sort</h1>
 
         <!-- Board Container - Only shows the wheel -->
-        <div class="mt-6 w-full max-w-md">
+        <div class="mt-6 w-full max-w-lg">
             <!-- FortuneWheel Component -->
             <FortuneWheel
                 bind:this={wheelComponent}

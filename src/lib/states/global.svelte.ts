@@ -8,7 +8,6 @@ export type GameDisplayMode = "grid" | "list";
  * @description Holds the global state of the application
  */
 class GlobalState {
-
     /**
      * @description The current collapsed state of the sidebar
      * @type {boolean}
@@ -90,16 +89,24 @@ class GlobalState {
                 this.sideLinks = data;
                 return true;
             } else {
-                console.warn('Unexpected response format from sidelinks API:', data);
+                console.warn("Unexpected response format from sidelinks API:", data);
                 return false;
             }
         } catch (err) {
             console.error("Failed to fetch sidelinks:", err);
             return false;
         }
-    }
+    };
 
     localGamesFolder: string | undefined = $state<string | undefined>();
+
+    /**
+     * @description Whether the user is currently logging out (hides main UI)
+     * @type {boolean}
+     * @default false
+     * @memberof GlobalState
+     */
+    isLoggingOut: boolean = $state<boolean>(false);
 }
 
 export const global = new GlobalState();

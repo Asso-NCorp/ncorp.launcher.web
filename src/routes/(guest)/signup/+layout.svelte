@@ -16,12 +16,33 @@
 
     let { data, children }: LayoutProps = $props();
     const loginPageMessage = data.globalSettings.find((setting) => setting.key === "login_page_message")?.value;
+
+    let animationsDisabled = $state(false);
+
+    onMount(() => {
+        // Load preference from localStorage
+        const stored = localStorage.getItem("disableLoginAnimations");
+        if (stored !== null) {
+            animationsDisabled = stored === "true";
+        }
+        
+        // Listen for toggle changes from parent layout via custom event
+        const handleAnimationToggle = (e: CustomEvent) => {
+            animationsDisabled = e.detail.disabled;
+        };
+        window.addEventListener("animationToggle" as any, handleAnimationToggle as any);
+        return () => window.removeEventListener("animationToggle" as any, handleAnimationToggle as any);
+    });
 </script>
 
-<Lights direction="top" class="absolute top-0 block h-56 w-full dark:hidden" />
+{#if !animationsDisabled}
+    <Lights direction="top" class="absolute top-0 block h-56 w-full dark:hidden" />
+{/if}
 
 <div class="relative z-0 mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4 sm:px-6 lg:px-8">
-    <LampEffect class="absolute inset-auto h-120 w-100 translate-y-1/5 " />
+    {#if !animationsDisabled}
+        <LampEffect class="absolute inset-auto h-120 w-100 translate-y-1/5 " />
+    {/if}
     <div
         class="relative z-10 flex w-full max-w-md flex-col items-center justify-center sm:max-w-lg md:max-w-xl lg:max-w-2xl">
         {#if loginPageMessage}
@@ -29,11 +50,13 @@
                 <CircleAlertIcon class="size-4" />
                 <Alert.Title>Oupsss..</Alert.Title>
                 <Alert.Description class="z-40">{loginPageMessage}</Alert.Description>
-                <img
-                    src="/img/crying_cat.gif"
-                    alt="Crying Cat"
-                    class="absolute right-0 bottom-0 -z-10 h-24"
-                    style="mask-image: linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.3) 50%, transparent 100%); -webkit-mask-image: linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.3) 50%, transparent 100%);" />
+                {#if !animationsDisabled}
+                    <img
+                        src="/img/crying_cat.gif"
+                        alt="Crying Cat"
+                        class="absolute right-0 bottom-0 -z-10 h-24"
+                        style="mask-image: linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.3) 50%, transparent 100%); -webkit-mask-image: linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.3) 50%, transparent 100%);" />
+                {/if}
             </Alert.Root>
         {/if}
         {@render children()}
