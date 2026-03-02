@@ -76,6 +76,21 @@ export class LiveKitSession {
     audioDevices: AudioDevice[] = $state([]);
     selectedAudioDeviceId: string = $state("");
 
+    /** Noise gate threshold (0 = off, 0–0.1 RMS range). Persisted to localStorage. */
+    noiseGateThreshold: number = $state(0);
+    /** Noise ceiling threshold (0 = off, 0–0.1 RMS range). Audio above this is muted. Persisted. */
+    noiseCeilingThreshold: number = $state(0);
+    /** Live microphone RMS level (0–0.1). Updated every 30ms while mic is active. */
+    micLevel: number = $state(0);
+    /** Whether the mic preview/test is currently active (not connected but testing). */
+    micTestActive: boolean = $state(false);
+    /** Whether loopback audio is enabled during mic testing. */
+    loopbackEnabled: boolean = $state(false);
+    /** Whether all incoming audio is muted (and mic is force-muted). */
+    isDeafened: boolean = $state(false);
+    /** Output gain applied to all remote audio (0–2, default 1 = 100%). Persisted. */
+    outputVolume: number = $state(1);
+
     /** Set of identities currently speaking */
     speakingParticipants: SvelteSet<string> = new SvelteSet();
 
@@ -103,11 +118,46 @@ export class LiveKitSession {
     private channelPollTimer: ReturnType<typeof setInterval> | null = null;
     private disposed = false;
 
+    /* ---- noise gate audio chain ---- */
+    private audioCtx: AudioContext | null = null;
+    private rawMicStream: MediaStream | null = null;
+    private processedTrack: MediaStreamTrack | null = null;
+    private gateGain: GainNode | null = null;
+    private gateAnalyser: AnalyserNode | null = null;
+    private gateIntervalId: ReturnType<typeof setInterval> | null = null;
+    private publishedMicPub: any | null = null;
+    private loopbackGain: GainNode | null = null;
+
+    /* ---- remote audio output ---- */
+    private outputAudioCtx: AudioContext | null = null;
+    private gainNodes: Map<string, GainNode> = new Map();
+    private deafenPrevMuted = false;
+
     /**
      * Monotonically increasing counter used to guard event handlers.
      * Incremented on every disconnect so that stale room events are ignored.
      */
     private roomGeneration = 0;
+
+    constructor() {
+        if (typeof window !== "undefined") {
+            const gate = localStorage.getItem("noiseGateThreshold");
+            if (gate !== null) {
+                const v = parseFloat(gate);
+                if (!isNaN(v) && v >= 0 && v <= 1) this.noiseGateThreshold = v;
+            }
+            const ceiling = localStorage.getItem("noiseCeilingThreshold");
+            if (ceiling !== null) {
+                const v = parseFloat(ceiling);
+                if (!isNaN(v) && v >= 0 && v <= 1) this.noiseCeilingThreshold = v;
+            }
+            const vol = localStorage.getItem("outputVolume");
+            if (vol !== null) {
+                const v = parseFloat(vol);
+                if (!isNaN(v) && v >= 0 && v <= 2) this.outputVolume = v;
+            }
+        }
+    }
 
     /* ================================================================
      * Connection
@@ -159,7 +209,6 @@ export class LiveKitSession {
             const newRoom = new lk.Room({
                 adaptiveStream: true,
                 dynacast: true,
-                audioCaptureDefaults: this.selectedAudioDeviceId ? { deviceId: this.selectedAudioDeviceId } : undefined,
             });
 
             this.room = newRoom;
@@ -173,16 +222,37 @@ export class LiveKitSession {
             // 5. Connect
             await newRoom.connect(url, token);
 
-            // 6. Try to publish microphone (non-fatal — user may have no mic)
+            // 6. Try to publish microphone through noise-gate chain (non-fatal — user may have no mic)
+            // Preserve pre-set mute/deafen state
+            const wasPreMuted = this.isMuted;
+            const wasDeafened = this.isDeafened;
             try {
-                await newRoom.localParticipant.setMicrophoneEnabled(true);
-                this.isMuted = false;
+                const processedTrack = await this.startProcessedMic(this.selectedAudioDeviceId || undefined);
+                if (processedTrack) {
+                    const lkTrack = new lk.LocalAudioTrack(processedTrack, undefined, true);
+                    this.publishedMicPub = await newRoom.localParticipant.publishTrack(lkTrack, {
+                        source: lk.Track.Source.Microphone,
+                    });
+                    // Apply pre-set mute state
+                    if (wasPreMuted || wasDeafened) {
+                        for (const t of this.rawMicStream?.getAudioTracks() ?? []) {
+                            t.enabled = false;
+                        }
+                        this.isMuted = true;
+                    } else {
+                        this.isMuted = false;
+                    }
+                } else {
+                    console.warn("[LiveKitSession] No microphone available, joining as listener");
+                    this.isMuted = true;
+                }
             } catch (micErr: any) {
                 console.warn("[LiveKitSession] No microphone available, joining as listener:", micErr?.message);
                 this.isMuted = true;
             }
 
             this.connected = true;
+            playSound("/assets/sounds/user_joined.mp3");
             this.stopPreviewPolling();
             this.rebuildParticipants();
         } catch (e: any) {
@@ -194,6 +264,9 @@ export class LiveKitSession {
 
     /** Disconnect from the current room and reset state. */
     async disconnect() {
+        // Play disconnect sound for the local user
+        playSound("/assets/sounds/user_left.mp3");
+
         // Capture before clearing so we can fix channelParticipants below
         const prevRoom = this.roomName;
         const prevIdentity = this.identity;
@@ -234,6 +307,7 @@ export class LiveKitSession {
         // reactive state changes, which causes the `.prev` TypeError.
         this.participants = [];
 
+        this.stopProcessedMic();
         this.cleanupAllAudio();
         this.detachScreenShare();
 
@@ -363,12 +437,10 @@ export class LiveKitSession {
 
         room.on(RoomEvent.TrackMuted, () => {
             if (isStale()) return;
-            this.isMuted = !this.room?.localParticipant.isMicrophoneEnabled;
             this.rebuildParticipants();
         });
         room.on(RoomEvent.TrackUnmuted, () => {
             if (isStale()) return;
-            this.isMuted = !this.room?.localParticipant.isMicrophoneEnabled;
             this.rebuildParticipants();
         });
 
@@ -406,7 +478,7 @@ export class LiveKitSession {
             name: local.name ?? local.identity,
             isSpeaking: this.speakingParticipants.has(local.identity),
             isLocal: true,
-            audioEnabled: local.isMicrophoneEnabled,
+            audioEnabled: !this.isMuted,
         });
         seen.add(local.identity);
 
@@ -431,20 +503,38 @@ export class LiveKitSession {
      * Audio handling
      * ================================================================ */
 
+    private getOutputAudioCtx(): AudioContext {
+        if (!this.outputAudioCtx) this.outputAudioCtx = new AudioContext();
+        return this.outputAudioCtx;
+    }
+
     private attachAudio(track: any, identity: string) {
         if (typeof document === "undefined") return;
 
-        // Clean up existing element for this identity
         this.removeAudioElement(identity);
 
         const audioEl = document.createElement("audio");
         audioEl.autoplay = true;
         audioEl.setAttribute("playsinline", "");
-        // Hide it — it's only for playback, not UI
         audioEl.style.display = "none";
         document.body.appendChild(audioEl);
 
         track.attach(audioEl);
+
+        // Route through Web Audio GainNode so volume can go 0–2×
+        try {
+            const ctx = this.getOutputAudioCtx();
+            const source = ctx.createMediaElementSource(audioEl);
+            const gain = ctx.createGain();
+            gain.gain.value = this.isDeafened ? 0 : this.outputVolume;
+            source.connect(gain);
+            gain.connect(ctx.destination);
+            this.gainNodes.set(identity, gain);
+        } catch {
+            // Fallback: direct element volume (no boost above 100%)
+            audioEl.volume = this.isDeafened ? 0 : Math.min(this.outputVolume, 1);
+        }
+
         this.audioElements.set(identity, audioEl);
     }
 
@@ -460,6 +550,7 @@ export class LiveKitSession {
             }
             this.audioElements.delete(identity);
         }
+        this.gainNodes.delete(identity);
     }
 
     private cleanupAllAudio() {
@@ -556,6 +647,7 @@ export class LiveKitSession {
                 await this.room.localParticipant.setScreenShareEnabled(true, captureOpts, publishOpts);
                 this.screenSharing = true;
                 this.screenShareParticipantId = this.identity;
+                playSound("/assets/sounds/screen_share_on.mp3");
 
                 // Attach the local screen share track so the local preview works.
                 // There is no TrackSubscribed event for local tracks, so we must
@@ -569,6 +661,7 @@ export class LiveKitSession {
             } else {
                 await this.room.localParticipant.setScreenShareEnabled(false);
                 this.screenSharing = false;
+                playSound("/assets/sounds/screen_share_off.mp3");
                 if (this.screenShareParticipantId === this.identity) {
                     this.screenShareParticipantId = null;
                 }
@@ -617,15 +710,31 @@ export class LiveKitSession {
 
     /**
      * Switch the active microphone device.
+     * Rebuilds the noise-gate audio chain with the new device.
      */
     async setMicrophoneDevice(deviceId: string) {
         this.selectedAudioDeviceId = deviceId;
 
         if (this.room && this.connected) {
             try {
-                await this.room.localParticipant.setMicrophoneEnabled(true, {
-                    deviceId,
-                });
+                if (this.publishedMicPub?.track) {
+                    await this.room.localParticipant.unpublishTrack(this.publishedMicPub.track);
+                }
+
+                const processedTrack = await this.startProcessedMic(deviceId);
+                if (processedTrack) {
+                    const lk = await ensureLK();
+                    const lkTrack = new lk.LocalAudioTrack(processedTrack, undefined, true);
+                    this.publishedMicPub = await this.room.localParticipant.publishTrack(lkTrack, {
+                        source: lk.Track.Source.Microphone,
+                    });
+                    // Restore mute state at source level
+                    if (this.rawMicStream) {
+                        for (const t of this.rawMicStream.getAudioTracks()) {
+                            t.enabled = !this.isMuted;
+                        }
+                    }
+                }
             } catch (e: any) {
                 console.error("[LiveKitSession] setMicrophoneDevice error:", e);
             }
@@ -634,18 +743,297 @@ export class LiveKitSession {
 
     /**
      * Toggle local microphone mute.
+     * Mutes at the raw MediaStreamTrack level — reliable for user-provided custom tracks.
+     * Also works when not connected — state is preserved for when user joins.
      */
     async toggleMute() {
-        if (!this.room || !this.connected) return;
-
         try {
-            const enabled = this.room.localParticipant.isMicrophoneEnabled;
-            await this.room.localParticipant.setMicrophoneEnabled(!enabled);
-            this.isMuted = !this.room.localParticipant.isMicrophoneEnabled;
-            this.rebuildParticipants();
+            const newMuted = !this.isMuted;
+            // If connected and have a mic stream, toggle the track
+            if (this.rawMicStream) {
+                for (const t of this.rawMicStream.getAudioTracks()) {
+                    t.enabled = !newMuted;
+                }
+            }
+            this.isMuted = newMuted;
+            playSound(newMuted ? "/assets/sounds/mute.mp3" : "/assets/sounds/unmute.mp3");
+            if (this.connected) {
+                this.rebuildParticipants();
+            }
         } catch (e: any) {
             console.error("[LiveKitSession] toggleMute error:", e);
         }
+    }
+
+    /**
+     * Deafen (mute mic + silence all incoming audio) or un-deafen.
+     * Also works when not connected — state is preserved for when user joins.
+     */
+    async toggleDeafen() {
+        if (!this.isDeafened) {
+            this.deafenPrevMuted = this.isMuted;
+            // Force-mute mic at source level
+            if (this.rawMicStream) {
+                for (const t of this.rawMicStream.getAudioTracks()) t.enabled = false;
+            }
+            this.isMuted = true;
+            // Only update audio elements if connected
+            if (this.connected) {
+                for (const gain of this.gainNodes.values()) gain.gain.value = 0;
+                for (const el of this.audioElements.values()) el.volume = 0;
+            }
+            this.isDeafened = true;
+        } else {
+            this.isDeafened = false;
+            const vol = this.outputVolume;
+            // Only update audio elements if connected
+            if (this.connected) {
+                for (const gain of this.gainNodes.values()) gain.gain.value = vol;
+                for (const [id, el] of this.audioElements) {
+                    if (!this.gainNodes.has(id)) el.volume = Math.min(vol, 1);
+                }
+            }
+            // Restore mic to pre-deafen mute state
+            if (this.rawMicStream) {
+                for (const t of this.rawMicStream.getAudioTracks()) t.enabled = !this.deafenPrevMuted;
+            }
+            this.isMuted = this.deafenPrevMuted;
+        }
+        if (this.connected) {
+            this.rebuildParticipants();
+        }
+    }
+
+    /**
+     * Set output volume for all remote participants (0 = silent, 1 = 100%, 2 = 200%).
+     */
+    setOutputVolume(value: number) {
+        const clamped = Math.max(0, Math.min(2, value));
+        this.outputVolume = clamped;
+        if (typeof window !== "undefined") {
+            localStorage.setItem("outputVolume", String(clamped));
+        }
+        if (!this.isDeafened) {
+            for (const gain of this.gainNodes.values()) gain.gain.value = clamped;
+            for (const [id, el] of this.audioElements) {
+                if (!this.gainNodes.has(id)) el.volume = Math.min(clamped, 1);
+            }
+        }
+    }
+
+    /**
+     * Start the mic audio chain for settings preview while NOT connected.
+     * No-ops if already connected (chain already running).
+     */
+    async startMicPreview() {
+        if (this.connected) return;
+        await this.startProcessedMic(this.selectedAudioDeviceId || undefined);
+        this.micTestActive = true;
+        // Enable loopback by default during testing
+        this.setLoopback(true);
+    }
+
+    /**
+     * Stop the preview mic chain. No-ops if connected (keeps chain running).
+     */
+    stopMicPreview() {
+        if (this.connected) return;
+        this.setLoopback(false);
+        this.stopProcessedMic();
+        this.micTestActive = false;
+    }
+
+    /**
+     * Toggle mic preview on/off.
+     */
+    async toggleMicPreview() {
+        if (this.micTestActive) {
+            this.stopMicPreview();
+        } else {
+            await this.startMicPreview();
+        }
+    }
+
+    /**
+     * Enable or disable loopback audio (hear yourself through speakers).
+     * Only works during mic testing, not when connected to a voice channel.
+     */
+    setLoopback(enabled: boolean) {
+        this.loopbackEnabled = enabled;
+        if (!this.gateGain || !this.audioCtx) return;
+
+        if (enabled && this.micTestActive && !this.connected) {
+            // Create loopback gain if needed
+            if (!this.loopbackGain) {
+                this.loopbackGain = this.audioCtx.createGain();
+                this.loopbackGain.gain.value = 0.5; // Lower volume to avoid feedback
+                this.loopbackGain.connect(this.audioCtx.destination);
+            }
+            // Connect gate output to loopback
+            try {
+                this.gateGain.connect(this.loopbackGain);
+            } catch {
+                // Already connected
+            }
+        } else {
+            // Disconnect loopback
+            if (this.loopbackGain && this.gateGain) {
+                try {
+                    this.gateGain.disconnect(this.loopbackGain);
+                } catch {
+                    // Not connected
+                }
+            }
+        }
+    }
+
+    /**
+     * Toggle loopback audio on/off.
+     */
+    toggleLoopback() {
+        this.setLoopback(!this.loopbackEnabled);
+    }
+
+    /**
+     * Update the noise gate threshold and persist it.
+     * @param value — 0 (off) to 0.1 (high gate). Typical speech is ~0.01–0.03 RMS.
+     */
+    setNoiseGateThreshold(value: number) {
+        const clamped = Math.max(0, Math.min(1, value));
+        this.noiseGateThreshold = clamped;
+        if (typeof window !== "undefined") {
+            localStorage.setItem("noiseGateThreshold", String(clamped));
+        }
+    }
+
+    /**
+     * Update the noise ceiling threshold and persist it.
+     * @param value — 0 (off) to 0.1 (high ceiling). Audio above this is muted.
+     */
+    setNoiseCeilingThreshold(value: number) {
+        const clamped = Math.max(0, Math.min(1, value));
+        this.noiseCeilingThreshold = clamped;
+        if (typeof window !== "undefined") {
+            localStorage.setItem("noiseCeilingThreshold", String(clamped));
+        }
+    }
+
+    /**
+     * Acquire the microphone and route it through a noise-gate audio chain.
+     * Returns the processed MediaStreamTrack to publish to LiveKit.
+     */
+    private async startProcessedMic(deviceId?: string): Promise<MediaStreamTrack | null> {
+        if (typeof window === "undefined") return null;
+        this.stopProcessedMic();
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: deviceId ? { deviceId: { exact: deviceId } } : true,
+            });
+            this.rawMicStream = stream;
+
+            const ctx = new AudioContext();
+            this.audioCtx = ctx;
+
+            const source = ctx.createMediaStreamSource(stream);
+
+            const analyser = ctx.createAnalyser();
+            analyser.fftSize = 512;
+            this.gateAnalyser = analyser;
+
+            const gain = ctx.createGain();
+            gain.gain.value = 1;
+            this.gateGain = gain;
+
+            const dest = ctx.createMediaStreamDestination();
+
+            source.connect(analyser);
+            analyser.connect(gain);
+            gain.connect(dest);
+
+            this.startGateMonitor();
+
+            const processedTrack = dest.stream.getAudioTracks()[0] ?? null;
+            this.processedTrack = processedTrack;
+            return processedTrack;
+        } catch (e) {
+            console.warn("[LiveKitSession] startProcessedMic error:", e);
+            return null;
+        }
+    }
+
+    private startGateMonitor() {
+        this.stopGateMonitor();
+        if (!this.gateAnalyser || !this.gateGain || !this.audioCtx) return;
+
+        const data = new Uint8Array(this.gateAnalyser.frequencyBinCount);
+
+        this.gateIntervalId = setInterval(() => {
+            if (!this.gateAnalyser || !this.gateGain || !this.audioCtx) return;
+
+            this.gateAnalyser.getByteTimeDomainData(data);
+
+            let sum = 0;
+            for (let i = 0; i < data.length; i++) {
+                const v = (data[i] - 128) / 128;
+                sum += v * v;
+            }
+            const rms = Math.sqrt(sum / data.length);
+            this.micLevel = rms;
+            const minThreshold = this.noiseGateThreshold;
+            const maxThreshold = this.noiseCeilingThreshold;
+
+            // Gate is open if:
+            // - min threshold is 0 (off) OR rms >= min threshold
+            // - AND max threshold is 0 (off) OR rms <= max threshold
+            const aboveMin = minThreshold === 0 || rms >= minThreshold;
+            const belowMax = maxThreshold === 0 || rms <= maxThreshold;
+
+            if (aboveMin && belowMax) {
+                // Open gate — fast attack (3ms time constant)
+                this.gateGain.gain.setTargetAtTime(1, this.audioCtx.currentTime, 0.003);
+            } else {
+                // Close gate — slow release (50ms time constant) to avoid clipping
+                this.gateGain.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.05);
+            }
+        }, 30);
+    }
+
+    private stopGateMonitor() {
+        if (this.gateIntervalId !== null) {
+            clearInterval(this.gateIntervalId);
+            this.gateIntervalId = null;
+        }
+    }
+
+    private stopProcessedMic() {
+        this.stopGateMonitor();
+        this.micLevel = 0;
+        // Disconnect loopback first
+        if (this.loopbackGain && this.gateGain) {
+            try {
+                this.gateGain.disconnect(this.loopbackGain);
+            } catch {
+                // Not connected
+            }
+        }
+        this.loopbackGain = null;
+        this.gateAnalyser = null;
+        this.gateGain = null;
+        // Stop the processed (destination) track first
+        if (this.processedTrack) {
+            this.processedTrack.stop();
+            this.processedTrack = null;
+        }
+        if (this.audioCtx) {
+            void this.audioCtx.close().catch(() => {});
+            this.audioCtx = null;
+        }
+        if (this.rawMicStream) {
+            for (const t of this.rawMicStream.getTracks()) t.stop();
+            this.rawMicStream = null;
+        }
+        this.publishedMicPub = null;
     }
 
     /* ================================================================

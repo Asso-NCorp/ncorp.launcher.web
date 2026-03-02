@@ -1,6 +1,7 @@
 import { json, error, type RequestHandler } from "@sveltejs/kit";
 import { RoomServiceClient } from "livekit-server-sdk";
 import { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET } from "$env/static/private";
+import { logger } from "better-auth";
 
 function wsToHttp(wsUrl: string): string {
     return wsUrl.replace(/^ws(s?):\/\//, "http$1://");

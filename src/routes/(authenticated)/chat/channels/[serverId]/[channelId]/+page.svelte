@@ -3,6 +3,7 @@
 	import ChannelList from "$lib/components/chat/ChannelList.svelte";
 	import ChatPane from "$lib/components/chat/ChatPane.svelte";
 	import ScreenShareView from "$lib/components/chat/ScreenShareView.svelte";
+	import VoiceFloatingWidget from "$lib/components/chat/VoiceFloatingWidget.svelte";
 	import { onMount, untrack } from "svelte";
 	import { chatController } from "$lib/controllers/ChatController.svelte";
 
@@ -36,21 +37,29 @@
 
 <!-- WRAPPER: empêche le scroll fenêtre et autorise les enfants à overflow -->
 <div class="flex h-[calc(100vh-64px)] min-h-0 overflow-hidden bg-background">
-	<!-- Colonne serveurs -->
-	<div class="flex-none min-h-0 overflow-visible">
-		<ServerList
-			servers={contextState.servers}
-			selectServer={(id) => chatController.selectServer(id)} />
-	</div>
+	<!-- Colonnes gauches: serveurs + salons + widget voix -->
+	<div class="flex h-full flex-none flex-col overflow-hidden">
+		<div class="flex min-h-0 flex-1 overflow-hidden">
+			<!-- Colonne serveurs -->
+			<div class="flex-none min-h-0 overflow-visible">
+				<ServerList
+					servers={contextState.servers}
+					selectServer={(id) => chatController.selectServer(id)} />
+			</div>
 
-	<!-- Colonne salons -->
-	<div class="flex-none min-h-0 overflow-auto">
-		<ChannelList
-			channels={contextState.channels}
-			currentId={currentRoomId}
-			onSelect={(id) => chatController.selectChannel(id)}
-			onJoinVoice={(id, name) => chatController.joinVoice(id, name)}
-			title="Salons" />
+			<!-- Colonne salons -->
+			<div class="flex-none min-h-0 overflow-auto">
+				<ChannelList
+					channels={contextState.channels}
+					currentId={currentRoomId}
+					onSelect={(id) => chatController.selectChannel(id)}
+					onJoinVoice={(id, name) => chatController.joinVoice(id, name)}
+					title="Salons" />
+			</div>
+		</div>
+
+		<!-- Widget voix — spans across server + channel columns -->
+		<VoiceFloatingWidget />
 	</div>
 
 	<!-- Pane chat + screen share -->

@@ -4,7 +4,6 @@
     import type { ChannelItemData } from "$src/lib/types";
     import * as Accordion from "$lib/components/ui/accordion/index.js";
     import VoiceChannelItem from "./VoiceChannelItem.svelte";
-    import VoiceStatusBar from "./VoiceStatusBar.svelte";
 
     const {
         channels = [],
@@ -140,7 +139,4 @@
         {/if}
     </Accordion.Root>
     </div>
-
-    <!-- Voice status bar (shows when connected to voice) -->
-    <VoiceStatusBar />
 </aside>

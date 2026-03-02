@@ -5,9 +5,16 @@
     import LiveUserRow from "./LiveUserRow.svelte";
     import type { LiveUser } from "$src/lib/shared-models";
     import ScrollArea from "$src/lib/components/ui/scroll-area/scroll-area.svelte";
+    import { chatStore } from "$lib/chat/chat.svelte";
+    import MessageCircle from "@lucide/svelte/icons/message-circle";
 
 	
     let { class: klazz }: { class?: string } = $props();
+
+	// Show hint only when user has no DM/Group conversations yet
+	let hasNoConversations = $derived(
+		!chatStore.loadingRooms && chatStore.rooms.filter(r => r.type !== "GUILD_CHANNEL").length === 0
+	);
 
 	// Admin users (all, connected or not)
 	let adminUsers: LiveUser[] = $derived(
@@ -68,6 +75,12 @@
 			</div>
 		{:else}
 			<div class="my-2 flex w-full flex-col gap-2 pr-2.5" id="users-container">
+				{#if hasNoConversations}
+					<div class="mx-2 flex items-start gap-2 rounded-lg bg-secondary/30 p-3 text-xs text-muted-foreground">
+						<MessageCircle class="mt-0.5 h-4 w-4 shrink-0" />
+						<span>{$t("chat_hint")}</span>
+					</div>
+				{/if}
 				{#if adminUsers.length > 0}
 					<h2 class="pb-1 pl-4 pr-1 pt-5 text-sm font-semibold text-muted-foreground">
 						{$t("admins")} — ({adminUsers.filter(u=>u.status!=="Disconnected").length}/{adminUsers.length})

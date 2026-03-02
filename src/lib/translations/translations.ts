@@ -190,6 +190,7 @@ export default {
         approval_status_pending: "En attente",
         approval_status_approved: "Approuvé",
         approval_status_rejected: "Rejeté",
+        chat_hint: "Survolez un utilisateur et cliquez sur l'icône de message pour démarrer une conversation",
     },
     en: {
         lang,
@@ -381,5 +382,6 @@ export default {
         approval_status_pending: "Pending",
         approval_status_approved: "Approved",
         approval_status_rejected: "Rejected",
+        chat_hint: "Hover over a user and click the message icon to start a conversation",
     },
 };

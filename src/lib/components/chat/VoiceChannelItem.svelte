@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Volume2, Mic, MicOff, UserX, ArrowRightLeft } from "@lucide/svelte";
+	import { Volume2, Mic, MicOff, UserX, ArrowRightLeft, PhoneOff, Monitor } from "@lucide/svelte";
 	import { cn } from "$lib/utils";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as ContextMenu from "$lib/components/ui/context-menu";
@@ -105,7 +105,7 @@
 			{#snippet participantRow()}
 				<div
 					class={cn(
-						"flex items-center gap-2 rounded px-2 py-0.5 text-xs text-muted-foreground",
+						"group flex items-center gap-2 rounded px-2 py-0.5 text-xs text-muted-foreground",
 						p.isSpeaking && "text-emerald-400",
 					)}>
 					<div class="relative">
@@ -127,7 +127,33 @@
 						{/if}
 					</div>
 					<span class="truncate">{p.name}</span>
-					{#if !p.audioEnabled}
+					{#if voiceSession.screenShareParticipantId === p.identity}
+						<Monitor class="h-3 w-3 shrink-0 text-primary" title="Partage d'écran" />
+					{/if}
+					{#if p.isLocal}
+						<!-- Local user hover controls -->
+						<div class="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+							<button
+								class={cn(
+									"h-6 w-6 flex items-center justify-center rounded hover:bg-muted transition-colors",
+									!p.audioEnabled && "text-red-400",
+								)}
+								onclick={(e) => { e.stopPropagation(); voiceSession.toggleMute(); }}
+								title={p.audioEnabled ? "Couper le micro" : "Activer le micro"}>
+								{#if p.audioEnabled}
+									<Mic class="h-3.5 w-3.5" />
+								{:else}
+									<MicOff class="h-3.5 w-3.5" />
+								{/if}
+							</button>
+							<button
+								class="h-6 w-6 flex items-center justify-center rounded text-red-400 hover:bg-red-400/20 transition-colors"
+								onclick={(e) => { e.stopPropagation(); voiceSession.disconnect(); }}
+								title="Quitter le salon">
+								<PhoneOff class="h-3.5 w-3.5" />
+							</button>
+						</div>
+					{:else if !p.audioEnabled}
 						<MicOff class="ml-auto h-3 w-3 shrink-0 text-red-400" />
 					{/if}
 				</div>
