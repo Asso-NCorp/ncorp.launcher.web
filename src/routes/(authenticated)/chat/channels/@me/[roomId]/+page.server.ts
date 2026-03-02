@@ -1,17 +1,15 @@
-import { auth } from "$src/lib/auth/server";
-import type { ServerLoad } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
+import { PUBLIC_SIGNIN_PATH } from "$env/static/public";
+import type { PageServerLoad } from "./$types";
 
-export const load: ServerLoad = async ({ request, params }) => {
-    const session = await auth.api.getSession({
-        headers: request.headers,
-    });
-
-    if (!session || !session.user) {
-        throw new Error("User session is invalid or not found.");
+export const load: PageServerLoad = async ({ locals, params }) => {
+    // Session is already validated in hooks.server.ts — use locals directly
+    if (!locals.user) {
+        redirect(302, PUBLIC_SIGNIN_PATH);
     }
 
     return {
         roomId: params.roomId,
-        user: session.user,
+        user: locals.user,
     };
 };

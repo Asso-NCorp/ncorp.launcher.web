@@ -1,5 +1,5 @@
 // src/hooks.server.ts
-import { redirect, type Handle, type HandleFetch } from "@sveltejs/kit";
+import { error, redirect, type Handle, type HandleFetch } from "@sveltejs/kit";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { auth } from "$lib/auth/server";
 import { db } from "$srv/db";
@@ -19,14 +19,10 @@ const AUTH_DOMAIN = `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`;
 async function ensureTokenFromSession(event: any, session: any): Promise<string | null> {
     let token = event.cookies.get("token");
 
-    logger.info(`[TOKEN_CHECK] Cookie exists: ${!!token}, Session token exists: ${!!session?.session?.token}`, {
-        userId: session?.user?.id,
-    });
-
     // If no token cookie but session exists, try to get JWT from session
     if (!token && session?.session?.token) {
         try {
-            logger.info("Token cookie missing, attempting to refresh from session via auth.api", {
+            logger.info("Token cookie missing, refreshing from session via auth.api", {
                 userId: session?.user?.id,
             });
 
@@ -98,22 +94,33 @@ const isPendingApprovalPage = (pathname: string): boolean => {
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
-    let session;
-    try {
-        session = await auth.api.getSession(event.request);
-    } catch (e) {
-        logger.error(`[HOOKS] Failed to get session for ${event.url.pathname}`, {
-            error: e instanceof Error ? e.message : e,
-        });
-        session = null;
-    }
     const pathname = event.url.pathname;
     const isProtected = !isUnprotected(event.route.id, pathname);
+
+    // Retrieve session — separate "no session" from "server error"
+    let session;
+    let sessionError = false;
+    try {
+        session = await auth.api.getSession({ headers: event.request.headers });
+    } catch (e) {
+        logger.error(`[HOOKS] getSession threw for ${pathname}`, {
+            error: e instanceof Error ? e.message : String(e),
+        });
+        sessionError = true;
+        session = null;
+    }
 
     // PROTÉGER PAR DÉFAUT
     if (isProtected) {
         if (!session?.user) {
-            logger.error(`[HOOKS] Access denied - no user for ${pathname}`);
+            // If getSession threw, it's a transient server error — don't redirect (would kill the session).
+            // Instead return 503 so the client can retry.
+            if (sessionError) {
+                logger.error(`[HOOKS] Returning 503 for ${pathname} (session lookup failed)`);
+                error(503, "Service temporarily unavailable — please retry.");
+            }
+            // Genuine "no session" — redirect to sign-in
+            logger.warn(`[HOOKS] No session for ${pathname} — redirecting to sign-in`);
             redirect(302, PUBLIC_SIGNIN_PATH);
         }
 
@@ -127,9 +134,6 @@ export const handle: Handle = async ({ event, resolve }) => {
         }
 
         event.locals.token = token;
-        logger.info(`[HOOKS] Token set successfully for ${pathname}`, {
-            userId: session?.user?.id,
-        });
 
         // CHECK APPROVAL STATUS - allow admin and pending approval page bypass
         if (!isPendingApprovalPage(pathname) && !isAdminRoute(event.route.id, pathname)) {
