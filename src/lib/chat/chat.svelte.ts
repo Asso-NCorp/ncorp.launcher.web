@@ -3,6 +3,10 @@ import { toast } from "svelte-sonner";
 import { chatClient } from "./chatclient.svelte";
 import { chatNotifications } from "$lib/states/chat-notifications.svelte";
 import { liveUsers } from "$lib/states/live-users.svelte";
+import { LiveKitSession } from "./livekit-session.svelte";
+
+/** Singleton voice session shared across the app. */
+export const voiceSession = new LiveKitSession();
 
 /**
  * Chat store: fixes and guards added to prevent TypeScript errors and runtime crashes.

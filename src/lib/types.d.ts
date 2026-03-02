@@ -44,7 +44,7 @@ export interface ServerItemData {
 export interface ChannelItemData {
     id: string; // identifiant unique
     name: string; // nom du channel ou de la personne
-    type: "direct" | "group"; // type de conversation
+    type: "direct" | "group" | "voice"; // type de conversation
     lastMessage?: string; // aperçu du dernier message
     lastMessageAt?: Date; // date du dernier message
     unreadCount?: number; // nombre de messages non lus

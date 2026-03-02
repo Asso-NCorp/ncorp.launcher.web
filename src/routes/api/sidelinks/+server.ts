@@ -12,7 +12,7 @@ export const GET: RequestHandler = async () => {
 
         const sidelinks = await db.sidelink.findMany({
             orderBy: {
-                name: 'asc'
+                position: 'asc'
             },
         });
 

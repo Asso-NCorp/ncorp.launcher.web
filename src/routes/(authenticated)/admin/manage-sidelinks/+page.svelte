@@ -42,6 +42,21 @@
         selectedSidelink = null;
     };
 
+    async function handleReorder(orderedIds: number[]) {
+        const response = await fetch("/api/sidelinks/reorder", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderedIds }),
+        });
+
+        if (response.ok) {
+            await global.refreshSideLinks();
+            await liveServerConnection.broadcastMessage("SideLinksUpdated");
+        } else {
+            console.error("Failed to reorder sidelinks");
+        }
+    }
+
     // Listen for clearSelection event
     onMount(() => {
         const handleClearSelection = () => {
@@ -109,7 +124,8 @@
                         sidelinks={global.sideLinks}
                         loading={false}
                         onSelect={handleSelectSidelink}
-                        onDelete={handleDelete} />
+                        onDelete={handleDelete}
+                        onReorder={handleReorder} />
                 </Card.Content>
             </Card.Root>
         </div>

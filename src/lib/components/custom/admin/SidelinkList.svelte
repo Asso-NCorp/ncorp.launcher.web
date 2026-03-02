@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Skeleton } from "$lib/components/ui/skeleton";
     import * as Table from "$lib/components/ui/table/index.js";
-    import { Link, Trash2 } from "@lucide/svelte";
+    import { Link, Trash2, ArrowUp, ArrowDown, GripVertical } from "@lucide/svelte";
     import Button from "../../ui/button/button.svelte";
     import * as Popover from "$lib/components/ui/popover/index.js";
     import { toast } from "svelte-sonner";
@@ -15,9 +15,10 @@
         sidelinks: sidelink[];
         onSelect: (sidelink: sidelink) => void;
         onDelete: (sidelink: sidelink) => Promise<void>;
+        onReorder: (orderedIds: number[]) => Promise<void>;
     }
 
-    const { loading, sidelinks, onSelect, onDelete }: SidelinkListProps = $props();
+    const { loading, sidelinks, onSelect, onDelete, onReorder }: SidelinkListProps = $props();
 
     // Create a map to track open state of each popover
     let popoverStates: Record<number, boolean> = {};
@@ -57,6 +58,21 @@
             });
         }
     };
+
+    async function moveItem(index: number, direction: -1 | 1) {
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= sidelinks.length) return;
+
+        // Build new order by swapping
+        const ids = sidelinks.map((s) => s.id);
+        [ids[index], ids[newIndex]] = [ids[newIndex], ids[index]];
+
+        try {
+            await onReorder(ids);
+        } catch {
+            toast.error("Erreur lors du réordonnancement");
+        }
+    }
 </script>
 
 <div class="h-full w-full flex flex-col">
@@ -67,6 +83,7 @@
             <Table.Header class="bg-muted/30">
                 <Table.Row>
                     <Table.Head class="w-10 px-4"></Table.Head>
+                    <Table.Head class="w-16 px-2 text-center">Ordre</Table.Head>
                     <Table.Head class={cn("w-40", global.sidebarCollapsed && "text-xs")}>Nom</Table.Head>
                     <Table.Head class={cn("w-48", global.sidebarCollapsed && "hidden text-xs md:table-cell")}>
                         URL
@@ -78,10 +95,30 @@
                 </Table.Row>
             </Table.Header>
             <Table.Body>
-                {#each sidelinks as sidelink (sidelink.id)}
+                {#each sidelinks as sidelink, i (sidelink.id)}
                     <Table.Row class="cursor-pointer hover:bg-muted/50 transition-colors group" onclick={() => onSelect(sidelink)}>
                         <Table.Cell>
                             <Link class={cn("size-5", global.sidebarCollapsed && "size-4")} />
+                        </Table.Cell>
+                        <Table.Cell class="px-1">
+                            <div class="flex items-center justify-center gap-0.5">
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                                    disabled={i === 0}
+                                    title="Monter"
+                                    onclick={(e) => { e.stopPropagation(); moveItem(i, -1); }}>
+                                    <ArrowUp class="size-3.5" />
+                                </button>
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                                    disabled={i === sidelinks.length - 1}
+                                    title="Descendre"
+                                    onclick={(e) => { e.stopPropagation(); moveItem(i, 1); }}>
+                                    <ArrowDown class="size-3.5" />
+                                </button>
+                            </div>
                         </Table.Cell>
                         <Table.Cell class={cn("font-medium truncate", global.sidebarCollapsed && "text-xs")}>
                             {global.sidebarCollapsed

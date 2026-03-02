@@ -1,7 +1,7 @@
 {
   "name": "ncorp.launcher.web",
   "private": true,
-  "version": "1.5.172",
+  "version": "1.5.173",
   "type": "module",
   "scripts": {
     "dev": "cp .env.development .env && dotenv -e .env.development -- cross-env NODE_ENV=development vite dev",
@@ -115,6 +115,8 @@
     "google-translate-api-x": "^10.7.2",
     "hls.js": "^1.6.15",
     "isomorphic-dompurify": "^2.31.0",
+    "livekit-client": "^2",
+    "livekit-server-sdk": "^2",
     "mediasoup-client": "^3.18.0",
     "mini-svg-data-uri": "^1.4.4",
     "moment": "^2.30.1",

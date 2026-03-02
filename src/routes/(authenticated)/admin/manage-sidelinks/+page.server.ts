@@ -9,7 +9,7 @@ import { logger } from "$src/lib/stores/loggerStore";
 export const load = (async () => {
     const sideLinks = await db.sidelink.findMany({
         orderBy: {
-            name: "asc",
+            position: "asc",
         },
     });
 
@@ -31,11 +31,16 @@ export const actions: Actions = {
 
         try {
             // Create new sidelink
+            // Place new sidelink at the end
+            const maxPos = await db.sidelink.aggregate({ _max: { position: true } });
+            const nextPosition = (maxPos._max.position ?? -1) + 1;
+
             await db.sidelink.create({
                 data: {
                     name: form.data.name,
                     url: form.data.url,
                     hidden: form.data.hidden,
+                    position: nextPosition,
                     createdBy: locals.user!.id,
                     updatedBy: locals.user!.id,
                     createdAt: new Date(),

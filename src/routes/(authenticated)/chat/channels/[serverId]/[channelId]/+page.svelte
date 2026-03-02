@@ -2,6 +2,7 @@
 	import ServerList from "$lib/components/chat/ServerList.svelte";
 	import ChannelList from "$lib/components/chat/ChannelList.svelte";
 	import ChatPane from "$lib/components/chat/ChatPane.svelte";
+	import ScreenShareView from "$lib/components/chat/ScreenShareView.svelte";
 	import { onMount } from "svelte";
 	import { chatController } from "$lib/controllers/ChatController.svelte";
 
@@ -35,11 +36,15 @@
 			channels={contextState.channels}
 			currentId={currentRoomId}
 			onSelect={(id) => chatController.selectChannel(id)}
+			onJoinVoice={(id, name) => chatController.joinVoice(id, name)}
 			title="Salons" />
 	</div>
 
-	<!-- Pane chat: prend l'espace, autorise overflow interne -->
-	<div class="flex min-h-0 flex-1 overflow-hidden">
-		<ChatPane title={currentTitle} roomId={currentRoomId} />
+	<!-- Pane chat + screen share -->
+	<div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+		<ScreenShareView />
+		<div class="flex min-h-0 flex-1 overflow-hidden">
+			<ChatPane title={currentTitle} roomId={currentRoomId} />
+		</div>
 	</div>
 </div>

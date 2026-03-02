@@ -3,29 +3,38 @@
     import { cn } from "$lib/utils";
     import type { ChannelItemData } from "$src/lib/types";
     import * as Accordion from "$lib/components/ui/accordion/index.js";
+    import VoiceChannelItem from "./VoiceChannelItem.svelte";
+    import VoiceStatusBar from "./VoiceStatusBar.svelte";
 
     const {
         channels = [],
         currentId = null,
         onSelect,
+        onJoinVoice,
         title = "Channels",
     } = $props<{
         channels?: ChannelItemData[];
         currentId?: string | null;
         onSelect: (id: string) => void;
+        onJoinVoice?: (channelId: string, channelName: string) => void;
         title?: string;
     }>();
 
     function isTextChannel(c: ChannelItemData): boolean {
-        return c.type !== "direct";
+        return c.type !== "direct" && c.type !== "voice";
     }
 
     function isDirectMessage(c: ChannelItemData): boolean {
         return c.type === "direct";
     }
 
+    function isVoiceChannel(c: ChannelItemData): boolean {
+        return c.type === "voice";
+    }
+
     const textChannels: ChannelItemData[] = $derived(channels.filter(isTextChannel));
     const directMessages: ChannelItemData[] = $derived(channels.filter(isDirectMessage));
+    const voiceChannels: ChannelItemData[] = $derived(channels.filter(isVoiceChannel));
 
     // Track failed image loads - use object instead of Map for better Svelte reactivity
     let failedImages: Record<string, boolean> = $state({});
@@ -41,8 +50,9 @@
 </script>
 
 <aside class="flex h-full w-64 flex-col border-r bg-muted/40">
-    <!-- Replaced static title + list with accordion -->
-    <Accordion.Root type="multiple" class="w-full" value={['text-channels', 'direct-messages']}>
+    <!-- Channel lists -->
+    <div class="min-h-0 flex-1 overflow-auto">
+    <Accordion.Root type="multiple" class="w-full" value={['text-channels', 'voice-channels', 'direct-messages']}>
         {#if textChannels.length > 0}
             <Accordion.Item value="text-channels">
                 <Accordion.Trigger class="px-3 py-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -63,6 +73,25 @@
                                 <span class="truncate">{c.name}</span>
                                 {#if c.unreadCount}<span class="ml-auto h-2 w-2 rounded-full bg-primary" />{/if}
                             </button>
+                        {/each}
+                    </div>
+                </Accordion.Content>
+            </Accordion.Item>
+        {/if}
+
+        {#if voiceChannels.length > 0}
+            <Accordion.Item value="voice-channels">
+                <Accordion.Trigger class="px-3 py-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Salons vocaux
+                </Accordion.Trigger>
+                <Accordion.Content>
+                    <div class="flex-1 overflow-auto">
+                        {#each voiceChannels as c (c.id)}
+                            <VoiceChannelItem
+                                channelId={c.id}
+                                channelName={c.name}
+                                selected={c.id === currentId}
+                                onJoin={(id) => onJoinVoice?.(id, c.name)} />
                         {/each}
                     </div>
                 </Accordion.Content>
@@ -110,4 +139,8 @@
             </Accordion.Item>
         {/if}
     </Accordion.Root>
+    </div>
+
+    <!-- Voice status bar (shows when connected to voice) -->
+    <VoiceStatusBar />
 </aside>

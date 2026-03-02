@@ -49,7 +49,6 @@
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         class="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground">
-                                        <ExternalLink class="h-4 w-4" />
                                     </a>
                                 </Tooltip.Trigger>
                                 <Tooltip.Content side="right">
@@ -63,7 +62,6 @@
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="flex items-center gap-2 rounded-md py-1 px-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
-                                <ExternalLink class="size-4 shrink-0" />
                                 <span class="truncate">{link.name}</span>
                             </a>
                         {/if}

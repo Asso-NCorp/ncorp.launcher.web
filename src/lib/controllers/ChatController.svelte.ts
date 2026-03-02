@@ -1,4 +1,4 @@
-import { chatStore } from "$lib/chat/chat.svelte";
+import { chatStore, voiceSession } from "$lib/chat/chat.svelte";
 import { chatNotifications } from "$lib/states/chat-notifications.svelte";
 import { liveUsers } from "$lib/states/live-users.svelte";
 import { global } from "$lib/states/global.svelte";
@@ -203,9 +203,12 @@ class ChatControllerImpl {
                 const list = chatStore.rooms.filter((r) => r.type === "GUILD_CHANNEL" && r.guildId === serverId);
                 this.contextState.channels = list.map((r) => ({
                     id: r.id ?? "",
-                    type: "direct" as const,
+                    type: "group" as const,
                     name: r.name ?? "channel",
                 }));
+
+                // Fetch voice channels for this guild in background
+                this.fetchVoiceChannels(serverId);
             }
 
             // Persist last selected server
@@ -253,6 +256,58 @@ class ChatControllerImpl {
     private clearCurrentRoom() {
         this.contextState.selectedChannelId = null;
         chatStore.currentRoomId = null;
+    }
+
+    /**
+     * Fetch voice channels for a guild and append them to the channel list
+     */
+    private async fetchVoiceChannels(guildId: string) {
+        try {
+            const res = await fetch(`/api/voice-channels?guildId=${encodeURIComponent(guildId)}`);
+            if (!res.ok) return;
+
+            const voiceChannels = (await res.json()) as Array<{
+                id: string;
+                channelId: string;
+                name: string;
+                type: "voice";
+            }>;
+
+            if (voiceChannels.length > 0) {
+                // Append voice channels to existing channel list (only if still on same server)
+                if (this.contextState.selectedServerId === guildId) {
+                    const voiceItems: ChannelItemData[] = voiceChannels.map((vc) => ({
+                        id: vc.id,
+                        name: vc.name,
+                        type: "voice" as const,
+                    }));
+                    this.contextState.channels = [...this.contextState.channels, ...voiceItems];
+                }
+            }
+        } catch (error) {
+            console.warn("[fetchVoiceChannels] Failed:", error);
+        }
+    }
+
+    /**
+     * Join a voice channel via LiveKit.
+     * Uses the channel/room id as the LiveKit room name.
+     */
+    async joinVoice(channelId: string, channelName?: string) {
+        if (!channelId) return;
+
+        try {
+            await voiceSession.connect(channelId, channelName);
+        } catch (error) {
+            console.error("[joinVoice] Failed to join voice channel:", error);
+        }
+    }
+
+    /**
+     * Leave the current voice channel.
+     */
+    async leaveVoice() {
+        await voiceSession.disconnect();
     }
 
     /**

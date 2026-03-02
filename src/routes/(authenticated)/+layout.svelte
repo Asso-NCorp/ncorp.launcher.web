@@ -42,6 +42,7 @@
     import UninstallModal from "$src/lib/components/modals/UninstallModal.svelte";
     import PendingApprovalsDialog from "$src/lib/components/custom/PendingApprovalsDialog.svelte";
     import ChatNotificationBell from "$src/lib/components/custom/ChatNotificationBell.svelte";
+    import HeaderVoiceWidget from "$src/lib/components/layout/HeaderVoiceWidget.svelte";
     import { chatStore } from "$src/lib/chat/chat.svelte";
         
     let loading = $state(false);
@@ -280,6 +281,9 @@
                     {/if}
                     <Header class="flex-1" />
                     <div class="ml-auto flex h-full">
+                        <!-- Voice channel quick access -->
+                        <HeaderVoiceWidget />
+
                         <!-- Chat Notifications -->
                         <ChatNotificationBell />
 

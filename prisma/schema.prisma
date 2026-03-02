@@ -128,6 +128,7 @@ model sidelink {
   id        Int      @id @default(autoincrement())
   name      String   @db.VarChar(100)
   url       String   @db.VarChar(100)
+  position  Int      @default(0)
   createdAt DateTime @default(now()) @db.DateTime(0)
   updatedAt DateTime @default(now()) @db.DateTime(0)
   createdBy String   @db.VarChar(36)
