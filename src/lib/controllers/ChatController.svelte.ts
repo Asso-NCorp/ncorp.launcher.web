@@ -308,11 +308,20 @@ class ChatControllerImpl {
     /**
      * Join a voice channel via LiveKit.
      * Uses the channel/room id as the LiveKit room name.
+     * Ensures the user is only in one voice channel at a time.
      */
     async joinVoice(channelId: string, channelName?: string) {
         if (!channelId) return;
 
+        // Already connected to this channel — nothing to do
+        if (voiceSession.connected && voiceSession.roomName === channelId) return;
+
         try {
+            // Disconnect from current voice channel first (if any)
+            if (voiceSession.connected) {
+                await voiceSession.disconnect();
+            }
+
             await voiceSession.connect(channelId, channelName);
         } catch (error) {
             console.error("[joinVoice] Failed to join voice channel:", error);

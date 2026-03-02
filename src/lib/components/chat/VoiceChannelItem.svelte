@@ -39,6 +39,8 @@
 	}
 
 	function handleClick() {
+		// Already connected to this channel — do nothing
+		if (isConnectedHere) return;
 		onJoin(channelId);
 	}
 </script>

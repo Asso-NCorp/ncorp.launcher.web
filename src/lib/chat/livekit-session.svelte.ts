@@ -193,7 +193,7 @@ export class LiveKitSession {
 
         if (this.room) {
             try {
-                this.room.disconnect(true);
+                await this.room.disconnect(true);
             } catch {
                 // ignore
             }
