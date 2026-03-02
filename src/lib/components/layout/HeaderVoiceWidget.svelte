@@ -5,7 +5,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { cn } from "$lib/utils";
-	import { voiceSession } from "$lib/chat/chat.svelte";
+	import { chatStore, voiceSession } from "$lib/chat/chat.svelte";
 	import { fade } from "svelte/transition";
 
 	// --- Connected state ---
@@ -205,7 +205,7 @@
 								<div class="flex items-center gap-1.5 px-2 py-1">
 									<Volume2 class="h-3 w-3 text-muted-foreground" />
 									<span class="text-[11px] font-medium text-muted-foreground">
-										{channel.roomName}
+										{chatStore.rooms.find((r) => r.id === channel.roomName)?.name ?? channel.roomName}
 									</span>
 									<span class="ml-auto text-[10px] text-muted-foreground/60">
 										{channel.participants.length}
