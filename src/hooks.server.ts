@@ -18,10 +18,6 @@ const AUTH_DOMAIN = `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`;
 async function ensureTokenFromSession(event: any, session: any): Promise<string | null> {
     let token = event.cookies.get("token");
 
-    logger.info(`[TOKEN_CHECK] Cookie exists: ${!!token}, Session token exists: ${!!session?.session?.token}`, {
-        userId: session?.user?.id,
-    });
-
     // If no token cookie but session exists, try to get JWT from session
     if (!token && session?.session?.token) {
         try {
@@ -106,9 +102,17 @@ export const handle: Handle = async ({ event, resolve }) => {
     const pathname = event.url.pathname;
     const isProtected = !isUnprotected(event.route.id, pathname);
 
+    const isApiRoute = pathname.startsWith("/api/");
+
     // PROTÉGER PAR DÉFAUT
     if (isProtected) {
         if (!session?.user) {
+            if (isApiRoute) {
+                return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                    status: 401,
+                    headers: { "Content-Type": "application/json" },
+                });
+            }
             logger.error(`[HOOKS] Access denied - no user for ${pathname}`);
             redirect(302, PUBLIC_SIGNIN_PATH);
         }
@@ -119,13 +123,16 @@ export const handle: Handle = async ({ event, resolve }) => {
             logger.error(`[HOOKS] Access denied - no token available for ${pathname}`, {
                 userId: session?.user?.id,
             });
+            if (isApiRoute) {
+                return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                    status: 401,
+                    headers: { "Content-Type": "application/json" },
+                });
+            }
             redirect(302, PUBLIC_SIGNIN_PATH);
         }
 
         event.locals.token = token;
-        logger.info(`[HOOKS] Token set successfully for ${pathname}`, {
-            userId: session?.user?.id,
-        });
 
         // CHECK APPROVAL STATUS - allow admin and pending approval page bypass
         if (!isPendingApprovalPage(pathname) && !isAdminRoute(event.route.id, pathname)) {
