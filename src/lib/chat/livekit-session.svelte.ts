@@ -84,6 +84,8 @@ export class LiveKitSession {
     private room: InstanceType<typeof import("livekit-client").Room> | null = null;
     private audioElements: SvelteMap<string, HTMLAudioElement> = new SvelteMap();
     private screenShareVideoEl: HTMLVideoElement | null = null;
+    /** Holds the active screen share track so it can be attached when the <video> element mounts. */
+    private pendingScreenShareTrack: any | null = null;
 
     private previewTimer: ReturnType<typeof setInterval> | null = null;
     private previewDebounce: ReturnType<typeof setTimeout> | null = null;
@@ -424,6 +426,11 @@ export class LiveKitSession {
     attachScreenShareVideo(node: HTMLVideoElement) {
         this.screenShareVideoEl = node;
 
+        // If a track arrived before this element was mounted, attach it now.
+        if (this.pendingScreenShareTrack) {
+            this.pendingScreenShareTrack.attach(node);
+        }
+
         // Return a destroy-like cleanup for use as a Svelte action
         return {
             destroy: () => {
@@ -433,12 +440,16 @@ export class LiveKitSession {
     }
 
     private attachScreenShare(track: any) {
+        this.pendingScreenShareTrack = track;
         if (this.screenShareVideoEl) {
             track.attach(this.screenShareVideoEl);
         }
+        // If screenShareVideoEl is null here, the <video> element hasn't mounted yet
+        // (Svelte's DOM update is async). attachScreenShareVideo() will attach it once mounted.
     }
 
     private detachScreenShare() {
+        this.pendingScreenShareTrack = null;
         if (this.screenShareVideoEl) {
             this.screenShareVideoEl.srcObject = null;
         }
@@ -477,12 +488,23 @@ export class LiveKitSession {
                 await this.room.localParticipant.setScreenShareEnabled(true, captureOpts, publishOpts);
                 this.screenSharing = true;
                 this.screenShareParticipantId = this.identity;
+
+                // Attach the local screen share track so the local preview works.
+                // There is no TrackSubscribed event for local tracks, so we must
+                // find and attach it manually after publishing.
+                for (const pub of this.room.localParticipant.trackPublications.values()) {
+                    if (pub.source === LK!.Track.Source.ScreenShare && pub.track) {
+                        this.attachScreenShare(pub.track);
+                        break;
+                    }
+                }
             } else {
                 await this.room.localParticipant.setScreenShareEnabled(false);
                 this.screenSharing = false;
                 if (this.screenShareParticipantId === this.identity) {
                     this.screenShareParticipantId = null;
                 }
+                this.detachScreenShare();
             }
         } catch (e: any) {
             console.error("[LiveKitSession] toggleScreenShare error:", e);
