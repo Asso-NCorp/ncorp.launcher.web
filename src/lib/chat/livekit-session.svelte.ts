@@ -47,6 +47,17 @@ async function ensureLK() {
     return LK;
 }
 
+function playSound(path: string) {
+    if (typeof window === "undefined") return;
+    try {
+        const audio = new Audio(path);
+        audio.volume = 0.5;
+        void audio.play().catch(() => {});
+    } catch {
+        // ignore — audio context not ready or browser blocked autoplay
+    }
+}
+
 /* ---------- class ---------- */
 
 export class LiveKitSession {
@@ -141,8 +152,8 @@ export class LiveKitSession {
                 identity: string;
             };
 
-            // 2. Disconnect previous room if any
-            await this.disconnectInternal();
+            // 2. Disconnect previous room if any (fire-and-forget internally)
+            this.disconnectInternal();
 
             // 3. Create a fresh Room instance
             const newRoom = new lk.Room({
@@ -183,7 +194,12 @@ export class LiveKitSession {
 
     /** Disconnect from the current room and reset state. */
     async disconnect() {
-        await this.disconnectInternal();
+        // Capture before clearing so we can fix channelParticipants below
+        const prevRoom = this.roomName;
+        const prevIdentity = this.identity;
+
+        this.disconnectInternal();
+
         this.connected = false;
         this.isMuted = false;
         this.roomDisplayName = "";
@@ -191,13 +207,32 @@ export class LiveKitSession {
         this.screenSharing = false;
         this.screenShareParticipantId = null;
         this.speakingParticipants.clear();
-        this.participants = [];
         this.errorMsg = "";
+
+        // Immediately remove local user from the polling map so the UI
+        // doesn't show us as still present in the channel we just left.
+        // (The next poll will reconcile the rest.)
+        if (prevRoom && prevIdentity) {
+            const existing = this.channelParticipants.get(prevRoom);
+            if (existing) {
+                const filtered = existing.filter((p) => p.identity !== prevIdentity);
+                if (filtered.length > 0) {
+                    this.channelParticipants.set(prevRoom, filtered);
+                } else {
+                    this.channelParticipants.delete(prevRoom);
+                }
+            }
+        }
     }
 
-    private async disconnectInternal() {
+    private disconnectInternal() {
         // Bump generation so any in-flight event handlers from the old room are ignored
         this.roomGeneration++;
+
+        // Clear participants immediately — this prevents Svelte 5's keyed-list
+        // reconciler from trying to remove items at the same time as other
+        // reactive state changes, which causes the `.prev` TypeError.
+        this.participants = [];
 
         this.cleanupAllAudio();
         this.detachScreenShare();
@@ -206,13 +241,16 @@ export class LiveKitSession {
             const oldRoom = this.room;
             // Nullify reference first so stale event guards fail immediately
             this.room = null;
+            oldRoom.removeAllListeners();
             try {
-                oldRoom.removeAllListeners();
                 oldRoom.localParticipant.removeAllListeners();
-                await oldRoom.disconnect(true);
             } catch {
-                // ignore
+                // ignore — localParticipant may already be gone
             }
+            // Fire-and-forget: don't block callers on the server round-trip
+            // or on the browser releasing mic/camera tracks. This is what
+            // caused the 2-5s delay on disconnect/channel-switch.
+            void oldRoom.disconnect(true).catch(() => {});
         }
     }
 
@@ -247,11 +285,13 @@ export class LiveKitSession {
 
         room.on(RoomEvent.ParticipantConnected, () => {
             if (isStale()) return;
+            playSound("/assets/sounds/user_joined.mp3");
             this.rebuildParticipants();
         });
 
         room.on(RoomEvent.ParticipantDisconnected, (participant) => {
             if (isStale()) return;
+            playSound("/assets/sounds/user_left.mp3");
             this.removeAudioElement(participant.identity);
             this.speakingParticipants.delete(participant.identity);
             if (this.screenShareParticipantId === participant.identity) {
