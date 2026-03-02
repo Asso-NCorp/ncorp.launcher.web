@@ -90,6 +90,12 @@ export class LiveKitSession {
     private channelPollTimer: ReturnType<typeof setInterval> | null = null;
     private disposed = false;
 
+    /**
+     * Monotonically increasing counter used to guard event handlers.
+     * Incremented on every disconnect so that stale room events are ignored.
+     */
+    private roomGeneration = 0;
+
     /* ================================================================
      * Connection
      * ================================================================ */
@@ -188,16 +194,23 @@ export class LiveKitSession {
     }
 
     private async disconnectInternal() {
+        // Bump generation so any in-flight event handlers from the old room are ignored
+        this.roomGeneration++;
+
         this.cleanupAllAudio();
         this.detachScreenShare();
 
         if (this.room) {
+            const oldRoom = this.room;
+            // Nullify reference first so stale event guards fail immediately
+            this.room = null;
             try {
-                await this.room.disconnect(true);
+                oldRoom.removeAllListeners();
+                oldRoom.localParticipant.removeAllListeners();
+                await oldRoom.disconnect(true);
             } catch {
                 // ignore
             }
-            this.room = null;
         }
     }
 
@@ -212,7 +225,13 @@ export class LiveKitSession {
         const RoomEvent = lk.RoomEvent;
         const Track = lk.Track;
 
+        // Capture the current generation so we can detect stale events
+        // from a room that has since been disconnected/replaced.
+        const gen = this.roomGeneration;
+        const isStale = () => this.roomGeneration !== gen;
+
         room.on(RoomEvent.Disconnected, () => {
+            if (isStale()) return;
             this.connected = false;
             this.isSpeaking = false;
             this.screenSharing = false;
@@ -225,10 +244,12 @@ export class LiveKitSession {
         });
 
         room.on(RoomEvent.ParticipantConnected, () => {
+            if (isStale()) return;
             this.rebuildParticipants();
         });
 
         room.on(RoomEvent.ParticipantDisconnected, (participant) => {
+            if (isStale()) return;
             this.removeAudioElement(participant.identity);
             this.speakingParticipants.delete(participant.identity);
             if (this.screenShareParticipantId === participant.identity) {
@@ -239,6 +260,7 @@ export class LiveKitSession {
         });
 
         room.on(RoomEvent.TrackSubscribed, (track, _pub, participant) => {
+            if (isStale()) return;
             if (track.source === Track.Source.Microphone || track.kind === Track.Kind.Audio) {
                 this.attachAudio(track, participant.identity);
             }
@@ -250,6 +272,7 @@ export class LiveKitSession {
         });
 
         room.on(RoomEvent.TrackUnsubscribed, (track, _pub, participant) => {
+            if (isStale()) return;
             if (track.kind === Track.Kind.Audio) {
                 this.removeAudioElement(participant.identity);
             }
@@ -263,6 +286,7 @@ export class LiveKitSession {
         });
 
         room.on(RoomEvent.TrackUnpublished, (pub, participant) => {
+            if (isStale()) return;
             if (pub.source === Track.Source.ScreenShare) {
                 if (this.screenShareParticipantId === participant.identity) {
                     this.screenShareParticipantId = null;
@@ -273,6 +297,7 @@ export class LiveKitSession {
         });
 
         room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
+            if (isStale()) return;
             this.speakingParticipants.clear();
             for (const s of speakers) {
                 this.speakingParticipants.add(s.identity);
@@ -283,6 +308,7 @@ export class LiveKitSession {
 
         // Handle local screen share being stopped via browser UI ("Stop sharing")
         room.localParticipant.on(lk.ParticipantEvent.LocalTrackUnpublished as any, (pub: any) => {
+            if (isStale()) return;
             if (pub?.source === Track.Source.ScreenShare) {
                 this.screenSharing = false;
                 if (this.screenShareParticipantId === this.identity) {
@@ -294,10 +320,12 @@ export class LiveKitSession {
         });
 
         room.on(RoomEvent.TrackMuted, () => {
+            if (isStale()) return;
             this.isMuted = !this.room?.localParticipant.isMicrophoneEnabled;
             this.rebuildParticipants();
         });
         room.on(RoomEvent.TrackUnmuted, () => {
+            if (isStale()) return;
             this.isMuted = !this.room?.localParticipant.isMicrophoneEnabled;
             this.rebuildParticipants();
         });

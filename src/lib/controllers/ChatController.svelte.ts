@@ -317,11 +317,10 @@ class ChatControllerImpl {
         if (voiceSession.connected && voiceSession.roomName === channelId) return;
 
         try {
-            // Disconnect from current voice channel first (if any)
-            if (voiceSession.connected) {
-                await voiceSession.disconnect();
-            }
-
+            // connect() handles disconnecting the previous room internally
+            // via disconnectInternal(), so we don't call disconnect() here.
+            // Calling disconnect() first would reset UI state (connected, roomDisplayName, etc.)
+            // causing a flash and potentially corrupting Svelte's reactivity graph.
             await voiceSession.connect(channelId, channelName);
         } catch (error) {
             console.error("[joinVoice] Failed to join voice channel:", error);
