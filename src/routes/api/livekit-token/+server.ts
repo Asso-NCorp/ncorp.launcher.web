@@ -1,6 +1,6 @@
 import { json, error, type RequestHandler } from "@sveltejs/kit";
 import { AccessToken } from "livekit-server-sdk";
-import { getLivekitEnv } from "$lib/server/livekit";
+import { env } from "$env/dynamic/private";
 
 /**
  * POST /api/livekit-token
@@ -11,7 +11,9 @@ import { getLivekitEnv } from "$lib/server/livekit";
  * The identity is derived from the authenticated Better Auth user.
  */
 export const POST: RequestHandler = async ({ request, locals }) => {
-    const { url, apiKey, apiSecret } = getLivekitEnv();
+    const url = env.LIVEKIT_URL;
+    const apiKey = env.LIVEKIT_API_KEY;
+    const apiSecret = env.LIVEKIT_API_SECRET;
 
     if (!url || !apiKey || !apiSecret) {
         return error(500, "LiveKit is not configured on this server.");

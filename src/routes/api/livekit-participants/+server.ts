@@ -1,6 +1,10 @@
 import { json, error, type RequestHandler } from "@sveltejs/kit";
 import { RoomServiceClient } from "livekit-server-sdk";
-import { getLivekitEnv, wsToHttp } from "$lib/server/livekit";
+import { env } from "$env/dynamic/private";
+
+function wsToHttp(wsUrl: string): string {
+    return wsUrl.replace(/^ws(s?):\/\//, "http$1://");
+}
 
 /**
  * GET /api/livekit-participants?room=<name>
@@ -10,7 +14,9 @@ import { getLivekitEnv, wsToHttp } from "$lib/server/livekit";
  * If the room does not exist yet, returns [].
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
-    const { url: livekitUrl, apiKey, apiSecret } = getLivekitEnv();
+    const livekitUrl = env.LIVEKIT_URL;
+    const apiKey = env.LIVEKIT_API_KEY;
+    const apiSecret = env.LIVEKIT_API_SECRET;
 
     if (!livekitUrl || !apiKey || !apiSecret) {
         return error(500, "LiveKit is not configured on this server.");
