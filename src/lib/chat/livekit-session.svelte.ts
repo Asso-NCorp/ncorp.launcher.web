@@ -73,6 +73,13 @@ export class LiveKitSession {
     previewLoading: boolean = $state(false);
     previewError: string = $state("");
 
+    /**
+     * Per-channel participant map — used to show who's in each voice channel
+     * even when the current user is not connected.
+     * Key = channelId (room name), Value = list of participants.
+     */
+    channelParticipants: SvelteMap<string, PreviewParticipant[]> = new SvelteMap();
+
     /* ---- private ---- */
     private room: InstanceType<typeof import("livekit-client").Room> | null = null;
     private audioElements: SvelteMap<string, HTMLAudioElement> = new SvelteMap();
@@ -80,6 +87,7 @@ export class LiveKitSession {
 
     private previewTimer: ReturnType<typeof setInterval> | null = null;
     private previewDebounce: ReturnType<typeof setTimeout> | null = null;
+    private channelPollTimer: ReturnType<typeof setInterval> | null = null;
     private disposed = false;
 
     /* ================================================================
@@ -146,10 +154,15 @@ export class LiveKitSession {
             // 5. Connect
             await newRoom.connect(url, token);
 
-            // 6. Publish microphone
-            await newRoom.localParticipant.setMicrophoneEnabled(true);
+            // 6. Try to publish microphone (non-fatal — user may have no mic)
+            try {
+                await newRoom.localParticipant.setMicrophoneEnabled(true);
+                this.isMuted = false;
+            } catch (micErr: any) {
+                console.warn("[LiveKitSession] No microphone available, joining as listener:", micErr?.message);
+                this.isMuted = true;
+            }
 
-            this.isMuted = false;
             this.connected = true;
             this.stopPreviewPolling();
             this.rebuildParticipants();
@@ -583,6 +596,57 @@ export class LiveKitSession {
     cleanup() {
         this.disposed = true;
         this.stopPreviewPolling();
+        this.stopChannelPolling();
         void this.disconnect();
+    }
+
+    /* ================================================================
+     * Global channel participants polling
+     * ================================================================ */
+
+    /**
+     * Start polling ALL active LiveKit rooms to populate channelParticipants.
+     * Should be called once when entering the chat section.
+     */
+    startChannelPolling() {
+        if (this.channelPollTimer) return; // already polling
+        void this.fetchAllRoomParticipants();
+        this.channelPollTimer = setInterval(() => {
+            if (!this.disposed) {
+                void this.fetchAllRoomParticipants();
+            }
+        }, 5_000);
+    }
+
+    stopChannelPolling() {
+        if (this.channelPollTimer) {
+            clearInterval(this.channelPollTimer);
+            this.channelPollTimer = null;
+        }
+    }
+
+    private async fetchAllRoomParticipants() {
+        try {
+            const res = await fetch("/api/livekit-rooms");
+            if (!res.ok) return;
+            const data = (await res.json()) as Record<string, PreviewParticipant[]>;
+
+            // Update the map: add/update rooms with participants, remove empty ones
+            const activeRoomNames = new Set(Object.keys(data));
+
+            // Remove rooms that are no longer active
+            for (const key of this.channelParticipants.keys()) {
+                if (!activeRoomNames.has(key)) {
+                    this.channelParticipants.delete(key);
+                }
+            }
+
+            // Add/update active rooms
+            for (const [roomName, participants] of Object.entries(data)) {
+                this.channelParticipants.set(roomName, participants);
+            }
+        } catch {
+            // Silently ignore — polling will retry
+        }
     }
 }

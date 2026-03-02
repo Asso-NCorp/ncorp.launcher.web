@@ -25,15 +25,17 @@
                 aria-current={selected ? "true" : "false"}
                 onclick={() => select(server.id)}
                 aria-label={server.name}>
-                <!-- Notch indicator (ellipse when not selected, notch when selected) -->
+                <!-- Notch indicator -->
                 <span
                     aria-hidden="true"
                     class={cn(
-                        "absolute top-1/2 -translate-y-1/2 bg-primary transition-all duration-200 rounded-full",
+                        "absolute top-1/2 -translate-y-1/2 bg-foreground transition-all duration-200 rounded-full",
                         "-left-3",
                         selected
                             ? "h-8 w-1 opacity-100"
-                            : "h-2.5 w-2.5 opacity-100 group-hover:scale-110",
+                            : unread
+                                ? "h-2 w-1 opacity-100"
+                                : "h-0 w-1 opacity-0 group-hover:h-5 group-hover:opacity-100",
                     )} />
                 {#if server.iconName === "mail"}
                     <Mail class="h-6 w-6 text-muted-foreground" />

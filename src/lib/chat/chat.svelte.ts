@@ -52,6 +52,19 @@ class ChatStore {
     private resolvingPending = false;
     private typingPurgeInterval: ReturnType<typeof setInterval> | null = null;
 
+    /** Track which rooms we've joined via SignalR for notifications. */
+    private joinedRoomIds = new Set<string>();
+
+    /** Deduplicate a rooms array by id (keeps first occurrence). */
+    private dedupeRooms(rooms: RoomDto[]): RoomDto[] {
+        const seen = new Set<string>();
+        return rooms.filter((r) => {
+            if (!r.id || seen.has(r.id)) return false;
+            seen.add(r.id);
+            return true;
+        });
+    }
+
     private getUserDisplayName(userId?: string | null) {
         const id = userId ?? "";
         const u = id ? liveUsers.getUser(id) : undefined;
@@ -219,7 +232,10 @@ class ChatStore {
         this.loadingRooms = true;
         try {
             const rooms = await chatClient.myRooms();
-            this.rooms = Array.isArray(rooms) ? rooms : [];
+            this.rooms = this.dedupeRooms(Array.isArray(rooms) ? rooms : []);
+
+            // Join ALL rooms via SignalR so we receive notifications everywhere
+            await this.joinAllRooms(this.rooms);
         } catch (err) {
             console.error("[init] Failed to load rooms", err);
             toast.error("Erreur chargement des salons");
@@ -228,10 +244,38 @@ class ChatStore {
         }
     }
 
+    /**
+     * Join all rooms via SignalR for notification delivery.
+     * Skips rooms that are already joined.
+     */
+    private async joinAllRooms(rooms: RoomDto[]) {
+        const toJoin = rooms.filter((r) => r.id && !this.joinedRoomIds.has(r.id));
+        if (!toJoin.length) return;
+
+        // Join in parallel, non-blocking
+        const results = await Promise.allSettled(
+            toJoin.map((r) =>
+                chatClient.joinRoom(r.id!).then(() => {
+                    this.joinedRoomIds.add(r.id!);
+                }),
+            ),
+        );
+
+        const failed = results.filter((r) => r.status === "rejected").length;
+        if (failed > 0) {
+            console.warn(`[joinAllRooms] ${failed}/${toJoin.length} rooms failed to join`);
+        } else {
+            console.log(`[joinAllRooms] Joined ${toJoin.length} rooms for notifications`);
+        }
+    }
+
     private async refreshRooms() {
         try {
             const updated = await chatClient.myRooms();
-            this.rooms = Array.isArray(updated) ? updated : [];
+            this.rooms = this.dedupeRooms(Array.isArray(updated) ? updated : []);
+
+            // Join any new rooms that appeared (e.g. new DM)
+            await this.joinAllRooms(this.rooms);
         } catch (error) {
             console.error("[refreshRooms] Failed to refresh rooms:", error);
         } finally {
@@ -298,20 +342,20 @@ class ChatStore {
 
     async selectRoom(roomId: string) {
         if (!roomId) return;
-        if (this.currentRoomId && this.currentRoomId !== roomId) {
-            try {
-                await chatClient.leaveRoom(this.currentRoomId);
-            } catch (err) {
-                console.warn("[selectRoom] leaveRoom failed", err);
-            }
-        }
-        this._typingStopNow(); // reset typing when switching
+        // Stop typing in previous room but do NOT leave its SignalR group
+        // so we keep receiving notifications from all rooms.
+        this._typingStopNow();
 
         this.currentRoomId = roomId;
-        try {
-            await chatClient.joinRoom(roomId);
-        } catch (err) {
-            console.warn("[selectRoom] joinRoom failed", err);
+
+        // Join if not already joined (e.g. new room created mid-session)
+        if (!this.joinedRoomIds.has(roomId)) {
+            try {
+                await chatClient.joinRoom(roomId);
+                this.joinedRoomIds.add(roomId);
+            } catch (err) {
+                console.warn("[selectRoom] joinRoom failed", err);
+            }
         }
 
         this.messagesByRoom[roomId] ??= [];

@@ -3,16 +3,28 @@
 	import ChannelList from "$lib/components/chat/ChannelList.svelte";
 	import ChatPane from "$lib/components/chat/ChatPane.svelte";
 	import ScreenShareView from "$lib/components/chat/ScreenShareView.svelte";
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import { chatController } from "$lib/controllers/ChatController.svelte";
 
 	let { data } = $props();
-	const roomId = data.roomId as string;
+	const roomId = $derived(data.roomId as string);
 
 	onMount(async () => {
 		await chatController.init();
 		chatController.selectServer("dm_server");
 		await chatController.selectChannelInternal(roomId);
+	});
+
+	// Re-select channel when navigating between DMs
+	// untrack prevents re-triggering when controller internal state changes
+	$effect(() => {
+		const r = roomId;
+		untrack(() => {
+			if (r) {
+				chatController.selectServer("dm_server");
+				chatController.selectChannelInternal(r);
+			}
+		});
 	});
 
 	const contextState = $derived(chatController.contextState);

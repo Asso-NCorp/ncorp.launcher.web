@@ -14,6 +14,7 @@ const AUTH_DOMAIN = `.${parseTopLevelDomain(PUBLIC_BETTER_AUTH_URL).domain}`;
 /**
  * Attempts to refresh the JWT token from the session if the token cookie is missing or invalid.
  * This prevents unexpected logouts when the token cookie is cleared but the session is still valid.
+ * Uses auth.api.getToken() directly instead of an HTTP self-fetch to avoid network failures.
  */
 async function ensureTokenFromSession(event: any, session: any): Promise<string | null> {
     let token = event.cookies.get("token");
@@ -25,36 +26,31 @@ async function ensureTokenFromSession(event: any, session: any): Promise<string 
     // If no token cookie but session exists, try to get JWT from session
     if (!token && session?.session?.token) {
         try {
-            logger.info("Token cookie missing, attempting to refresh from session", {
+            logger.info("Token cookie missing, attempting to refresh from session via auth.api", {
                 userId: session?.user?.id,
             });
-            const res = await fetch(`${PUBLIC_BETTER_AUTH_URL}/api/auth/token`, {
-                headers: {
+
+            // Use direct server-side API call instead of HTTP self-fetch
+            // This avoids network round-trip, TLS issues, and connection exhaustion
+            const result = await auth.api.getToken({
+                headers: new Headers({
                     Authorization: `Bearer ${session.session.token}`,
-                },
+                }),
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                token = data.token;
+            token = result?.token;
 
-                // Set the token cookie for future requests
-                if (token) {
-                    event.cookies.set("token", token, {
-                        domain: AUTH_DOMAIN,
-                        path: "/",
-                        httpOnly: true,
-                        secure: true,
-                        sameSite: "none",
-                        maxAge: 60 * 60 * 24 * 30, // 30 days
-                    });
-                    logger.info("Token refreshed successfully from session", {
-                        userId: session?.user?.id,
-                    });
-                }
-            } else {
-                logger.warn("Failed to refresh token from session", {
-                    status: res.status,
+            // Set the token cookie for future requests
+            if (token) {
+                event.cookies.set("token", token, {
+                    domain: AUTH_DOMAIN,
+                    path: "/",
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                    maxAge: 60 * 60 * 24 * 30, // 30 days
+                });
+                logger.info("Token refreshed successfully from session", {
                     userId: session?.user?.id,
                 });
             }
@@ -102,7 +98,15 @@ const isPendingApprovalPage = (pathname: string): boolean => {
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
-    const session = await auth.api.getSession(event.request);
+    let session;
+    try {
+        session = await auth.api.getSession(event.request);
+    } catch (e) {
+        logger.error(`[HOOKS] Failed to get session for ${event.url.pathname}`, {
+            error: e instanceof Error ? e.message : e,
+        });
+        session = null;
+    }
     const pathname = event.url.pathname;
     const isProtected = !isUnprotected(event.route.id, pathname);
 

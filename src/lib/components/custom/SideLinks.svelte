@@ -27,7 +27,7 @@
                 {global.sidebarCollapsed ? "Liens" : $t("quick_links")}
             </Card.Title>
         </Card.Header>
-        <Card.Content class={cn("py-2", global.sidebarCollapsed && "px-2 py-2")}>
+        <Card.Content class={cn("pl-0  pr-2 py-2", global.sidebarCollapsed && "px-2 py-2")}>
             {#if loading}
                 <div class="space-y-2">
                     <Skeleton class={cn("h-6 w-full", global.sidebarCollapsed && "h-4")} />

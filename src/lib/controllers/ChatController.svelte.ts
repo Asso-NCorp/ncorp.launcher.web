@@ -75,6 +75,16 @@ class ChatControllerImpl {
         this.contextState.servers = [dmServer, ...guildServers];
     }
 
+    /** Deduplicate channels by id (keeps first occurrence). */
+    private dedupeChannels(channels: ChannelItemData[]): ChannelItemData[] {
+        const seen = new Set<string>();
+        return channels.filter((c) => {
+            if (!c.id || seen.has(c.id)) return false;
+            seen.add(c.id);
+            return true;
+        });
+    }
+
     /**
      * Check if a string looks like a GUID
      */
@@ -165,47 +175,53 @@ class ChatControllerImpl {
      */
     selectServer(serverId: string) {
         try {
-            // Clear current selection to clean up ChatPane
-            this.clearCurrentRoom();
+            // Only clear current room if actually switching to a different server
+            if (this.contextState.selectedServerId !== serverId) {
+                this.clearCurrentRoom();
+            }
 
             this.contextState.selectedServerId = serverId;
 
             if (serverId === "dm_server") {
                 // Show DM and group channels, sorted by last message time
                 const dmAndGroups = chatStore.rooms.filter((r) => r.type !== "GUILD_CHANNEL");
-                this.contextState.channels = dmAndGroups
-                    .sort((a, b) => {
-                        // Sort by lastMessageAt descending (most recent first)
-                        const aTime = new Date(a.lastMessageAt || 0).getTime();
-                        const bTime = new Date(b.lastMessageAt || 0).getTime();
-                        return bTime - aTime;
-                    })
-                    .map((r) => {
-                        try {
-                            return {
-                                id: r.id ?? "",
-                                type: r.type === "DM" ? ("direct" as const) : ("group" as const),
-                                name: r.type === "DM" ? this.getDMDisplayName(r) : (r.name ?? "Groupe"),
-                                avatarUrl: r.type === "DM" ? this.getDMUserAvatar(r) : undefined,
-                            };
-                        } catch (error) {
-                            console.error("[selectServer] Error mapping room:", r, error);
-                            return {
-                                id: r.id ?? "",
-                                type: r.type === "DM" ? ("direct" as const) : ("group" as const),
-                                name: r.name ?? (r.type === "DM" ? "Conversation privée" : "Groupe"),
-                                avatarUrl: undefined,
-                            };
-                        }
-                    });
+                this.contextState.channels = this.dedupeChannels(
+                    dmAndGroups
+                        .sort((a, b) => {
+                            // Sort by lastMessageAt descending (most recent first)
+                            const aTime = new Date(a.lastMessageAt || 0).getTime();
+                            const bTime = new Date(b.lastMessageAt || 0).getTime();
+                            return bTime - aTime;
+                        })
+                        .map((r) => {
+                            try {
+                                return {
+                                    id: r.id ?? "",
+                                    type: r.type === "DM" ? ("direct" as const) : ("group" as const),
+                                    name: r.type === "DM" ? this.getDMDisplayName(r) : (r.name ?? "Groupe"),
+                                    avatarUrl: r.type === "DM" ? this.getDMUserAvatar(r) : undefined,
+                                };
+                            } catch (error) {
+                                console.error("[selectServer] Error mapping room:", r, error);
+                                return {
+                                    id: r.id ?? "",
+                                    type: r.type === "DM" ? ("direct" as const) : ("group" as const),
+                                    name: r.name ?? (r.type === "DM" ? "Conversation privée" : "Groupe"),
+                                    avatarUrl: undefined,
+                                };
+                            }
+                        }),
+                );
             } else {
                 // Show guild channels for selected server
                 const list = chatStore.rooms.filter((r) => r.type === "GUILD_CHANNEL" && r.guildId === serverId);
-                this.contextState.channels = list.map((r) => ({
-                    id: r.id ?? "",
-                    type: "group" as const,
-                    name: r.name ?? "channel",
-                }));
+                this.contextState.channels = this.dedupeChannels(
+                    list.map((r) => ({
+                        id: r.id ?? "",
+                        type: "group" as const,
+                        name: r.name ?? "channel",
+                    })),
+                );
 
                 // Fetch voice channels for this guild in background
                 this.fetchVoiceChannels(serverId);
@@ -281,7 +297,7 @@ class ChatControllerImpl {
                         name: vc.name,
                         type: "voice" as const,
                     }));
-                    this.contextState.channels = [...this.contextState.channels, ...voiceItems];
+                    this.contextState.channels = this.dedupeChannels([...this.contextState.channels, ...voiceItems]);
                 }
             }
         } catch (error) {

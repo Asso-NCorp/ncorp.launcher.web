@@ -525,59 +525,80 @@ export const load: PageServerLoad = async ({ locals }) => {
         throw redirect(302, PUBLIC_SIGNIN_PATH);
     }
 
-    // Fetch data from database
-    const [userGameSessions, otherUsersSessions, roles, allUsers] = await Promise.all([
-        getCurrentUserSessions(user.id),
-        getOtherUsersSessions(user.id),
-        db.role.findMany(),
-        db.user.findMany({ select: { id: true, name: true, displayUsername: true, image: true } }),
-    ]);
+    try {
+        // Fetch data from database
+        const [userGameSessions, otherUsersSessions, roles, allUsers] = await Promise.all([
+            getCurrentUserSessions(user.id),
+            getOtherUsersSessions(user.id),
+            db.role.findMany(),
+            db.user.findMany({ select: { id: true, name: true, displayUsername: true, image: true } }),
+        ]);
 
-    // Enrich sessions with game metadata from the server API
-    const enrichedUserGameSessions = await enrichSessionsWithGameData(userGameSessions, locals.token || "");
-    const enrichedOtherUsersSessions = await enrichSessionsWithGameData(otherUsersSessions, locals.token || "");
+        // Enrich sessions with game metadata from the server API
+        const enrichedUserGameSessions = await enrichSessionsWithGameData(userGameSessions, locals.token || "");
+        const enrichedOtherUsersSessions = await enrichSessionsWithGameData(otherUsersSessions, locals.token || "");
 
-    // Combine all sessions for trending calculation
-    const allSessions = [...enrichedUserGameSessions, ...enrichedOtherUsersSessions];
+        // Combine all sessions for trending calculation
+        const allSessions = [...enrichedUserGameSessions, ...enrichedOtherUsersSessions];
 
-    // Process current user's data for game summaries (personal stats)
-    const validUserSessions = filterValidSessions(enrichedUserGameSessions);
-    const userGameSummaries = createUserGameSummaries(validUserSessions);
+        // Process current user's data for game summaries (personal stats)
+        const validUserSessions = filterValidSessions(enrichedUserGameSessions);
+        const userGameSummaries = createUserGameSummaries(validUserSessions);
 
-    // Process individual sessions for activity feed (shows each session separately)
-    const currentUserActivitySessions = createCurrentUserActivitySessions(validUserSessions);
-    const otherUsersActivitySessions = createOtherUsersActivitySessions(
-        filterValidSessions(enrichedOtherUsersSessions),
-    );
+        // Process individual sessions for activity feed (shows each session separately)
+        const currentUserActivitySessions = createCurrentUserActivitySessions(validUserSessions);
+        const otherUsersActivitySessions = createOtherUsersActivitySessions(
+            filterValidSessions(enrichedOtherUsersSessions),
+        );
 
-    // Combine all individual sessions for the activity feed
-    const allActivities = combineAndSortActivitySessions(currentUserActivitySessions, otherUsersActivitySessions);
+        // Combine all individual sessions for the activity feed
+        const allActivities = combineAndSortActivitySessions(currentUserActivitySessions, otherUsersActivitySessions);
 
-    // Calculate trending games
-    const trendingGames = calculateTrendingGames(allSessions);
+        // Calculate trending games
+        const trendingGames = calculateTrendingGames(allSessions);
 
-    // Calculate additional stats
-    const achievements = calculateAchievements(validUserSessions, allUsers);
-    const streak = calculateStreak(validUserSessions);
-    const peakHours = calculatePeakHours(validUserSessions);
-    const activityHeatmap = calculateActivityHeatmap(validUserSessions);
-    const favoriteGames = userGameSummaries.slice(0, 4);
-    const { leaderboardData, userRank } = calculateMonthlyLeaderboard(allSessions, user.id, roles, new Date());
+        // Calculate additional stats
+        const achievements = calculateAchievements(validUserSessions, allUsers);
+        const streak = calculateStreak(validUserSessions);
+        const peakHours = calculatePeakHours(validUserSessions);
+        const activityHeatmap = calculateActivityHeatmap(validUserSessions);
+        const favoriteGames = userGameSummaries.slice(0, 4);
+        const { leaderboardData, userRank } = calculateMonthlyLeaderboard(allSessions, user.id, roles, new Date());
 
-    return {
-        gameSessions: enrichedUserGameSessions,
-        userGameSummaries,
-        allActivities,
-        trendingGames,
-        roles,
-        achievements,
-        streak,
-        peakHours,
-        activityHeatmap: Object.fromEntries(activityHeatmap),
-        favoriteGames,
-        allUsers,
-        leaderboardData,
-        userRank,
-        allSessions,
-    };
+        return {
+            gameSessions: enrichedUserGameSessions,
+            userGameSummaries,
+            allActivities,
+            trendingGames,
+            roles,
+            achievements,
+            streak,
+            peakHours,
+            activityHeatmap: Object.fromEntries(activityHeatmap),
+            favoriteGames,
+            allUsers,
+            leaderboardData,
+            userRank,
+            allSessions,
+        };
+    } catch (e) {
+        console.error("[PAGE LOAD] Error loading dashboard data:", e);
+        // Return empty defaults so the page still renders
+        return {
+            gameSessions: [],
+            userGameSummaries: [],
+            allActivities: [],
+            trendingGames: [],
+            roles: [],
+            achievements: [],
+            streak: { currentStreak: 0, longestStreak: 0 },
+            peakHours: [],
+            activityHeatmap: {},
+            favoriteGames: [],
+            allUsers: [],
+            leaderboardData: [],
+            userRank: 0,
+            allSessions: [],
+        };
+    }
 };

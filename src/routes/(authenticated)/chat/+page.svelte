@@ -6,7 +6,6 @@
 
 	onMount(async () => {
 		await chatController.init();
-		chatController.rebuildServerList();
 
 		// Restore last selection or default to first server
 		try {
@@ -14,6 +13,8 @@
 			const lastChannelId = localStorage.getItem("chat:lastChannelId");
 
 			if (lastServerId && lastChannelId) {
+				// Select the server in the controller so sidebar highlights it
+				chatController.selectServer(lastServerId);
 				if (lastServerId === "dm_server") {
 					await goto(`/chat/channels/@me/${lastChannelId}`);
 				} else {
@@ -21,6 +22,7 @@
 				}
 			} else if (chatController.contextState.servers.length > 0) {
 				const firstServer = chatController.contextState.servers[0];
+				chatController.selectServer(firstServer.id);
 				const firstChannel = chatStore.rooms.find((r) =>
 					firstServer.id === "dm_server" ? r.type !== "GUILD_CHANNEL" : r.guildId === firstServer.id
 				);

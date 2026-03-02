@@ -43,7 +43,7 @@
     import PendingApprovalsDialog from "$src/lib/components/custom/PendingApprovalsDialog.svelte";
     import ChatNotificationBell from "$src/lib/components/custom/ChatNotificationBell.svelte";
     import HeaderVoiceWidget from "$src/lib/components/layout/HeaderVoiceWidget.svelte";
-    import { chatStore } from "$src/lib/chat/chat.svelte";
+    import { chatStore, voiceSession } from "$src/lib/chat/chat.svelte";
         
     let loading = $state(false);
     let showAdminModal = $state(false);
@@ -168,6 +168,9 @@
             // Initialize chat client globally so we receive notifications everywhere
             await chatStore.init(() => localStorage.getItem("token") || "");
 
+            // Start polling voice channel participants for the header widget
+            voiceSession.startChannelPolling();
+
             if (localStorage.getItem("gamesSortOrder")) {
                 global.gamesSortOrder = localStorage.getItem("gamesSortOrder") as "asc" | "desc";
             }
@@ -238,6 +241,8 @@
         if (liveServerConnection?.connection) {
             liveServerConnection.connection.stop();
         }
+
+        voiceSession.stopChannelPolling();
     });
 
     let headerEl: HTMLElement | null = null;

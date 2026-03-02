@@ -28,9 +28,9 @@
 		isConnectedHere ? voiceSession.participants : [],
 	);
 
-	/** Preview participants (when not connected) */
+	/** Preview participants from polling (when not connected to this channel) */
 	const previewParticipants = $derived(
-		!isConnectedHere ? voiceSession.previewParticipants.filter(() => voiceSession.roomName === channelId) : [],
+		!isConnectedHere ? (voiceSession.channelParticipants.get(channelId) ?? []) : [],
 	);
 
 	function getUserAvatar(identity: string): string | undefined {

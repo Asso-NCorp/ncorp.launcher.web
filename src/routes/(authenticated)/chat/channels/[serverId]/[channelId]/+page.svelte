@@ -3,17 +3,30 @@
 	import ChannelList from "$lib/components/chat/ChannelList.svelte";
 	import ChatPane from "$lib/components/chat/ChatPane.svelte";
 	import ScreenShareView from "$lib/components/chat/ScreenShareView.svelte";
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import { chatController } from "$lib/controllers/ChatController.svelte";
 
 	let { data } = $props();
-	const serverId = data.serverId as string;
-	const channelId = data.channelId as string;
+	const serverId = $derived(data.serverId as string);
+	const channelId = $derived(data.channelId as string);
 
 	onMount(async () => {
 		await chatController.init();
 		chatController.selectServer(serverId);
 		await chatController.selectChannelInternal(channelId);
+	});
+
+	// Re-select server/channel when navigating between guild channels
+	// untrack prevents re-triggering when controller internal state changes
+	$effect(() => {
+		const s = serverId;
+		const c = channelId;
+		untrack(() => {
+			if (s && c) {
+				chatController.selectServer(s);
+				chatController.selectChannelInternal(c);
+			}
+		});
 	});
 
 	const contextState = $derived(chatController.contextState);
