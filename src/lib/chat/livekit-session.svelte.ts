@@ -465,25 +465,35 @@ export class LiveKitSession {
             const next = !this.screenSharing;
 
             if (next) {
-                // Detect resolution for quality settings
-                const captureOpts: Record<string, any> = {};
-                const publishOpts: Record<string, any> = {};
+                const lk = await ensureLK();
 
-                if (typeof window !== "undefined") {
-                    const w = window.screen.width * (window.devicePixelRatio ?? 1);
-                    const h = window.screen.height * (window.devicePixelRatio ?? 1);
+                // Capture at native resolution.
+                // contentHint: 'detail' is the most impactful setting for clarity —
+                // it tells the WebRTC encoder to prioritise sharpness over motion,
+                // which eliminates the blurry/soft look when sharing text/UI.
+                const captureOpts: Parameters<typeof this.room.localParticipant.setScreenShareEnabled>[1] = {
+                    resolution: {
+                        width: window.screen.width * (window.devicePixelRatio ?? 1),
+                        height: window.screen.height * (window.devicePixelRatio ?? 1),
+                        frameRate: 30,
+                    },
+                    contentHint: "detail",
+                };
 
-                    if (w >= 3840) {
-                        // 4K
-                        publishOpts.videoEncoding = { maxBitrate: 6_000_000, maxFramerate: 30 };
-                    } else if (w >= 2560) {
-                        // 1440p
-                        publishOpts.videoEncoding = { maxBitrate: 4_000_000, maxFramerate: 30 };
-                    } else {
-                        // 1080p or less
-                        publishOpts.videoEncoding = { maxBitrate: 2_500_000, maxFramerate: 30 };
-                    }
-                }
+                // h1080fps30 is the highest preset in the SDK; for 4K/1440p screens we
+                // keep the same preset but bump the bitrate so the server doesn't
+                // re-encode to a lower quality.
+                const pixelWidth = window.screen.width * (window.devicePixelRatio ?? 1);
+                const preset =
+                    pixelWidth >= 3840
+                        ? { encoding: { maxBitrate: 8_000_000, maxFramerate: 30 } }
+                        : pixelWidth >= 2560
+                          ? { encoding: { maxBitrate: 5_000_000, maxFramerate: 30 } }
+                          : lk.ScreenSharePresets.h1080fps30;
+
+                const publishOpts: Parameters<typeof this.room.localParticipant.setScreenShareEnabled>[2] = {
+                    videoEncoding: preset.encoding,
+                };
 
                 await this.room.localParticipant.setScreenShareEnabled(true, captureOpts, publishOpts);
                 this.screenSharing = true;

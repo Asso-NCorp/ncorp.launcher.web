@@ -1,0 +1,6 @@
+{
+    "permissions": {
+        "allow": ["mcp__ide__getDiagnostics", "Bash(xargs grep:*)"]
+    },
+    "enableAllProjectMcpServers": true
+}
