@@ -384,6 +384,7 @@ export class LiveKitSession {
         }
 
         const list: VoiceParticipant[] = [];
+        const seen = new Set<string>();
 
         // Local participant first
         const local = this.room.localParticipant;
@@ -394,9 +395,13 @@ export class LiveKitSession {
             isLocal: true,
             audioEnabled: local.isMicrophoneEnabled,
         });
+        seen.add(local.identity);
 
-        // Remote participants
+        // Remote participants — keyed by SID, not identity, so the same user
+        // with multiple tabs will appear multiple times; deduplicate by identity.
         for (const [, rp] of this.room.remoteParticipants) {
+            if (seen.has(rp.identity)) continue;
+            seen.add(rp.identity);
             list.push({
                 identity: rp.identity,
                 name: rp.name ?? rp.identity,
