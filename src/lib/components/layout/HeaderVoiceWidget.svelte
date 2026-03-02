@@ -1,11 +1,15 @@
 <script lang="ts">
-	import { Signal, Mic, MicOff, PhoneOff, Volume2, Headphones } from "@lucide/svelte";
+	import { Signal, Mic, MicOff, PhoneOff, Volume2, Headphones, UserX, ArrowRightLeft } from "@lucide/svelte";
 	import { Button } from "$lib/components/ui/button";
 	import * as Popover from "$lib/components/ui/popover";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import * as Avatar from "$lib/components/ui/avatar";
+	import * as ContextMenu from "$lib/components/ui/context-menu";
 	import { cn } from "$lib/utils";
 	import { chatStore, voiceSession } from "$lib/chat/chat.svelte";
+	import { global } from "$lib/states/global.svelte";
+	import { chatController } from "$lib/controllers/ChatController.svelte";
+	import { toast } from "svelte-sonner";
 	import { fade } from "svelte/transition";
 
 	// --- Connected state ---
@@ -43,11 +47,53 @@
 		await voiceSession.disconnect();
 	}
 
-	const avatarSource = $derived(
-		voiceSession.connected
-			? voiceSession.participants.map((p) => ({ identity: p.identity, name: p.name, speaking: p.isSpeaking }))
-			: activeChannels.flatMap((ch) => ch.participants.map((p) => ({ ...p, speaking: false }))),
+	const isAdmin = $derived((global.currentUser as any)?.role === "admin");
+
+	const otherVoiceChannels = $derived(
+		chatController.contextState.channels.filter(
+			(c) => c.type === "voice" && c.id !== voiceSession.roomName,
+		),
 	);
+
+	async function adminRemove(identity: string) {
+		try {
+			const res = await fetch("/api/livekit-admin", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ action: "remove", room: voiceSession.roomName, identity }),
+			});
+			if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? res.statusText);
+			toast.success("Participant déconnecté du salon");
+		} catch (e: any) {
+			toast.error(e?.message ?? "Erreur lors de la déconnexion");
+		}
+	}
+
+	async function adminMove(identity: string, targetRoom: string) {
+		try {
+			const res = await fetch("/api/livekit-admin", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ action: "move", room: voiceSession.roomName, identity, targetRoom }),
+			});
+			if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? res.statusText);
+			toast.success("Participant déplacé");
+		} catch (e: any) {
+			toast.error(e?.message ?? "Erreur lors du déplacement");
+		}
+	}
+
+	const avatarSource = $derived.by(() => {
+		const raw = voiceSession.connected
+			? voiceSession.participants.map((p) => ({ identity: p.identity, name: p.name, speaking: p.isSpeaking }))
+			: activeChannels.flatMap((ch) => ch.participants.map((p) => ({ ...p, speaking: false })));
+		const seen = new Set<string>();
+		return raw.filter((p) => {
+			if (seen.has(p.identity)) return false;
+			seen.add(p.identity);
+			return true;
+		});
+	});
 </script>
 
 {#if isVisible}
@@ -154,38 +200,74 @@
 					<!-- Connected participant list -->
 					<div class="max-h-48 overflow-y-auto px-2 py-1.5">
 						{#each voiceSession.participants as p (p.identity)}
-							<div
-								class="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50">
-								<Avatar.Root
-									class={cn(
-										"h-7 w-7 border-2 transition-all",
-										p.isSpeaking
-											? "border-emerald-400 ring-2 ring-emerald-400/30"
-											: "border-transparent",
-									)}>
-									<Avatar.Fallback class="text-[10px]">
-										{p.name?.slice(0, 2).toUpperCase() ?? "??"}
-									</Avatar.Fallback>
-								</Avatar.Root>
-								<div class="flex flex-1 flex-col">
-									<span class="text-xs font-medium">
-										{p.name}
-										{#if p.isLocal}
-											<span class="text-muted-foreground">(vous)</span>
+							{#snippet participantRow()}
+								<div
+									class="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50 w-full">
+									<Avatar.Root
+										class={cn(
+											"h-7 w-7 border-2 transition-all",
+											p.isSpeaking
+												? "border-emerald-400 ring-2 ring-emerald-400/30"
+												: "border-transparent",
+										)}>
+										<Avatar.Fallback class="text-[10px]">
+											{p.name?.slice(0, 2).toUpperCase() ?? "??"}
+										</Avatar.Fallback>
+									</Avatar.Root>
+									<div class="flex flex-1 flex-col">
+										<span class="text-xs font-medium">
+											{p.name}
+											{#if p.isLocal}
+												<span class="text-muted-foreground">(vous)</span>
+											{/if}
+										</span>
+										{#if p.isSpeaking}
+											<span class="text-[10px] text-emerald-400">En train de parler</span>
 										{/if}
-									</span>
-									{#if p.isSpeaking}
-										<span class="text-[10px] text-emerald-400">En train de parler</span>
-									{/if}
+									</div>
+									<div class="flex items-center gap-1">
+										{#if !p.audioEnabled}
+											<MicOff class="h-3 w-3 text-destructive/60" />
+										{:else if p.isSpeaking}
+											<Volume2 class="h-3 w-3 animate-pulse text-emerald-400" />
+										{/if}
+									</div>
 								</div>
-								<div class="flex items-center gap-1">
-									{#if !p.audioEnabled}
-										<MicOff class="h-3 w-3 text-destructive/60" />
-									{:else if p.isSpeaking}
-										<Volume2 class="h-3 w-3 animate-pulse text-emerald-400" />
-									{/if}
-								</div>
-							</div>
+							{/snippet}
+
+							{#if isAdmin && !p.isLocal}
+								<ContextMenu.Root>
+									<ContextMenu.Trigger class="w-full">
+										{@render participantRow()}
+									</ContextMenu.Trigger>
+									<ContextMenu.Content class="w-48">
+										<ContextMenu.Label class="text-xs">{p.name}</ContextMenu.Label>
+										<ContextMenu.Separator />
+										<ContextMenu.Item variant="destructive" onclick={() => adminRemove(p.identity)}>
+											<UserX class="h-4 w-4" />
+											Déconnecter
+										</ContextMenu.Item>
+										{#if otherVoiceChannels.length > 0}
+											<ContextMenu.Sub>
+												<ContextMenu.SubTrigger>
+													<ArrowRightLeft class="h-4 w-4" />
+													Déplacer vers...
+												</ContextMenu.SubTrigger>
+												<ContextMenu.SubContent>
+													{#each otherVoiceChannels as ch (ch.id)}
+														<ContextMenu.Item onclick={() => adminMove(p.identity, ch.id)}>
+															<Volume2 class="h-4 w-4" />
+															{ch.name}
+														</ContextMenu.Item>
+													{/each}
+												</ContextMenu.SubContent>
+											</ContextMenu.Sub>
+										{/if}
+									</ContextMenu.Content>
+								</ContextMenu.Root>
+							{:else}
+								{@render participantRow()}
+							{/if}
 						{/each}
 						{#if voiceSession.participants.length === 0}
 							<p class="py-2 text-center text-xs text-muted-foreground">Aucun participant</p>
@@ -201,6 +283,14 @@
 					</div>
 					<div class="max-h-60 overflow-y-auto px-2 py-1.5">
 						{#each activeChannels as channel (channel.roomName)}
+							{@const dedupedParticipants = (() => {
+								const seen = new Set<string>();
+								return channel.participants.filter((p) => {
+									if (seen.has(p.identity)) return false;
+									seen.add(p.identity);
+									return true;
+								});
+							})()}
 							<div class="mb-1.5 last:mb-0">
 								<div class="flex items-center gap-1.5 px-2 py-1">
 									<Volume2 class="h-3 w-3 text-muted-foreground" />
@@ -208,10 +298,10 @@
 										{chatStore.rooms.find((r) => r.id === channel.roomName)?.name ?? channel.roomName}
 									</span>
 									<span class="ml-auto text-[10px] text-muted-foreground/60">
-										{channel.participants.length}
+										{dedupedParticipants.length}
 									</span>
 								</div>
-								{#each channel.participants as p (p.identity)}
+								{#each dedupedParticipants as p (p.identity)}
 									<div class="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted/50">
 										<Avatar.Root class="h-5 w-5 border border-transparent">
 											<Avatar.Fallback class="text-[8px]">

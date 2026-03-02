@@ -371,6 +371,19 @@ export class LiveKitSession {
             this.isMuted = !this.room?.localParticipant.isMicrophoneEnabled;
             this.rebuildParticipants();
         });
+
+        // Admin-initiated move: server sends a data message telling us to switch rooms.
+        room.on(RoomEvent.DataReceived, (payload) => {
+            if (isStale()) return;
+            try {
+                const msg = JSON.parse(new TextDecoder().decode(payload));
+                if (msg?.type === "admin:move" && typeof msg.room === "string") {
+                    void this.connect(msg.room);
+                }
+            } catch {
+                // ignore malformed messages
+            }
+        });
     }
 
     /* ================================================================
@@ -682,7 +695,13 @@ export class LiveKitSession {
         try {
             const res = await fetch(`/api/livekit-participants?room=${encodeURIComponent(room)}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            this.previewParticipants = (await res.json()) as PreviewParticipant[];
+            const raw = (await res.json()) as PreviewParticipant[];
+            const seen = new Set<string>();
+            this.previewParticipants = raw.filter((p) => {
+                if (seen.has(p.identity)) return false;
+                seen.add(p.identity);
+                return true;
+            });
         } catch (e: any) {
             this.previewError = e?.message ?? "Failed to fetch participants.";
             this.previewParticipants = [];
@@ -746,9 +765,17 @@ export class LiveKitSession {
                 }
             }
 
-            // Add/update active rooms
+            // Add/update active rooms — deduplicate by identity so that a user
+            // with multiple sessions (e.g. two tabs) never produces a duplicate
+            // key in keyed {#each} blocks.
             for (const [roomName, participants] of Object.entries(data)) {
-                this.channelParticipants.set(roomName, participants);
+                const seen = new Set<string>();
+                const deduped = participants.filter((p) => {
+                    if (seen.has(p.identity)) return false;
+                    seen.add(p.identity);
+                    return true;
+                });
+                this.channelParticipants.set(roomName, deduped);
             }
         } catch {
             // Silently ignore — polling will retry

@@ -1,10 +1,14 @@
 <script lang="ts">
-	import { Volume2, Mic, MicOff } from "@lucide/svelte";
+	import { Volume2, Mic, MicOff, UserX, ArrowRightLeft } from "@lucide/svelte";
 	import { cn } from "$lib/utils";
 	import * as Avatar from "$lib/components/ui/avatar";
+	import * as ContextMenu from "$lib/components/ui/context-menu";
 	import { voiceSession } from "$lib/chat/chat.svelte";
 	import type { VoiceParticipant } from "$lib/chat/livekit-session.svelte";
 	import { liveUsers } from "$lib/states/live-users.svelte";
+	import { global } from "$lib/states/global.svelte";
+	import { chatController } from "$lib/controllers/ChatController.svelte";
+	import { toast } from "svelte-sonner";
 
 	const {
 		channelId,
@@ -33,15 +37,51 @@
 		!isConnectedHere ? (voiceSession.channelParticipants.get(channelId) ?? []) : [],
 	);
 
+	const isAdmin = $derived((global.currentUser as any)?.role === "admin");
+
+	/** Other voice channels available for the "Move to" submenu */
+	const otherVoiceChannels = $derived(
+		chatController.contextState.channels.filter(
+			(c) => c.type === "voice" && c.id !== channelId,
+		),
+	);
+
 	function getUserAvatar(identity: string): string | undefined {
 		const user = liveUsers.getUser(identity);
 		return (user as any)?.image ?? undefined;
 	}
 
 	function handleClick() {
-		// Already connected to this channel — do nothing
 		if (isConnectedHere) return;
 		onJoin(channelId);
+	}
+
+	async function adminRemove(identity: string) {
+		try {
+			const res = await fetch("/api/livekit-admin", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ action: "remove", room: channelId, identity }),
+			});
+			if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? res.statusText);
+			toast.success("Participant déconnecté du salon");
+		} catch (e: any) {
+			toast.error(e?.message ?? "Erreur lors de la déconnexion");
+		}
+	}
+
+	async function adminMove(identity: string, targetRoom: string) {
+		try {
+			const res = await fetch("/api/livekit-admin", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ action: "move", room: channelId, identity, targetRoom }),
+			});
+			if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? res.statusText);
+			toast.success("Participant déplacé");
+		} catch (e: any) {
+			toast.error(e?.message ?? "Erreur lors du déplacement");
+		}
 	}
 </script>
 
@@ -62,13 +102,80 @@
 {#if participants.length > 0}
 	<div class="ml-7 flex flex-col gap-0.5 pb-1">
 		{#each participants as p (p.identity)}
-			<div
-				class={cn(
-					"flex items-center gap-2 rounded px-2 py-0.5 text-xs text-muted-foreground",
-					p.isSpeaking && "text-emerald-400",
-				)}>
-				<!-- Avatar -->
-				<div class="relative">
+			{#snippet participantRow()}
+				<div
+					class={cn(
+						"flex items-center gap-2 rounded px-2 py-0.5 text-xs text-muted-foreground",
+						p.isSpeaking && "text-emerald-400",
+					)}>
+					<div class="relative">
+						<Avatar.Root class="h-5 w-5">
+							{#if getUserAvatar(p.identity)}
+								<Avatar.Image
+									src={getUserAvatar(p.identity)}
+									alt={p.name}
+									class="h-5 w-5 rounded-full object-cover" />
+							{:else}
+								<Avatar.Fallback class="h-5 w-5 text-[9px]">
+									{p.name?.slice(0, 2).toUpperCase() ?? "??"}
+								</Avatar.Fallback>
+							{/if}
+						</Avatar.Root>
+						{#if p.isSpeaking}
+							<span
+								class="absolute -inset-0.5 rounded-full border-2 border-emerald-400 animate-pulse" />
+						{/if}
+					</div>
+					<span class="truncate">{p.name}</span>
+					{#if !p.audioEnabled}
+						<MicOff class="ml-auto h-3 w-3 shrink-0 text-red-400" />
+					{/if}
+				</div>
+			{/snippet}
+
+			{#if isAdmin && !p.isLocal}
+				<ContextMenu.Root>
+					<ContextMenu.Trigger class="w-full">
+						{@render participantRow()}
+					</ContextMenu.Trigger>
+					<ContextMenu.Content class="w-48">
+						<ContextMenu.Label class="text-xs">{p.name}</ContextMenu.Label>
+						<ContextMenu.Separator />
+						<ContextMenu.Item variant="destructive" onclick={() => adminRemove(p.identity)}>
+							<UserX class="h-4 w-4" />
+							Déconnecter
+						</ContextMenu.Item>
+						{#if otherVoiceChannels.length > 0}
+							<ContextMenu.Sub>
+								<ContextMenu.SubTrigger>
+									<ArrowRightLeft class="h-4 w-4" />
+									Déplacer vers...
+								</ContextMenu.SubTrigger>
+								<ContextMenu.SubContent>
+									{#each otherVoiceChannels as ch (ch.id)}
+										<ContextMenu.Item onclick={() => adminMove(p.identity, ch.id)}>
+											<Volume2 class="h-4 w-4" />
+											{ch.name}
+										</ContextMenu.Item>
+									{/each}
+								</ContextMenu.SubContent>
+							</ContextMenu.Sub>
+						{/if}
+					</ContextMenu.Content>
+				</ContextMenu.Root>
+			{:else}
+				{@render participantRow()}
+			{/if}
+		{/each}
+	</div>
+{/if}
+
+<!-- Preview participants (not connected yet) -->
+{#if !isConnectedHere && previewParticipants.length > 0}
+	<div class="ml-7 flex flex-col gap-0.5 pb-1">
+		{#each previewParticipants as p (p.identity)}
+			{#snippet previewRow()}
+				<div class="flex items-center gap-2 rounded px-2 py-0.5 text-xs text-muted-foreground/60">
 					<Avatar.Root class="h-5 w-5">
 						{#if getUserAvatar(p.identity)}
 							<Avatar.Image
@@ -81,43 +188,43 @@
 							</Avatar.Fallback>
 						{/if}
 					</Avatar.Root>
-					<!-- Speaking ring -->
-					{#if p.isSpeaking}
-						<span
-							class="absolute -inset-0.5 rounded-full border-2 border-emerald-400 animate-pulse" />
-					{/if}
+					<span class="truncate">{p.name}</span>
 				</div>
+			{/snippet}
 
-				<span class="truncate">{p.name}</span>
-
-				<!-- Mic state -->
-				{#if !p.audioEnabled}
-					<MicOff class="ml-auto h-3 w-3 shrink-0 text-red-400" />
-				{/if}
-			</div>
-		{/each}
-	</div>
-{/if}
-
-<!-- Preview participants (not connected yet) -->
-{#if !isConnectedHere && previewParticipants.length > 0}
-	<div class="ml-7 flex flex-col gap-0.5 pb-1">
-		{#each previewParticipants as p (p.identity)}
-			<div class="flex items-center gap-2 rounded px-2 py-0.5 text-xs text-muted-foreground/60">
-				<Avatar.Root class="h-5 w-5">
-					{#if getUserAvatar(p.identity)}
-						<Avatar.Image
-							src={getUserAvatar(p.identity)}
-							alt={p.name}
-							class="h-5 w-5 rounded-full object-cover" />
-					{:else}
-						<Avatar.Fallback class="h-5 w-5 text-[9px]">
-							{p.name?.slice(0, 2).toUpperCase() ?? "??"}
-						</Avatar.Fallback>
-					{/if}
-				</Avatar.Root>
-				<span class="truncate">{p.name}</span>
-			</div>
+			{#if isAdmin}
+				<ContextMenu.Root>
+					<ContextMenu.Trigger class="w-full">
+						{@render previewRow()}
+					</ContextMenu.Trigger>
+					<ContextMenu.Content class="w-48">
+						<ContextMenu.Label class="text-xs">{p.name}</ContextMenu.Label>
+						<ContextMenu.Separator />
+						<ContextMenu.Item variant="destructive" onclick={() => adminRemove(p.identity)}>
+							<UserX class="h-4 w-4" />
+							Déconnecter
+						</ContextMenu.Item>
+						{#if otherVoiceChannels.length > 0}
+							<ContextMenu.Sub>
+								<ContextMenu.SubTrigger>
+									<ArrowRightLeft class="h-4 w-4" />
+									Déplacer vers...
+								</ContextMenu.SubTrigger>
+								<ContextMenu.SubContent>
+									{#each otherVoiceChannels as ch (ch.id)}
+										<ContextMenu.Item onclick={() => adminMove(p.identity, ch.id)}>
+											<Volume2 class="h-4 w-4" />
+											{ch.name}
+										</ContextMenu.Item>
+									{/each}
+								</ContextMenu.SubContent>
+							</ContextMenu.Sub>
+						{/if}
+					</ContextMenu.Content>
+				</ContextMenu.Root>
+			{:else}
+				{@render previewRow()}
+			{/if}
 		{/each}
 	</div>
 {/if}
