@@ -39,6 +39,13 @@ export const auth = betterAuth({
             httpOnly: true,
             partitioned: true,
         },
+        cookies: {
+            session_token: {
+                attributes: {
+                    maxAge: 60 * 60 * 24 * 30, // 30 days - CRITICAL: this controls the session_token cookie lifetime
+                },
+            },
+        },
     },
     secret: BETTER_AUTH_SECRET,
     user: {
@@ -112,7 +119,12 @@ export const auth = betterAuth({
         },
     },
     session: {
-        expiresIn: 60 * 60 * 24 * 30, // 30 days,
+        expiresIn: 60 * 60 * 24 * 30, // 30 days - database session lifetime
+        updateAge: 60 * 60 * 24, // 1 day - refresh session every day when user is active
+        cookieCache: {
+            enabled: true,
+            maxAge: 60 * 60 * 24 * 30, // 30 days - cookie cache lifetime (must match expiresIn)
+        },
     },
     plugins: [
         username(),
