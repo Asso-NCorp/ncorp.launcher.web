@@ -1,6 +1,6 @@
 import { json, error, type RequestHandler } from "@sveltejs/kit";
 import { RoomServiceClient } from "livekit-server-sdk";
-import { env } from "$env/dynamic/private";
+import { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET } from "$env/static/private";
 
 function wsToHttp(wsUrl: string): string {
     return wsUrl.replace(/^ws(s?):\/\//, "http$1://");
@@ -14,11 +14,7 @@ function wsToHttp(wsUrl: string): string {
  * If the room does not exist yet, returns [].
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
-    const livekitUrl = env.LIVEKIT_URL;
-    const apiKey = env.LIVEKIT_API_KEY;
-    const apiSecret = env.LIVEKIT_API_SECRET;
-
-    if (!livekitUrl || !apiKey || !apiSecret) {
+    if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
         return error(500, "LiveKit is not configured on this server.");
     }
 
@@ -31,8 +27,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
         return error(400, "Missing ?room= query parameter.");
     }
 
-    const httpUrl = wsToHttp(livekitUrl);
-    const roomService = new RoomServiceClient(httpUrl, apiKey, apiSecret);
+    const httpUrl = wsToHttp(LIVEKIT_URL);
+    const roomService = new RoomServiceClient(httpUrl, LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
 
     try {
         const participants = await roomService.listParticipants(room);
