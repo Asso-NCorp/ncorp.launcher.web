@@ -98,9 +98,23 @@ const isPendingApprovalPage = (pathname: string): boolean => {
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
+    // Debug: log cookies received
+    const cookieHeader = event.request.headers.get("cookie");
+    const hasSessionToken = cookieHeader?.includes("better-auth.session_token");
+    
     const session = await auth.api.getSession(event.request);
     const pathname = event.url.pathname;
     const isProtected = !isUnprotected(event.route.id, pathname);
+    
+    // Debug: log session state for protected routes
+    if (isProtected && !session?.user) {
+        logger.warn(`[HOOKS] Session check failed`, {
+            pathname,
+            hasSessionTokenCookie: hasSessionToken,
+            hasCookieHeader: !!cookieHeader,
+            cookieNames: cookieHeader?.split(";").map(c => c.trim().split("=")[0]).join(", ") || "none",
+        });
+    }
 
     const isApiRoute = pathname.startsWith("/api/");
 

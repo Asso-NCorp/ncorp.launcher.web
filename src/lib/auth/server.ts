@@ -37,7 +37,8 @@ export const auth = betterAuth({
             secure: true,
             sameSite: "none", // obligatoire pour partager entre sous-domaines
             httpOnly: true,
-            partitioned: true,
+            // NOTE: Do NOT use partitioned: true with crossSubDomainCookies - they are incompatible!
+            // Partitioned cookies (CHIPS) are isolated by top-level site, breaking subdomain sharing.
         },
         cookies: {
             session_token: {
