@@ -27,6 +27,9 @@ jobs:
       - name: Inject .env from secrets
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
+      - name: Sync SvelteKit
+        run: bunx svelte-kit sync
+
       - name: Generate Prisma client
         run: bunx prisma generate
 
