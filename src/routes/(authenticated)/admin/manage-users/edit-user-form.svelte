@@ -17,7 +17,7 @@
     import * as Form from "$lib/components/ui/form";
     import { editUserFormSchema, type EditUserFormSchema } from "./schema";
     import type { User } from "$src/lib/auth/client";
-    import type { role } from "@prisma/client";
+    import type { role } from "$src/generated/prisma/client";
     import { page } from "$app/state";
     import { t } from "$lib/translations";
     

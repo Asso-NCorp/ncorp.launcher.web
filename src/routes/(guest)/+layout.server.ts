@@ -1,7 +1,7 @@
 import { db } from '$srv/db';
 import type { LayoutServerLoad } from './$types';
 import { logger } from '$src/lib/stores/loggerStore';
-import type { global_settings } from '@prisma/client';
+import type { global_settings } from "$src/generated/prisma/client";
 
 export const load: LayoutServerLoad = (async ({ locals }) => {
 

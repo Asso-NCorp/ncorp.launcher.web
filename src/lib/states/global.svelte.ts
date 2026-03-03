@@ -1,6 +1,5 @@
-import type { sidelink } from "@prisma/client";
+import type { sidelink } from "$src/generated/prisma/client";
 import type { User } from "../auth/client";
-
 
 export type GameDisplayMode = "grid" | "list";
 

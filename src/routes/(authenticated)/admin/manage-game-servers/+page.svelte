@@ -5,7 +5,7 @@
     import AddGameServerForm from "./add-game-server-form.svelte";
     import EditGameServerForm from "./edit-game-server-form.svelte";
     import { onMount } from "svelte";
-    import type { game_server } from "@prisma/client";
+    import type { game_server } from "$src/generated/prisma/client";
     import * as Card from "$lib/components/ui/card";
     import { Server } from "@lucide/svelte";
     import { invalidateAll } from "$app/navigation";

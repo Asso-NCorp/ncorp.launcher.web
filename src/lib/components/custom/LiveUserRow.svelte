@@ -10,7 +10,7 @@
     import { GamesStore } from "$src/lib/states/games.svelte";
     import { page } from "$app/state";
     import { global } from "$src/lib/states/global.svelte";
-    import type { role } from "@prisma/client";
+    import type { role } from "$src/generated/prisma/client";
     import AvatarWithStatus from "./AvatarWithStatus.svelte";
     import { toast } from "svelte-sonner";
 

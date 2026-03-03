@@ -15,7 +15,7 @@
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
     import * as Form from "$lib/components/ui/form";
     import { gameServerFormSchema, type GameServerFormSchema } from "./schema";
-    import type { game_server } from "@prisma/client";
+    import type { game_server } from "$src/generated/prisma/client";
     import { Checkbox } from "$src/lib/components/ui/checkbox";
     import * as Select from "$lib/components/ui/select";
     import { Textarea } from "$src/lib/components/ui/textarea";

@@ -1,5 +1,8 @@
 {
     "sarif-viewer.connectToGithubCodeScanning": "off",
     "codeQL.createQuery.qlPackLocation": "d:\\DEV\\keytrap-x86\\ncorp.launcher",
-    "prisma.pinToPrisma6": true
+    "prisma.pinToPrisma6": true,
+    "chat.tools.terminal.autoApprove": {
+        "bunx": true
+    }
 }

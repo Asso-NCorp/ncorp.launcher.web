@@ -5,7 +5,7 @@
     import AddSidelinkForm from "./add-sidelink-form.svelte";
     import EditSidelinkForm from "./edit-sidelink-form.svelte";
     import { onMount } from "svelte";
-    import type { sidelink } from "@prisma/client";
+    import type { sidelink } from "$src/generated/prisma/client";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
     import { global } from "$src/lib/states/global.svelte";
     import * as Card from "$lib/components/ui/card";

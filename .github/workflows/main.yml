@@ -38,7 +38,7 @@ jobs:
 
       - name: Create archive
         run: |
-          7z a ncorp.launcher.7z ./build/* ./prisma/ package.json .env ecosystem.config.json
+          7z a ncorp.launcher.7z ./build/* ./prisma/ package.json .env ecosystem.config.json prisma.config.ts
 
       - name: Upload via SFTP
         uses: appleboy/scp-action@v0.1.7

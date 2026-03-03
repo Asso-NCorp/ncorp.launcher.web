@@ -8,7 +8,7 @@
     import BlurFade from "$lib/components/custom/BlurFade.svelte";
     import AvatarWithStatus from "$src/lib/components/custom/AvatarWithStatus.svelte";
     import type { PageData } from "./$types";
-    import type { role } from "@prisma/client";
+    import type { role } from "$src/generated/prisma/client";
 
     interface User {
         id: string;

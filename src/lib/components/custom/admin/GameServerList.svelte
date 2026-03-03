@@ -5,7 +5,7 @@
     import Button from "../../ui/button/button.svelte";
     import * as Popover from "$lib/components/ui/popover/index.js";
     import { toast } from "svelte-sonner";
-    import type { game_server } from "@prisma/client";
+    import type { game_server } from "$src/generated/prisma/client";
     import { Checkbox } from "../../ui/checkbox";
     import { cn } from "$lib/utils";
     import { Badge } from "$lib/components/ui/badge";

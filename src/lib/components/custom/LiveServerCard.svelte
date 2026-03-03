@@ -11,7 +11,7 @@
     import type { DetectedServer } from "$src/lib/shared-models";
     import * as Tooltip from "$src/lib/components/ui/tooltip";
     import AvatarDiscord from "$src/lib/components/custom/AvatarDiscord.svelte";
-    import type { game_server, role } from "@prisma/client";
+    import type { game_server, role } from "$src/generated/prisma/client";
 
     dayjs.extend(duration);
 

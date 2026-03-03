@@ -15,7 +15,7 @@
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
     import * as Form from "$lib/components/ui/form";
     import { sidelinkFormSchema, type SidelinkFormSchema } from "./schema";
-    import type { sidelink } from "@prisma/client";
+    import type { sidelink } from "$src/generated/prisma/client";
     import { liveServerConnection } from "$src/lib/states/live-server.svelte";
     import { Checkbox } from "$src/lib/components/ui/checkbox";
 

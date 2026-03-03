@@ -1,4 +1,4 @@
-import type { edition, edition_room, table, table_seat } from "@prisma/client";
+import type { edition, edition_room, table, table_seat } from "$src/generated/prisma/client";
 
 export type TableWithSeats = table & { seats: table_seat[] };
 export type RoomWithTables = edition_room & { tables: TableWithSeats[] };

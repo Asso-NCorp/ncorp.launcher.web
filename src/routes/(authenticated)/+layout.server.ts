@@ -5,7 +5,7 @@ import { db } from "$srv/db";
 import { getWinnerGifFiles } from "$src/lib/server/fileUtils";
 import { extendGames } from "$src/lib/utils/games";
 import type { InstallableGameExtended } from "$src/lib/types";
-import type { event, global_settings, role } from "@prisma/client";
+import type { event, global_settings, role } from "$src/generated/prisma/client";
 import type { LiveUser } from "$src/lib/shared-models";
 
 // Cache config

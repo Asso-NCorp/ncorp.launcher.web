@@ -3,7 +3,7 @@
 import type { Session } from "better-auth";
 import type { User } from "./lib/auth/client";
 import type { LiveUser } from "./lib/shared-models";
-import type { event, global_settings, role } from "@prisma/client";
+import type { event, global_settings, role } from "$src/generated/prisma/client";
 import type { InstallableGameExtended } from "./lib/types";
 
 // for information about these interfaces

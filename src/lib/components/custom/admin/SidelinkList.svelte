@@ -5,7 +5,7 @@
     import Button from "../../ui/button/button.svelte";
     import * as Popover from "$lib/components/ui/popover/index.js";
     import { toast } from "svelte-sonner";
-    import type { sidelink } from "@prisma/client";
+    import type { sidelink } from "$src/generated/prisma/client";
     import { Checkbox } from "../../ui/checkbox";
     import { global } from "$lib/states/global.svelte";
     import { cn } from "$lib/utils";

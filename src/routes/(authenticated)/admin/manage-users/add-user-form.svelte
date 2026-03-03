@@ -16,7 +16,7 @@
     import * as Card from "$lib/components/ui/card";
     import { Check } from "@lucide/svelte";
     import * as Select from "$lib/components/ui/select/index.js";
-    import type { role } from "@prisma/client";
+    import type { role } from "$src/generated/prisma/client";
     import { page } from "$app/state";
 
     // Debounce function to limit API calls while typing

@@ -14,7 +14,7 @@
     import { goto } from "$app/navigation";
     import { Button } from "$src/lib/components/ui/button";
     import { fly } from "svelte/transition";
-    import type { role } from "@prisma/client";
+    import type { role } from "$src/generated/prisma/client";
     import { PUBLIC_MEDIAS_URL } from "$env/static/public";
     import Achievements from "$lib/components/dashboard/Achievements.svelte";
     import AdvancedStats from "$lib/components/dashboard/AdvancedStats.svelte";

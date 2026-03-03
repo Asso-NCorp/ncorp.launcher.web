@@ -7,7 +7,7 @@
     import AvatarWithStatus from "../custom/AvatarWithStatus.svelte";
     import Button from "../ui/button/button.svelte";
     import { page } from "$app/state";
-    import type { role } from "@prisma/client";
+    import type { role } from "$src/generated/prisma/client";
     import { transformMessageContent } from "$lib/utils/messageContentMiddleware";
     import { chatClient } from "$src/lib/chat/chatclient.svelte";
     import { toast } from "svelte-sonner";

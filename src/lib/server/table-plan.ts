@@ -1,5 +1,5 @@
 import { db } from "$srv/db";
-import type { edition, edition_room, table, table_seat } from "@prisma/client";
+import type { edition, edition_room, table, table_seat } from "$src/generated/prisma/client";
 
 const GRID_SIZE = 50; // pixels per grid unit
 

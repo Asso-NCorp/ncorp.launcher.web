@@ -10,7 +10,7 @@
     import { toast } from "svelte-sonner";
     import { Badge } from "$lib/components/ui/badge";
     import AvatarWithStatus from "$lib/components/custom/AvatarWithStatus.svelte";
-    import type { role } from "@prisma/client";
+    import type { role } from "$src/generated/prisma/client";
     import * as Tooltip from "$lib/components/ui/tooltip";
 
     interface UserWithApproval extends User {
