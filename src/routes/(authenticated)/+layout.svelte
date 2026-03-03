@@ -177,6 +177,9 @@
     let heartbeatInterval: ReturnType<typeof setInterval> | undefined;
 
     onMount(async () => {
+        // Reset logging out state in case user logged back in
+        global.isLoggingOut = false;
+
         if (browser) {
             // Initialize chat client globally so we receive notifications everywhere
             await chatStore.init(() => localStorage.getItem("token") || "");
