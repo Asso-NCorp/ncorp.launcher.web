@@ -2,8 +2,8 @@
     import { Skeleton } from "../ui/skeleton";
     import { fly } from "svelte/transition";
     import { global } from "$src/lib/states/global.svelte";
-    import DataTable, { type Api } from "datatables.net";
-    import "datatables.net-plugins/sorting/file-size.js";
+    import { browser } from "$app/environment";
+    import type { Api } from "datatables.net";
 
     let { games, loading }: { games: InstallableGameExtended[]; loading: boolean } = $props();
     let table: HTMLTableElement | null = null;
@@ -14,7 +14,13 @@
     import { t } from "$src/lib/translations";
     import type { InstallableGameExtended } from "$src/lib/types";
 
-    onMount(() => {
+    onMount(async () => {
+        if (!browser || !table) return;
+        
+        // Dynamic imports to avoid SSR issues with jQuery/DataTables
+        const DataTable = (await import("datatables.net")).default;
+        await import("datatables.net-plugins/sorting/file-size.js");
+
         if (table) {
             tableApi = new DataTable(table, {
                 data: games,
