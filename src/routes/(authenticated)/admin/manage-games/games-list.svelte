@@ -13,10 +13,11 @@
     import { Skeleton as SkeletonLoader } from "$src/lib/components/ui/skeleton";
     import { cn } from "$lib/utils";
 
-    let { gameSelected, onDelete }: { gameSelected: (game: InstallableGame) => void; onDelete?: (game: InstallableGame) => Promise<void> } = $props();
+    let { gameSelected, onDelete, selectedSlug = $bindable<string | null>(null) }: { gameSelected: (game: InstallableGame) => void; onDelete?: (game: InstallableGame) => Promise<void>; selectedSlug?: string | null } = $props();
 
     const games = $derived(GamesStore.games || []);
     let searchQuery = $state("");
+    let scrollContainer: HTMLDivElement | undefined = $state();
 
     const filteredGames = $derived(
         games.filter((game) =>
@@ -44,6 +45,19 @@
             popoverStates[folderSlug] = false;
         }
     }
+
+    // Auto-scroll to selected game
+    $effect(() => {
+        if (selectedSlug && scrollContainer) {
+            // Use tick-like delay to ensure DOM has rendered
+            requestAnimationFrame(() => {
+                const row = scrollContainer?.querySelector(`[data-slug="${selectedSlug}"]`) as HTMLElement | null;
+                if (row) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+    });
 
     const handleDelete = async (game: InstallableGame) => {
         try {
@@ -84,7 +98,7 @@
             />
         </div>
 
-        <div class="flex-1 min-h-0 overflow-y-auto">
+        <div class="flex-1 min-h-0 overflow-y-auto" bind:this={scrollContainer}>
             <Table.Root class="border">
             <Table.Header class="bg-muted/30">
                 <Table.Row>
@@ -97,8 +111,9 @@
             <Table.Body class="divide-y divide-border">
 {#each filteredGames as game (game.folderSlug)}
                     <Table.Row 
-                        class="cursor-pointer hover:bg-muted/50 transition-colors h-16 group" 
-                        onclick={() => gameSelected(game)}
+                        data-slug={game.folderSlug}
+                        class="cursor-pointer hover:bg-muted/50 transition-colors h-16 group {selectedSlug === game.folderSlug ? 'bg-primary/10 ring-1 ring-primary/30' : ''}" 
+                        onclick={() => { selectedSlug = game.folderSlug ?? null; gameSelected(game); }}
                     >
                         <Table.Cell class="relative font-bold overflow-hidden">
                             {#if game.folderSlug}

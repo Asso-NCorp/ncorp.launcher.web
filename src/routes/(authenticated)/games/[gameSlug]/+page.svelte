@@ -2,7 +2,7 @@
     import LazyImage from "$src/lib/components/custom/LazyImage.svelte";
     import { getGameResourceUrl, getLocalApi, getRandomScreenshot } from "$src/lib/utils";
     import Button from "$src/lib/components/ui/button/button.svelte";
-    import { ArrowLeft, FolderOpen, Heart } from "@lucide/svelte";
+    import { ArrowLeft, FolderOpen, Heart, Settings } from "@lucide/svelte";
     import { onNavigate } from "$app/navigation";
     import Badge from "$src/lib/components/ui/badge/badge.svelte";
     import GameActionButton from "$src/lib/components/custom/GameActionButton.svelte";
@@ -117,7 +117,17 @@
                     {game.title}
                 </h1>
             {/if}
-            <div class="flex gap-2">
+            <div class="ml-auto flex gap-2">
+                {#if global.currentUser?.role === "admin"}
+                    <Button
+                        variant="secondary"
+                        href="/admin/manage-games?game={game.folderSlug}"
+                        class="h-auto"
+                        title="Gérer">
+                        <Settings />
+                        Gérer
+                    </Button>
+                {/if}
                 <Button
                     variant="secondary"
                     disabled={!reactiveGame.isInstalled}

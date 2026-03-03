@@ -25,6 +25,7 @@
     
     // Provide available logos (adjust data source as needed)
     let logos = $state<string[]>([]);
+    let selectedSlug = $state<string | null>(page.url.searchParams.get('game'));
     const folders = page.data["folders"] as string[];
     let { data }: { data: { form: SuperValidated<Infer<AddGameFormSchema>> } } = $props();
 
@@ -52,6 +53,22 @@
     });
 
     const { form: formData, enhance, allErrors, submitting } = form;
+
+    // Auto-select game from URL query parameter (runs once when games load)
+    let autoSelectDone = $state(false);
+    $effect(() => {
+        const gameSlug = page.url.searchParams.get('game');
+        if (!autoSelectDone && gameSlug && GamesStore.games.length > 0) {
+            const game = GamesStore.games.find(
+                (g) => g.folderSlug?.toLowerCase() === gameSlug.toLowerCase()
+            );
+            if (game) {
+                autoSelectDone = true;
+                selectedSlug = game.folderSlug ?? null;
+                handleInstallableGameSelect(game);
+            }
+        }
+    });
 
     function fmtDate(d: Date) {
         return d.toISOString().slice(0, 10);
@@ -178,6 +195,7 @@
 
     const handleInstallableGameSelect = async (game: InstallableGame) => {
         clearTemporalFields();
+        selectedSlug = game.folderSlug ?? null;
         // Populate basic game information
         $formData.title = game.title || "";
         $formData.folderSlug = game.folderSlug || "";
@@ -357,7 +375,7 @@
 <div class="grid grid-cols-3 gap-8">
     <div class="sticky flex flex-col" style="height:calc(100vh - var(--header-height) - 2rem);">
         <div class="min-h-0 flex-1 overflow-y-auto pr-2">
-            <GamesList gameSelected={handleInstallableGameSelect} />
+            <GamesList gameSelected={handleInstallableGameSelect} bind:selectedSlug />
         </div>
     </div>
 

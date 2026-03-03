@@ -8,7 +8,8 @@
     import { goto } from "$app/navigation";
     import GameActionButton from "./GameActionButton.svelte";
     import { t } from "$src/lib/translations";
-    import { ArrowBigDown, ArrowDown, Clock, FolderOpen, Heart, LucideZap, Users, VerifiedIcon } from "@lucide/svelte";
+    import { ArrowBigDown, ArrowDown, Clock, FolderOpen, Heart, LucideZap, Settings, Users, VerifiedIcon } from "@lucide/svelte";
+    import { global } from "$src/lib/states/global.svelte";
     import InstalledBadge from "./badge/InstalledBadge.svelte";
     import Button from "../ui/button/button.svelte";
     import { getLocalApi, isRecentlyAdded } from "$src/lib/utils";
@@ -149,6 +150,15 @@
                     variant="ghost">
                     <FolderOpen size={16} />
                 </Button>
+                {#if global.currentUser?.role === "admin"}
+                    <Button
+                        href="/admin/manage-games?game={game.folderSlug}"
+                        size="sm"
+                        title="Gérer"
+                        variant="ghost">
+                        <Settings size={16} />
+                    </Button>
+                {/if}
             </div>
         {/if}
 
