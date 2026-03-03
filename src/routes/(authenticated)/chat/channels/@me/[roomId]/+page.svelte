@@ -1,21 +1,12 @@
 <script lang="ts">
-	import ServerList from "$lib/components/chat/ServerList.svelte";
-	import ChannelList from "$lib/components/chat/ChannelList.svelte";
 	import ChatPane from "$lib/components/chat/ChatPane.svelte";
-	import ScreenShareView from "$lib/components/chat/ScreenShareView.svelte";
-	import { onMount, untrack } from "svelte";
+	import { untrack } from "svelte";
 	import { chatController } from "$lib/controllers/ChatController.svelte";
 
 	let { data } = $props();
 	const roomId = $derived(data.roomId as string);
 
-	onMount(async () => {
-		await chatController.init();
-		chatController.selectServer("dm_server");
-		await chatController.selectChannelInternal(roomId);
-	});
-
-	// Re-select channel when navigating between DMs
+	// Select DM server + channel when params change
 	// untrack prevents re-triggering when controller internal state changes
 	$effect(() => {
 		const r = roomId;
@@ -27,35 +18,8 @@
 		});
 	});
 
-	const contextState = $derived(chatController.contextState);
 	const currentTitle = $derived(chatController.currentTitle);
-	const currentRoomId = $derived(contextState.selectedChannelId);
+	const currentRoomId = $derived(chatController.contextState.selectedChannelId);
 </script>
 
-<!-- WRAPPER: empêche le scroll fenêtre et autorise les enfants à overflow -->
-<div class="flex h-[calc(100vh-64px)] min-h-0 overflow-hidden bg-background">
-	<!-- Colonne serveurs -->
-	<div class="flex-none min-h-0 overflow-visible">
-		<ServerList
-			servers={contextState.servers}
-			selectServer={(id) => chatController.selectServer(id)} />
-	</div>
-
-	<!-- Colonne salons -->
-	<div class="flex-none min-h-0 overflow-auto">
-		<ChannelList
-			channels={contextState.channels}
-			currentId={currentRoomId}
-			onSelect={(id) => chatController.selectChannel(id)}
-			onJoinVoice={(id, name) => chatController.joinVoice(id, name)}
-			title="Messages directs" />
-	</div>
-
-	<!-- Pane chat + screen share -->
-	<div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-		<ScreenShareView />
-		<div class="flex min-h-0 flex-1 overflow-hidden">
-			<ChatPane title={currentTitle} roomId={currentRoomId} />
-		</div>
-	</div>
-</div>
+<ChatPane title={currentTitle} roomId={currentRoomId} />

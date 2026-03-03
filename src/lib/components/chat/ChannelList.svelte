@@ -35,6 +35,9 @@
     const directMessages: ChannelItemData[] = $derived(channels.filter(isDirectMessage));
     const voiceChannels: ChannelItemData[] = $derived(channels.filter(isVoiceChannel));
 
+    // Accordion sections open by default – local state so user toggles persist across re-renders
+    let accordionValue: string[] = $state(['text-channels', 'voice-channels', 'direct-messages']);
+
     // Track failed image loads - use object instead of Map for better Svelte reactivity
     let failedImages: Record<string, boolean> = $state({});
 
@@ -51,7 +54,7 @@
 <aside class="flex h-full w-64 flex-col border-r bg-muted/40">
     <!-- Channel lists -->
     <div class="min-h-0 flex-1 overflow-auto">
-    <Accordion.Root type="multiple" class="w-full" value={['text-channels', 'voice-channels', 'direct-messages']}>
+    <Accordion.Root type="multiple" class="w-full **:data-[slot=accordion-content]:animate-none!" bind:value={accordionValue}>
         {#if textChannels.length > 0}
             <Accordion.Item value="text-channels">
                 <Accordion.Trigger class="px-3 py-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

@@ -27,6 +27,9 @@ class ChatStore {
     rooms: RoomDto[] = $state([]);
     currentRoomId: string | null = $state(null);
     loadingRooms = $state(false);
+    /** True once the initial room list has been loaded. */
+    ready = $state(false);
+    private readyResolvers: Array<() => void> = [];
 
     messagesByRoom = $state<Record<string, MessageDto[]>>({});
     cursorsByRoom = $state<Record<string, PageCursor | null>>({});
@@ -241,6 +244,10 @@ class ChatStore {
             toast.error("Erreur chargement des salons");
         } finally {
             this.loadingRooms = false;
+            this.ready = true;
+            // Resolve any pending waitForReady() callers
+            for (const resolve of this.readyResolvers) resolve();
+            this.readyResolvers = [];
         }
     }
 
@@ -615,6 +622,12 @@ class ChatStore {
             toast.error("Impossible de créer la conversation privée");
             throw error;
         }
+    }
+
+    /** Returns a promise that resolves once rooms have been loaded. */
+    waitForReady(): Promise<void> {
+        if (this.ready) return Promise.resolve();
+        return new Promise<void>((resolve) => this.readyResolvers.push(resolve));
     }
 }
 

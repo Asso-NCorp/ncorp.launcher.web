@@ -118,13 +118,11 @@ export class LiveKitSession {
     private channelPollTimer: ReturnType<typeof setInterval> | null = null;
     private disposed = false;
 
-    /* ---- noise gate audio chain ---- */
+    /* ---- noise gate audio chain (AudioWorklet) ---- */
     private audioCtx: AudioContext | null = null;
     private rawMicStream: MediaStream | null = null;
     private processedTrack: MediaStreamTrack | null = null;
-    private gateGain: GainNode | null = null;
-    private gateAnalyser: AnalyserNode | null = null;
-    private gateIntervalId: ReturnType<typeof setInterval> | null = null;
+    private gateWorkletNode: AudioWorkletNode | null = null;
     private publishedMicPub: any | null = null;
     private loopbackGain: GainNode | null = null;
 
@@ -860,7 +858,7 @@ export class LiveKitSession {
      */
     setLoopback(enabled: boolean) {
         this.loopbackEnabled = enabled;
-        if (!this.gateGain || !this.audioCtx) return;
+        if (!this.gateWorkletNode || !this.audioCtx) return;
 
         if (enabled && this.micTestActive && !this.connected) {
             // Create loopback gain if needed
@@ -869,17 +867,17 @@ export class LiveKitSession {
                 this.loopbackGain.gain.value = 0.5; // Lower volume to avoid feedback
                 this.loopbackGain.connect(this.audioCtx.destination);
             }
-            // Connect gate output to loopback
+            // Connect worklet output to loopback
             try {
-                this.gateGain.connect(this.loopbackGain);
+                this.gateWorkletNode.connect(this.loopbackGain);
             } catch {
                 // Already connected
             }
         } else {
             // Disconnect loopback
-            if (this.loopbackGain && this.gateGain) {
+            if (this.loopbackGain && this.gateWorkletNode) {
                 try {
-                    this.gateGain.disconnect(this.loopbackGain);
+                    this.gateWorkletNode.disconnect(this.loopbackGain);
                 } catch {
                     // Not connected
                 }
@@ -904,6 +902,7 @@ export class LiveKitSession {
         if (typeof window !== "undefined") {
             localStorage.setItem("noiseGateThreshold", String(clamped));
         }
+        this.syncWorkletThresholds();
     }
 
     /**
@@ -916,11 +915,14 @@ export class LiveKitSession {
         if (typeof window !== "undefined") {
             localStorage.setItem("noiseCeilingThreshold", String(clamped));
         }
+        this.syncWorkletThresholds();
     }
 
     /**
-     * Acquire the microphone and route it through a noise-gate audio chain.
-     * Returns the processed MediaStreamTrack to publish to LiveKit.
+     * Acquire the microphone and route it through an AudioWorklet-based
+     * noise-gate chain.  The worklet runs RMS computation + gain gating
+     * entirely on the audio rendering thread (no setInterval / main-thread
+     * jank).  Returns the processed MediaStreamTrack to publish to LiveKit.
      */
     private async startProcessedMic(deviceId?: string): Promise<MediaStreamTrack | null> {
         if (typeof window === "undefined") return null;
@@ -932,26 +934,35 @@ export class LiveKitSession {
             });
             this.rawMicStream = stream;
 
-            const ctx = new AudioContext();
+            const ctx = new AudioContext({ sampleRate: 48_000 });
             this.audioCtx = ctx;
+
+            // Load the AudioWorklet module (from /static/audio/)
+            await ctx.audioWorklet.addModule("/audio/vad-processor.js");
 
             const source = ctx.createMediaStreamSource(stream);
 
-            const analyser = ctx.createAnalyser();
-            analyser.fftSize = 512;
-            this.gateAnalyser = analyser;
+            // Create the worklet node with current thresholds
+            const worklet = new AudioWorkletNode(ctx, "voice-gate-processor", {
+                processorOptions: {
+                    noiseGateThreshold: this.noiseGateThreshold,
+                    noiseCeilingThreshold: this.noiseCeilingThreshold,
+                    sampleRate: ctx.sampleRate,
+                },
+            });
+            this.gateWorkletNode = worklet;
 
-            const gain = ctx.createGain();
-            gain.gain.value = 1;
-            this.gateGain = gain;
+            // Listen for volume/gate reports from the audio thread
+            worklet.port.onmessage = (event: MessageEvent) => {
+                const { volume } = event.data as { volume: number; gateOpen: boolean };
+                this.micLevel = volume;
+            };
 
             const dest = ctx.createMediaStreamDestination();
 
-            source.connect(analyser);
-            analyser.connect(gain);
-            gain.connect(dest);
-
-            this.startGateMonitor();
+            // Graph: source → worklet → destination
+            source.connect(worklet);
+            worklet.connect(dest);
 
             const processedTrack = dest.stream.getAudioTracks()[0] ?? null;
             this.processedTrack = processedTrack;
@@ -962,64 +973,34 @@ export class LiveKitSession {
         }
     }
 
-    private startGateMonitor() {
-        this.stopGateMonitor();
-        if (!this.gateAnalyser || !this.gateGain || !this.audioCtx) return;
-
-        const data = new Uint8Array(this.gateAnalyser.frequencyBinCount);
-
-        this.gateIntervalId = setInterval(() => {
-            if (!this.gateAnalyser || !this.gateGain || !this.audioCtx) return;
-
-            this.gateAnalyser.getByteTimeDomainData(data);
-
-            let sum = 0;
-            for (let i = 0; i < data.length; i++) {
-                const v = (data[i] - 128) / 128;
-                sum += v * v;
-            }
-            const rms = Math.sqrt(sum / data.length);
-            this.micLevel = rms;
-            const minThreshold = this.noiseGateThreshold;
-            const maxThreshold = this.noiseCeilingThreshold;
-
-            // Gate is open if:
-            // - min threshold is 0 (off) OR rms >= min threshold
-            // - AND max threshold is 0 (off) OR rms <= max threshold
-            const aboveMin = minThreshold === 0 || rms >= minThreshold;
-            const belowMax = maxThreshold === 0 || rms <= maxThreshold;
-
-            if (aboveMin && belowMax) {
-                // Open gate — fast attack (3ms time constant)
-                this.gateGain.gain.setTargetAtTime(1, this.audioCtx.currentTime, 0.003);
-            } else {
-                // Close gate — slow release (50ms time constant) to avoid clipping
-                this.gateGain.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.05);
-            }
-        }, 30);
-    }
-
-    private stopGateMonitor() {
-        if (this.gateIntervalId !== null) {
-            clearInterval(this.gateIntervalId);
-            this.gateIntervalId = null;
-        }
+    /** Send the current noise gate threshold to the running worklet. */
+    private syncWorkletThresholds() {
+        this.gateWorkletNode?.port.postMessage({
+            noiseGateThreshold: this.noiseGateThreshold,
+            noiseCeilingThreshold: this.noiseCeilingThreshold,
+        });
     }
 
     private stopProcessedMic() {
-        this.stopGateMonitor();
         this.micLevel = 0;
         // Disconnect loopback first
-        if (this.loopbackGain && this.gateGain) {
+        if (this.loopbackGain && this.gateWorkletNode) {
             try {
-                this.gateGain.disconnect(this.loopbackGain);
+                this.gateWorkletNode.disconnect(this.loopbackGain);
             } catch {
                 // Not connected
             }
         }
         this.loopbackGain = null;
-        this.gateAnalyser = null;
-        this.gateGain = null;
+        if (this.gateWorkletNode) {
+            try {
+                this.gateWorkletNode.port.close();
+                this.gateWorkletNode.disconnect();
+            } catch {
+                // ignore
+            }
+            this.gateWorkletNode = null;
+        }
         // Stop the processed (destination) track first
         if (this.processedTrack) {
             this.processedTrack.stop();

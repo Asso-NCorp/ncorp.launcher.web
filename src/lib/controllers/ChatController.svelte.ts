@@ -35,8 +35,9 @@ class ChatControllerImpl {
      * Initialize the controller - call once on mount
      */
     async init() {
-        // Chat store is now initialized globally in the authenticated layout
-        // Just rebuild the server list from current rooms
+        // Wait for chatStore to finish loading rooms (may already be done)
+        await chatStore.waitForReady();
+        // Rebuild the server list from loaded rooms
         this.rebuildServerList();
     }
 
@@ -260,9 +261,9 @@ class ChatControllerImpl {
 
         // Navigate to the appropriate route
         if (this.isInDMContext) {
-            await goto(`/chat/channels/@me/${channelId}`);
+            await goto(`/chat/channels/@me/${channelId}`, { noScroll: true });
         } else if (this.contextState.selectedServerId) {
-            await goto(`/chat/channels/${this.contextState.selectedServerId}/${channelId}`);
+            await goto(`/chat/channels/${this.contextState.selectedServerId}/${channelId}`, { noScroll: true });
         }
     }
 
