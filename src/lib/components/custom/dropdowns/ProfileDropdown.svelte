@@ -60,7 +60,11 @@
 
                 <!-- Status dot -->
                  {#if user}
-                 <AdminStatusDot user={user} />
+                    {#if user.role === "admin"}
+                        <AdminStatusDot user={user} />
+                    {:else}
+                        <UserStatusDot status={user.status} />
+                    {/if}
                  {/if}
                 
             </div>
