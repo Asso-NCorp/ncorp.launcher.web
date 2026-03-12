@@ -172,12 +172,17 @@ class ChatControllerImpl {
     }
 
     /**
-     * Select a server and update the channel list
+     * Select a server and update the channel list.
+     * When `navigate` is true (default) and the server actually changes,
+     * auto-navigates to the last visited channel on that server
+     * (or its first text channel).
      */
-    selectServer(serverId: string) {
+    async selectServer(serverId: string, navigate = true) {
         try {
+            const isSwitch = this.contextState.selectedServerId !== serverId;
+
             // Only clear current room if actually switching to a different server
-            if (this.contextState.selectedServerId !== serverId) {
+            if (isSwitch) {
                 this.clearCurrentRoom();
             }
 
@@ -232,6 +237,27 @@ class ChatControllerImpl {
             try {
                 localStorage.setItem("chat:lastServerId", serverId);
             } catch {}
+
+            // Auto-navigate to last visited channel on this server (or first text channel)
+            if (navigate && isSwitch && this.contextState.channels.length > 0) {
+                let targetId: string | null = null;
+                try {
+                    const stored = localStorage.getItem(`chat:lastRoomByServer:${serverId}`);
+                    if (stored && this.contextState.channels.some((c) => c.id === stored)) {
+                        targetId = stored;
+                    }
+                } catch {}
+
+                if (!targetId) {
+                    // Fall back to first non-voice channel
+                    const firstText = this.contextState.channels.find((c) => c.type !== "voice");
+                    targetId = firstText?.id ?? this.contextState.channels[0].id;
+                }
+
+                if (targetId) {
+                    await this.selectChannel(targetId);
+                }
+            }
         } catch (error) {
             console.error("[selectServer] Fatal error:", error);
             // Ensure channels array is not undefined
@@ -247,10 +273,18 @@ class ChatControllerImpl {
         // Select room in chat store
         await chatStore.selectRoom(channelId);
 
-        // Persist last selected channel
+        // Persist last selected channel (global)
         try {
             localStorage.setItem("chat:lastChannelId", channelId);
         } catch {}
+
+        // Persist last selected channel per server
+        const serverId = this.contextState.selectedServerId;
+        if (serverId) {
+            try {
+                localStorage.setItem(`chat:lastRoomByServer:${serverId}`, channelId);
+            } catch {}
+        }
     }
 
     /**
@@ -361,19 +395,19 @@ class ChatControllerImpl {
     /**
      * Restore last selection from localStorage
      */
-    restoreLastSelection() {
+    async restoreLastSelection() {
         try {
             const lastServerId = localStorage.getItem("chat:lastServerId");
             const lastChannelId = localStorage.getItem("chat:lastChannelId");
 
             if (lastServerId && this.contextState.servers.some((s) => s.id === lastServerId)) {
-                this.selectServer(lastServerId);
+                await this.selectServer(lastServerId, false);
 
                 if (lastChannelId && this.contextState.channels.some((c) => c.id === lastChannelId)) {
-                    this.selectChannel(lastChannelId);
+                    await this.selectChannel(lastChannelId);
                 }
             } else if (this.contextState.servers.length > 0) {
-                this.selectServer(this.contextState.servers[0].id);
+                await this.selectServer(this.contextState.servers[0].id);
             }
         } catch {}
     }
@@ -381,7 +415,7 @@ class ChatControllerImpl {
     /**
      * Sync with chatStore when rooms change
      */
-    syncWithStore() {
+    async syncWithStore() {
         this.rebuildServerList();
 
         // If current server is no longer in list, switch to first
@@ -390,13 +424,13 @@ class ChatControllerImpl {
             !this.contextState.servers.some((s) => s.id === this.contextState.selectedServerId)
         ) {
             if (this.contextState.servers.length > 0) {
-                this.selectServer(this.contextState.servers[0].id);
+                await this.selectServer(this.contextState.servers[0].id);
             } else {
                 this.clearCurrentRoom();
             }
         } else if (this.contextState.selectedServerId) {
             // Refresh channel list for current server (important for DM updates)
-            this.selectServer(this.contextState.selectedServerId);
+            await this.selectServer(this.contextState.selectedServerId, false);
         }
     }
 

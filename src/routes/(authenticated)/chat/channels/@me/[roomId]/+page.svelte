@@ -12,7 +12,7 @@
 		const r = roomId;
 		untrack(() => {
 			if (r) {
-				chatController.selectServer("dm_server");
+				chatController.selectServer("dm_server", false);
 				chatController.selectChannelInternal(r);
 			}
 		});

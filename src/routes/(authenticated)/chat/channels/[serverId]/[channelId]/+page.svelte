@@ -14,7 +14,7 @@
 		const c = channelId;
 		untrack(() => {
 			if (s && c) {
-				chatController.selectServer(s);
+				chatController.selectServer(s, false);
 				chatController.selectChannelInternal(c);
 			}
 		});
