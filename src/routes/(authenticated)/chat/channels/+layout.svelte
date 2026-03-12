@@ -41,7 +41,7 @@
 				<!-- Colonne salons -->
 				<div class="flex-none min-h-0 overflow-auto">
 					<ChannelList
-						channels={contextState.channels}
+						channels={contextState.channels.sort((a, b) => a.name.localeCompare(b.name))}
 						currentId={currentRoomId}
 						onSelect={(id) => chatController.selectChannel(id)}
 						onJoinVoice={(id, name) => chatController.joinVoice(id, name)}
