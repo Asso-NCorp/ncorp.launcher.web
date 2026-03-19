@@ -205,7 +205,7 @@
         $formData.sizeGb = game.sizeGb || 1;
         $formData.maxPlayers = game.maxPlayers || 1;
         $formData.genres = game.genres || [];
-        $formData.useNotifications = game.useNotifications || true;
+        $formData.useNotifications = game.useNotifications ?? true;
         $formData.isFeatured = game.isFeatured || false;
         // UPDATED: only set if provided, otherwise keep cleared (null)
         $formData.dateAdded = game.dateAdded ? fmtDate(new Date(game.dateAdded)) : null;
