@@ -4,11 +4,14 @@
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import {
+    AppWindow,
         CircleQuestionMark,
+        ClockArrowUp,
         CloudDownload,
         FolderOpen,
         Gamepad2,
         Heart,
+        Library,
         MessageCircle,
         MicVocal,
         PackageOpen,
@@ -94,14 +97,20 @@
                         label={$t("favorite_games") + ` (${GamesStore.getFavoriteGames().length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
-                        icon={PackageOpen}
+                        icon={Library}
                         href="/my-games"
                         label={$t("my_games") + ` (${GamesStore.allGames.filter((g) => g.isInstalled).length})`}
                         iconOnly={global.sidebarCollapsed} />
                     <SideMenuSubItem
-                        icon={PackagePlus}
+                        icon={ClockArrowUp}
                         href="/recently-added-games"
                         label={$t("recently_added_games") + ` (${GamesStore.recentlyAddedGames.length})`}
+                        iconOnly={global.sidebarCollapsed} />
+
+                    <SideMenuSubItem
+                        icon={AppWindow}
+                        href="/apps"
+                        label={$t("apps") + ` (${GamesStore.apps.length})`}
                         iconOnly={global.sidebarCollapsed} />
                 </div>
 
@@ -147,14 +156,18 @@
                 </div>
 
                 <!-- Side Links and Admin Menu - always visible but adapt to collapsed state -->
-                <div class={cn("mt-3 w-auto flex-col", global.sidebarCollapsed ? "flex items-center gap-1" : "flex gap-0")}>
+                <div
+                    class={cn(
+                        "mt-3 w-auto flex-col",
+                        global.sidebarCollapsed ? "flex items-center gap-1" : "flex gap-0",
+                    )}>
                     <!-- Side Links Component -->
                     <SideLinks />
 
                     {#if user?.role?.includes("admin")}
                         <div
                             class={cn(
-                                "dark:bg-background-dark relative flex h-auto w-auto flex-col rounded-lg antialiased gap-1",
+                                "dark:bg-background-dark relative flex h-auto w-auto flex-col gap-1 rounded-lg antialiased",
                                 global.sidebarCollapsed ? "items-center" : "items-center px-4",
                             )}>
                             <!-- <BackgroundBeams /> -->
@@ -169,11 +182,7 @@
                         label="Actions rapides"
                         class={global.sidebarCollapsed ? "truncate text-xs text-wrap text-ellipsis" : ""} />
 
-                    <div
-                        class={cn(
-                            "flex flex-col gap-1",
-                            global.sidebarCollapsed ? "items-center" : "text-base",
-                        )}>
+                    <div class={cn("flex flex-col gap-1", global.sidebarCollapsed ? "items-center" : "text-base")}>
                         {#if global.sidebarCollapsed}
                             <Tooltip.Root>
                                 <Tooltip.Trigger>

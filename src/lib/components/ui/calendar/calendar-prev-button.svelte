@@ -23,9 +23,14 @@
 	bind:ref
 	class={cn(
 		buttonVariants({ variant }),
-		"size-(--cell-size) select-none bg-transparent p-0 disabled:opacity-50 rtl:rotate-180",
+		"size-(--cell-size) bg-transparent p-0 select-none disabled:opacity-50 rtl:rotate-180",
 		className
 	)}
-	children={children || Fallback}
 	{...restProps}
-/>
+>
+	{#if children}
+		{@render children?.()}
+	{:else}
+		{@render Fallback()}
+	{/if}
+</CalendarPrimitive.PrevButton>

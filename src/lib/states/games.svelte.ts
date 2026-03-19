@@ -24,6 +24,8 @@ class GameStore {
     serverPlayers: Record<string, RConServer> = $state({});
     availableServers: DetectedServer[] = $state([]);
 
+    apps: InstallableGameExtended[] = $derived(this.games.filter((g) => g.useNotifications === false));
+
     lastGameFetchAt: number = $state(0); // ms epoch (info)
     private inFlight?: Promise<boolean>;
     private COOLDOWN_MS = 10_000;

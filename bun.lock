@@ -16,7 +16,7 @@
         "@fontsource/rubik": "^5.2.8",
         "@friendofsvelte/tipex": "^0.0.9",
         "@iconify/tailwind": "^1.2.0",
-        "@lucide/svelte": "^0.552.0",
+        "@lucide/svelte": "^0.577.0",
         "@microsoft/signalr": "^9.0.6",
         "@milkdown/crepe": "^7.17.1",
         "@milkdown/kit": "^7.17.1",
@@ -62,7 +62,7 @@
         "svelte-overflow-fade": "^1.0.3",
         "svelte-persisted-store": "^0.12.0",
         "sveltekit-i18n": "^2.4.2",
-        "sveltekit-superforms": "^2.28.1",
+        "sveltekit-superforms": "^2.30.0",
         "tldts": "^7.0.17",
         "vaul-svelte": "^1.0.0-next.7",
         "zod": "4.1.12",
@@ -73,7 +73,7 @@
         "@exodus/schemasafe": "^1.3.0",
         "@hey-api/openapi-ts": "^0.87.0",
         "@iconify-json/svg-spinners": "^1.2.4",
-        "@internationalized/date": "^3.10.0",
+        "@internationalized/date": "^3.12.0",
         "@sinclair/typebox": "^0.34.41",
         "@sveltejs/adapter-node": "^5.4.0",
         "@sveltejs/kit": "^2.48.4",
@@ -88,7 +88,7 @@
         "@vinejs/vine": "^4.1.0",
         "@vite-pwa/assets-generator": "^1.0.2",
         "autoprefixer": "^10.4.21",
-        "bits-ui": "^2.14.2",
+        "bits-ui": "^2.16.3",
         "class-validator": "^0.14.2",
         "clsx": "^2.1.1",
         "cross-env": "^10.1.0",
@@ -101,7 +101,7 @@
         "globals": "^16.5.0",
         "husky": "^9.1.7",
         "joi": "^18.0.1",
-        "layerchart": "2.0.0-next.42",
+        "layerchart": "2.0.0-next.43",
         "mode-watcher": "^1.1.0",
         "polka": "^0.5.2",
         "prettier": "^3.6.2",
@@ -110,11 +110,11 @@
         "superstruct": "^2.0.2",
         "svelte": "^5.43.4",
         "svelte-check": "^4.3.3",
-        "svelte-sonner": "^1.0.5",
+        "svelte-sonner": "^1.1.0",
         "svelte-typewriter": "^3.2.3",
         "sveltekit-adapter-iis": "^1.5.0",
-        "tailwind-merge": "^3.3.1",
-        "tailwind-variants": "^3.1.1",
+        "tailwind-merge": "^3.5.0",
+        "tailwind-variants": "^3.2.2",
         "tailwindcss": "^4.1.17",
         "tw-animate-css": "^1.4.0",
         "typescript": "^5.9.3",
@@ -574,7 +574,7 @@
 
     "@livekit/protocol": ["@livekit/protocol@1.44.0", "", { "dependencies": { "@bufbuild/protobuf": "^1.10.0" } }, "sha512-/vfhDUGcUKO8Q43r6i+5FrDhl5oZjm/X3U4x2Iciqvgn5C8qbj+57YPcWSJ1kyIZm5Cm6AV2nAPjMm3ETD/iyg=="],
 
-    "@lucide/svelte": ["@lucide/svelte@0.552.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-8wQF1YUKgaXiFidPdHM5NKESArKHLrgf8A1EAOjvqRmdVlL2KFsPxTchez/lMUOJKxXeDgrRKfXQuaN1O5KlhQ=="],
+    "@lucide/svelte": ["@lucide/svelte@0.577.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-0P6mkySd2MapIEgq08tADPmcN4DHndC/02PWwaLkOerXlx5Sv9aT4BxyXLIY+eccr0g/nEyCYiJesqS61YdBZQ=="],
 
     "@lukeed/csprng": ["@lukeed/csprng@1.1.0", "", {}, "sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA=="],
 
@@ -1548,7 +1548,7 @@
 
     "kysely": ["kysely@0.28.11", "", {}, "sha512-zpGIFg0HuoC893rIjYX1BETkVWdDnzTzF5e0kWXJFg5lE0k1/LfNWBejrcnOFu8Q2Rfq/hTDTU7XLUM8QOrpzg=="],
 
-    "layerchart": ["layerchart@2.0.0-next.42", "", { "dependencies": { "@dagrejs/dagre": "^1.1.5", "@layerstack/svelte-actions": "1.0.1-next.14", "@layerstack/svelte-state": "0.1.0-next.19", "@layerstack/tailwind": "2.0.0-next.17", "@layerstack/utils": "2.0.0-next.14", "d3-array": "^3.2.4", "d3-color": "^3.1.0", "d3-delaunay": "^6.0.4", "d3-dsv": "^3.0.1", "d3-force": "^3.0.0", "d3-geo": "^3.1.1", "d3-geo-voronoi": "^2.1.0", "d3-hierarchy": "^3.1.2", "d3-interpolate": "^3.0.1", "d3-interpolate-path": "^2.3.0", "d3-path": "^3.1.0", "d3-quadtree": "^3.0.1", "d3-random": "^3.0.1", "d3-sankey": "^0.12.3", "d3-scale": "^4.0.2", "d3-scale-chromatic": "^3.1.0", "d3-shape": "^3.2.0", "d3-tile": "^1.0.0", "d3-time": "^3.1.0", "lodash-es": "^4.17.21", "memoize": "^10.1.0", "runed": "^0.31.1" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-vLMHaLaU5Glf7OG56cZiD/1Dt6qvYHxc9gbNTq2ypjs+3iGLekx//wvkvCAmx8mH/t6kx1fbmxwKpf+RrFkyew=="],
+    "layerchart": ["layerchart@2.0.0-next.43", "", { "dependencies": { "@dagrejs/dagre": "^1.1.5", "@layerstack/svelte-actions": "1.0.1-next.14", "@layerstack/svelte-state": "0.1.0-next.19", "@layerstack/tailwind": "2.0.0-next.17", "@layerstack/utils": "2.0.0-next.14", "d3-array": "^3.2.4", "d3-color": "^3.1.0", "d3-delaunay": "^6.0.4", "d3-dsv": "^3.0.1", "d3-force": "^3.0.0", "d3-geo": "^3.1.1", "d3-geo-voronoi": "^2.1.0", "d3-hierarchy": "^3.1.2", "d3-interpolate": "^3.0.1", "d3-interpolate-path": "^2.3.0", "d3-path": "^3.1.0", "d3-quadtree": "^3.0.1", "d3-random": "^3.0.1", "d3-sankey": "^0.12.3", "d3-scale": "^4.0.2", "d3-scale-chromatic": "^3.1.0", "d3-shape": "^3.2.0", "d3-tile": "^1.0.0", "d3-time": "^3.1.0", "lodash-es": "^4.17.21", "memoize": "^10.1.0", "runed": "^0.31.1" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-1Ywm38NdzHWKwgaAHq3EcqshIgsq+pylntSnVWAVazXUk/NsxPcxdpR3tMt3ySjWV0ZPBBgLs78sdVf7FTgd+g=="],
 
     "levn": ["levn@0.4.1", "", { "dependencies": { "prelude-ls": "^1.2.1", "type-check": "~0.4.0" } }, "sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ=="],
 

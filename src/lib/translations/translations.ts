@@ -192,6 +192,7 @@ export default {
         approval_status_rejected: "Rejeté",
         chat_hint: "Survolez un utilisateur et cliquez sur l'icône de message pour démarrer une conversation",
         view_game: "Voir le jeu",
+        apps: "Applications",
     },
     en: {
         lang,
@@ -385,5 +386,6 @@ export default {
         approval_status_rejected: "Rejected",
         chat_hint: "Hover over a user and click the message icon to start a conversation",
         view_game: "View Game",
+        apps: "Apps",
     },
 };

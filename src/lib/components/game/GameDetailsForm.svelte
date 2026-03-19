@@ -133,7 +133,7 @@
     <Form.Control>
         {#snippet children({ props })}
             <Label for="useNotifications" title="Si oui, vous pourrez voir qui lance/installe ce jeu">
-                Notifications de lancement/installation
+                Est une jeu (non pour application)
             </Label>
             <Checkbox {...props} bind:checked={$formData.useNotifications} />
         {/snippet}
