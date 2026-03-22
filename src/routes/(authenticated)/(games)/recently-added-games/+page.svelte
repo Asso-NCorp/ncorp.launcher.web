@@ -12,6 +12,8 @@
 
     const filter1Month = $derived(
         GamesStore.games.filter((game) => {
+            if(!game.useNotifications) return false;
+
             const added = game.dateAdded ? new Date(game.dateAdded).getTime() : 0;
             return added > Date.now() - 30 * 24 * 60 * 60 * 1000;
         }),

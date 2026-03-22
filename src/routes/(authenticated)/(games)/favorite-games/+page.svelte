@@ -12,7 +12,7 @@
     import { Heart } from "@lucide/svelte";
 
     let filteredGames = $derived(
-        [...GamesStore.games].sort((a, b) => a.title!.localeCompare(b.title!)).filter((game) => game.isFavorite),
+        [...GamesStore.games.filter(g => g.useNotifications)].sort((a, b) => a.title!.localeCompare(b.title!)).filter((game) => game.isFavorite),
     );
 
     // Defer registration until snippets exist; ensure cleanup fires.
