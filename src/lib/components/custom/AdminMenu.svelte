@@ -3,6 +3,7 @@
     import { cn, getServerApi } from "$src/lib/utils";
     import SideMenuSubItem from "./SideMenuSubItem.svelte";
     import {
+    Calendar,
     CircleQuestionMark,
         FerrisWheel,
         Link,
@@ -71,6 +72,11 @@
         href="/admin/manage-sidelinks"
         label={$t("links_management")}
         icon={Link}
+        iconOnly={global.sidebarCollapsed} />
+    <SideMenuSubItem
+        href="/admin/manage-events"
+        label="Événements"
+        icon={Calendar}
         iconOnly={global.sidebarCollapsed} />
     <SideMenuSubItem
         href="/admin/lottery"

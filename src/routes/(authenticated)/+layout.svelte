@@ -109,7 +109,12 @@
     const upcomingEvents = $derived(() => {
         const now = new Date();
         return events
-            .filter((event) => new Date(event.start_time) > now)
+            .filter((event) => {
+                const start = new Date(event.start_time);
+                const end = event.end_time ? new Date(event.end_time) : null;
+                // Upcoming (not started yet), ongoing (started with end in future), or no end_time set
+                return start > now || end === null || end > now;
+            })
             .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
             .slice(0, 5); // Show only next 5 events
     });

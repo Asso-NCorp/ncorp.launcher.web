@@ -9,21 +9,49 @@
     import { Progress } from "$src/lib/components/ui/progress";
     import Separator from "$src/lib/components/ui/separator/separator.svelte";
     import { goto } from "$app/navigation";
+    import { onMount, onDestroy } from "svelte";
 
     dayjs.extend(utc);
     const dayjsUtc = (d?: dayjs.ConfigType) => dayjs.utc(d);
 
-    export let events: Array<{
+    type EventItem = {
         name: string;
         start_time: Date;
-        end_time: Date;
+        end_time: Date | null;
         description?: string;
         image_url?: string;
         url?: string;
-    }> = [];
+    };
+
+    let { events = [] }: { events: EventItem[] } = $props();
+
+    // Reactive tick counter that increments every minute to force progress recalc
+    let tick = $state(0);
+    let interval: ReturnType<typeof setInterval> | undefined;
+
+    onMount(() => {
+        interval = setInterval(() => { tick++; }, 60_000);
+    });
+
+    onDestroy(() => {
+        if (interval) clearInterval(interval);
+    });
 
     const formatRelative = (date: Date) => dayjsUtc(date).fromNow();
-    const formatDateTime = (date: Date) => dayjsUtc(date).format("DD/MM/YYYY HH:mm");
+    const formatDateTime = (date: Date | null) => date ? dayjsUtc(date).format("DD/MM/YYYY HH:mm") : "";
+
+    function getProgress(start: Date, end: Date | null): { value: number; max: number } | null {
+        // Force reactivity on tick
+        void tick;
+        if (!end) return null;
+        const now = dayjsUtc();
+        const s = dayjsUtc(start);
+        const e = dayjsUtc(end);
+        const total = e.diff(s, "minute");
+        if (total <= 0) return null;
+        const elapsed = now.diff(s, "minute");
+        return { value: Math.max(0, Math.min(elapsed, total)), max: total };
+    }
 </script>
 
 <div class="flex h-full w-auto gap-1 border-l">
@@ -32,6 +60,7 @@
             <DropdownMenu.Trigger class={buttonVariants({ variant: "ghost" })}>
                 {#if events.length > 0}
                     {@const firstEvent = events[0]}
+                    {@const progress = getProgress(firstEvent.start_time, firstEvent.end_time)}
                     <Tooltip.Root>
                         <Tooltip.Trigger class="flex items-center gap-2">
                             <Calendar class="text-muted-foreground" />
@@ -40,10 +69,12 @@
                                 <span class="text-muted-foreground text-xs">
                                     {formatRelative(firstEvent.start_time)}
                                 </span>
-                                <Progress
-                                    value={dayjsUtc(firstEvent.start_time).diff(dayjsUtc(), "minute")}
-                                    max={dayjsUtc(firstEvent.end_time).diff(dayjsUtc(firstEvent.start_time), "minute")}
-                                    class="text-primary-foreground h-1 w-full" />
+                                {#if progress}
+                                    <Progress
+                                        value={progress.value}
+                                        max={progress.max}
+                                        class="text-primary-foreground h-1 w-full" />
+                                {/if}
                             </div>
                             {#if firstEvent.image_url}
                                 <img
@@ -67,7 +98,11 @@
                         {#each events as event, i}
                             <DropdownMenu.Item
                                 class="cursor-pointer"
-                                onclick={async () => event.url && (await goto(event.url))}>
+                                onclick={() => {
+                                    if (event.url) {
+                                        window.location.href = event.url;
+                                    }
+                                }}>
                                 <div class="flex w-full flex-col gap-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-medium">{event.name}</span>
@@ -87,7 +122,7 @@
                                         </span>
                                     {/if}
                                     <span class="text-muted-foreground text-xs">
-                                        {formatDateTime(event.start_time)} - {formatDateTime(event.end_time)}
+                                        {formatDateTime(event.start_time)}{event.end_time ? ` - ${formatDateTime(event.end_time)}` : ""}
                                     </span>
                                     <Separator class="my-1" />
                                 </div>
