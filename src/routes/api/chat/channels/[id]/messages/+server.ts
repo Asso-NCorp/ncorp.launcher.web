@@ -5,23 +5,33 @@ export const GET: RequestHandler = async (event: RequestEvent) => {
 
     const id = event.params.id;
     if (!id) {
-        return json({ error: 'Server ID is required' }, { status: 400 });
+        return json({ error: 'Channel ID is required' }, { status: 400 });
     }
 
-    const messages = await db.chat_message.findMany({
+    // Find the room linked to this channel
+    const room = await db.room.findFirst({
+        where: { channelId: id },
+        select: { id: true }
+    });
+
+    if (!room) {
+        return json({ error: 'Room not found for this channel' }, { status: 404 });
+    }
+
+    const messages = await db.message.findMany({
         where: {
-            channelId: parseInt(id)
+            roomId: room.id
         },
         orderBy: {
-            timestamp: "desc",
+            createdAt: "desc",
         },
         select: {
             id: true,
-            channelId: true,
-            senderId: true,
-            text: true,
-            timestamp: true,
-            user: {
+            roomId: true,
+            authorId: true,
+            content: true,
+            createdAt: true,
+            author: {
                 select: {
                     id: true,
                     name: true
@@ -31,7 +41,7 @@ export const GET: RequestHandler = async (event: RequestEvent) => {
         take: 30,
     });
 
-    // Retourner l'order des messages
+    // Return messages in chronological order
     messages.reverse();
 
     return json(messages);

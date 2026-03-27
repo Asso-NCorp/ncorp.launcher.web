@@ -250,6 +250,24 @@ export class LiveKitSession {
             }
 
             this.connected = true;
+
+            // Attach audio for tracks that were already subscribed during
+            // connect().  TrackSubscribed events normally fire for these, but
+            // in some edge-cases (fast join, pre-cached tracks) the event may
+            // arrive before the handler is fully effective.  Iterating here is
+            // a no-cost safety net — attachAudio is idempotent per identity.
+            for (const [, rp] of newRoom.remoteParticipants) {
+                for (const pub of rp.trackPublications.values()) {
+                    if (
+                        pub.track &&
+                        pub.isSubscribed &&
+                        (pub.source === lk.Track.Source.Microphone || pub.track.kind === lk.Track.Kind.Audio)
+                    ) {
+                        this.attachAudio(pub.track, rp.identity);
+                    }
+                }
+            }
+
             playSound("/assets/sounds/user_joined.mp3");
             this.stopPreviewPolling();
             this.rebuildParticipants();
@@ -503,6 +521,12 @@ export class LiveKitSession {
 
     private getOutputAudioCtx(): AudioContext {
         if (!this.outputAudioCtx) this.outputAudioCtx = new AudioContext();
+        // AudioContext may be created in "suspended" state if the user-gesture
+        // context has expired (async TrackSubscribed callback).  Resume it so
+        // remote audio actually plays.
+        if (this.outputAudioCtx.state === "suspended") {
+            void this.outputAudioCtx.resume();
+        }
         return this.outputAudioCtx;
     }
 
@@ -532,6 +556,10 @@ export class LiveKitSession {
             // Fallback: direct element volume (no boost above 100%)
             audioEl.volume = this.isDeafened ? 0 : Math.min(this.outputVolume, 1);
         }
+
+        // Explicitly start playback — autoplay alone may be blocked by browser
+        // policy when the call originates from an async event callback.
+        void audioEl.play().catch(() => {});
 
         this.audioElements.set(identity, audioEl);
     }
