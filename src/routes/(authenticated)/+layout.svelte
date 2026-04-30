@@ -40,6 +40,7 @@
     import { toast } from "svelte-sonner";
     import ReinstallModal from "$src/lib/components/modals/ReinstallModal.svelte";
     import UninstallModal from "$src/lib/components/modals/UninstallModal.svelte";
+    import LauncherV2Modal from "$src/lib/components/modals/LauncherV2Modal.svelte";
     import PendingApprovalsDialog from "$src/lib/components/custom/PendingApprovalsDialog.svelte";
     import ChatNotificationBell from "$src/lib/components/custom/ChatNotificationBell.svelte";
     import HeaderVoiceWidget from "$src/lib/components/layout/HeaderVoiceWidget.svelte";
@@ -401,6 +402,7 @@
 
 <ReinstallModal />
 <UninstallModal />
+<LauncherV2Modal />
 <AppLoadingOverlay visible={loading && hasNavigated} />
 
 <style>

@@ -65,7 +65,7 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
         autoSignIn: true,
-        sendResetPassword: async ({ user, url, token }) => {
+        sendResetPassword: async ({ user, url }) => {
             const subject = "Réinitialisation de votre mot de passe - NCORP Launcher";
             const html = `
 <!DOCTYPE html>
